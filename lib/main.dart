@@ -11,6 +11,7 @@ import 'core/cache/provider/location_provider.dart';
 import 'core/utils/app_routes.dart';
 import 'features/ui/auth/login/login_screen.dart';
 import 'features/ui/pages/add_apartment/add_apartment.dart';
+import 'features/ui/pages/apartment_details_screen/apartment_details.dart';
 
 Future<void> main() async {
 WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
                 AppRoutes.verificationRoute: (context) => VerificationScreen(),
                 AppRoutes.forgetPassword2Route: (context) => ForgetPasswordScreen2(),
                 AppRoutes.addApartmentRoute: (context) => AddApartment(),
+                AppRoutes.apartmentDetailsRoute: (context) => ApartmentDetails(),
 
               },
               theme: ThemeData.light()

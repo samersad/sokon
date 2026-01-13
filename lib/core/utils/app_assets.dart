@@ -35,5 +35,11 @@ class AppAssets{
   static const String bathroomsIcon = 'assets/images/Bathrooms.png';
   static const String bedroomsIcon = 'assets/images/Bedrooms.png';
   static const String livingRoomsIcon = 'assets/images/Living Rooms.png';
+  static const String yesIcon = 'assets/images/yesIcon.png';
+  static const String avatar = 'assets/images/avatar.png';
+  static const String callIcon = 'assets/images/callIcon.png';
+  static const String messageIcon = 'assets/images/messageIcon.png';
+
+
 
 }

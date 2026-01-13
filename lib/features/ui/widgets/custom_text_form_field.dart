@@ -68,12 +68,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         fillColor:widget.fillColor??AppColors.offWhiteColor,
         filled: true,
         enabledBorder: bulitOutLineInputBorder(
-          borderSideColor: widget.borderSideColor!,
-          radius: widget.borderRadius
+          borderSideColor: widget.borderSideColor ?? AppColors.primaryColor,
+          radius: widget.borderRadius,
         ),
         focusedBorder: bulitOutLineInputBorder(
-          borderSideColor:widget.borderSideColor! ,
+          borderSideColor: widget.borderSideColor ?? AppColors.primaryColor,
         ),
+
         errorBorder: bulitOutLineInputBorder(borderSideColor: AppColors.redColor),
         focusedErrorBorder: bulitOutLineInputBorder(borderSideColor: AppColors.redColor),
         hintText: widget.hintText,

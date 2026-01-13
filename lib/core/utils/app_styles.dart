@@ -114,6 +114,18 @@ class AppStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.primaryColor,
   );
+  static TextStyle bold16PrimaryColor = TextStyle(
+    fontFamily: 'Raleway',
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: AppColors.primaryColor,
+  );
+  static TextStyle bold12PrimaryColor = TextStyle(
+    fontFamily: 'Raleway',
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    color: AppColors.primaryColor,
+  );
   static TextStyle semiBold10PrimaryColor = TextStyle(
     fontFamily: 'Raleway',
     fontSize: 10,
@@ -132,12 +144,39 @@ class AppStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.primaryColor,
   );
+  static TextStyle bold10black = TextStyle(
+    fontFamily: 'Montserrat',
+    fontSize: 10,
+    fontWeight: FontWeight.bold,
+    color: AppColors.blackColor,
+  );
 
   static TextStyle medium13GrayWithOpacity = TextStyle(
       color: Color(0xFF1E1E1E).withOpacity(0.5),
       fontSize: 13,
       fontWeight: FontWeight.w700,
       fontFamily: "Poppins"
+
+  );
+  static TextStyle medium13Gray = TextStyle(
+      color: Color(0xFF8C8C8C),
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+      fontFamily: "Poppins"
+
+  );
+  static TextStyle medium16whiteBlue = TextStyle(
+      color: AppColors.whiteBlue,
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+      fontFamily: "Raleway"
+
+  );
+  static TextStyle medium13PrimaryColor = TextStyle(
+      color: AppColors.primaryColor,
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+      fontFamily: "Raleway"
 
   );
 

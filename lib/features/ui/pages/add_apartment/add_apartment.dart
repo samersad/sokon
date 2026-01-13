@@ -16,6 +16,7 @@ import 'package:sokon/core/utils/app_styles.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_routes.dart';
 import '../../widgets/alert_dialog_utils.dart';
+import '../../widgets/custom_text_form_field.dart';
 
 class AddApartment extends StatefulWidget {
   const AddApartment({super.key});
@@ -35,6 +36,7 @@ class _AddApartmentState extends State<AddApartment> {
   int bedrooms = 0;
   int bathrooms = 0;
   int livingRooms = 0;
+  TextEditingController descriptionCRl=TextEditingController(text: "");
 
   @override
   void initState() {
@@ -246,16 +248,16 @@ class _AddApartmentState extends State<AddApartment> {
               ),
               SizedBox(height: 20.h),
               Text("Description:", style: AppStyles.medium16black),
-              ReadMoreText(
-                "Bright and modern apartment with an open living area,cozy seating, and a small kitchen with bar stools. Large balcony offers city views and plenty of natural light, with plants adding a touch of nature",
-                trimLength: 150,
-                style: AppStyles.regular14black,
-                trimLines: 5,
-                trimMode: TrimMode.Length,
-                colorClickableText: AppColors.redColor,
-                trimCollapsedText: 'Read more',
-                trimExpandedText: '  Read less',
-                moreStyle: AppStyles.bold12Primary,
+              CustomTextFormField(controller: descriptionCRl,
+                maxLines: 4
+                ,hintText:"Enter Apartment Description",
+                borderSideColor: AppColors.transparentColor,
+                validator: (text) {
+                  if (text==null || text.trim().isEmpty) {
+                      return "Please enter a description";
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 10.h),
               Text("Property Photos:", style: AppStyles.medium16black),

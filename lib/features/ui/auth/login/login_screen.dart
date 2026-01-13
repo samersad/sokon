@@ -67,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderSideColor: AppColors.grayColor,
                           validator: (val) {
                             AppValidators.validateEmail(val);
+                            return null;
                           },
                         ),
                         SizedBox(height: 13.h),
@@ -81,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscureText: hidePassword,
                           validator: (val) {
                             AppValidators.validatePassword(val);
+                            return null;
                           },
                           suffixIconName: IconButton(
                             icon: Icon(

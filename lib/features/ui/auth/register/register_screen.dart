@@ -65,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           borderSideColor: AppColors.grayColor,
                           validator: (val) {
                             AppValidators.validateUsername(val);
+                            return null;
                           },
                         ),
                         SizedBox(height: 16.h),
@@ -76,6 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           borderSideColor: AppColors.grayColor,
                           validator: (val) {
                             AppValidators.validateEmail(val);
+                            return null;
                           },
                         ),
                         SizedBox(height: 16.h),
@@ -90,6 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: hidePassword,
                           validator: (val) {
                             AppValidators.validatePassword(val);
+                            return null;
                           },
                           suffixIconName: IconButton(
                             icon: Icon(

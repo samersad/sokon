@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -10,6 +9,18 @@ class AppStyles {
     fontSize: 20,
     fontWeight: FontWeight.bold,
     color: AppColors.blackColor,
+  );
+  static TextStyle medium16black = TextStyle(
+    fontFamily: 'Poppins',
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    color: AppColors.blackColor,
+  );
+  static TextStyle medium13blue = TextStyle(
+    fontFamily: 'Poppins',
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    color: AppColors.blueColor,
   );
   static TextStyle bold36black = TextStyle(
     fontFamily: 'Montserrat',
@@ -51,12 +62,26 @@ class AppStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.darkGrayColor,
   );
+  static TextStyle regular14black = TextStyle(
+    fontFamily: 'Montserrat',
+
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: AppColors.blackColor,
+  );
   static TextStyle medium12gray = TextStyle(
     fontFamily: 'Montserrat',
 
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.darkGrayColor,
+  );
+  static TextStyle medium12White = TextStyle(
+    fontFamily: 'Montserrat',
+
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+    color: AppColors.whiteColor,
   );
   static TextStyle regular15black = TextStyle(
     fontFamily: 'Outfit',
@@ -76,4 +101,45 @@ class AppStyles {
     fontWeight: FontWeight.w700,
     color: AppColors.primaryColor,
   );
+  static TextStyle medium10blueDarkColor = TextStyle(
+    fontFamily: 'Raleway',
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    color: AppColors.blueDarkColor,
+  );
+
+  static TextStyle bold18PrimaryColor = TextStyle(
+    fontFamily: 'Lato',
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: AppColors.primaryColor,
+  );
+  static TextStyle semiBold10PrimaryColor = TextStyle(
+    fontFamily: 'Raleway',
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    color: AppColors.primaryColor,
+  );
+  static TextStyle bold12Primary = TextStyle(
+    fontFamily: 'Raleway',
+    fontSize: 12,
+    fontWeight: FontWeight.bold,
+    color: AppColors.primaryColor,
+  );
+  static TextStyle bold8Primary = TextStyle(
+    fontFamily: 'Montserrat',
+    fontSize: 8,
+    fontWeight: FontWeight.bold,
+    color: AppColors.primaryColor,
+  );
+
+  static TextStyle medium13GrayWithOpacity = TextStyle(
+      color: Color(0xFF1E1E1E).withOpacity(0.5),
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+      fontFamily: "Poppins"
+
+  );
+
+
 }

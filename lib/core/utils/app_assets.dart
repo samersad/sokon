@@ -17,5 +17,23 @@ class AppAssets{
   static const String selectedMessageIcon = 'assets/images/selected_message_icon.png';
 
   static const String selectedProfileIcon = 'assets/images/selected_profile_icon.png';
+  static const String locationIcon = 'assets/images/Location.png';
+  static const String downIcon = 'assets/images/downIcon.png';
+  static const String chatBot = 'assets/images/chat_bot.png';
+  static const String notification = 'assets/images/Notification.png';
+  static const String searchIcon = 'assets/images/search.png';
+  static const String filterIcon = 'assets/images/Filter.png';
+  static const String image = 'assets/images/image.png';
+  static const String star = 'assets/images/star.png';
+  static const String imageS = 'assets/images/image_s.png';
+  static const String imageC = 'assets/images/image_c.png';
+  static const String locationOrange = 'assets/images/LocationOrange.png';
+  static const String cameraIconGray = 'assets/images/cameraIconGray.png';
+  static const String cameraIcon = 'assets/images/cameraIcon.png';
+  static const String cam1 = 'assets/images/00.png';
+
+  static const String bathroomsIcon = 'assets/images/Bathrooms.png';
+  static const String bedroomsIcon = 'assets/images/Bedrooms.png';
+  static const String livingRoomsIcon = 'assets/images/Living Rooms.png';
 
 }

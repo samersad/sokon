@@ -1,10 +1,11 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/utils/app_routes.dart';
+import '../add_apartment/add_apartment.dart';
 import '../tabs/home_tab/home_tab.dart';
 import '../tabs/message_tab/message_tab.dart';
 import '../tabs/profile_tab/profile_tab.dart';
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: CircleBorder(),
         elevation: 0,
         onPressed: () {
-          //Navigator.of(context).pushNamed(AppRoutes.createEventScreenRoueNamed);
+          Navigator.of(context).pushNamed(AppRoutes.addApartmentRoute);
         },
         child: Icon(
           Icons.add,

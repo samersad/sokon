@@ -12,7 +12,7 @@ class CustomElevatedButtom extends StatelessWidget {
     this.textStyle,
     this.borderColor=AppColors.transparentColor,this.hasIcon=false,this.mainAxisAlignment,this.childIconWidget,
     this.customPadding=20,
-  this.width,
+  this.width=500,
   this.borderRadius=20});
   //final VoidCallback onPressed;
   final  String? text;
@@ -39,7 +39,7 @@ class CustomElevatedButtom extends StatelessWidget {
       child: ElevatedButton(onPressed: onPressed,
 
           style: ElevatedButton.styleFrom(
-            fixedSize: Size.fromWidth(width!),
+            fixedSize: Size.fromWidth( width!),
             elevation: 0,
             padding: EdgeInsets.symmetric(vertical: customPadding),
             backgroundColor: backgroundColorElevated,

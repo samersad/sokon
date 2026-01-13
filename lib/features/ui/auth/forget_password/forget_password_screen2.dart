@@ -7,7 +7,6 @@ import '../../../../core/utils/app_styles.dart';
 import '../../../../core/utils/app_validator.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 import '../../widgets/custom_text_form_field.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ForgetPasswordScreen2 extends StatefulWidget {
   const ForgetPasswordScreen2({super.key});
@@ -63,6 +62,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                         borderSideColor: AppColors.grayColor,
                         validator: (val) {
                           AppValidators.validatePassword(val);
+                          return null;
                         },
                       ),
                       SizedBox(height: 20.h),
@@ -75,6 +75,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                         borderSideColor: AppColors.grayColor,
                         validator: (val) {
                           AppValidators.validateConfirmPassword(val,passwordCtrl.text);
+                          return null;
                         },
                       ),
                       SizedBox(height: 70.h),

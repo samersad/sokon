@@ -7,6 +7,7 @@ class AppRoutes {
   static String forgetPassword2Route = "forget_Password2";
   static String addApartmentRoute = "add_apartment";
   static String apartmentDetailsRoute = "apartment_details";
+  static String locationPickerRoute = "location_picker";
 
 
 }

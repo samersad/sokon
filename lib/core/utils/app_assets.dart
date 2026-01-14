@@ -39,6 +39,7 @@ class AppAssets{
   static const String avatar = 'assets/images/avatar.png';
   static const String callIcon = 'assets/images/callIcon.png';
   static const String messageIcon = 'assets/images/messageIcon.png';
+  static const String moneySine = 'assets/images/moneySine.png';
 
 
 

@@ -5,6 +5,7 @@ import 'package:sokon/features/ui/auth/forget_password/forget_password_screen.da
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen2.dart';
 import 'package:sokon/features/ui/auth/register/register_screen.dart';
 import 'package:sokon/features/ui/auth/verification/verification_screen.dart';
+import 'package:sokon/features/ui/location_picker/location_picker.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
 
 import 'core/cache/provider/location_provider.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
                 AppRoutes.forgetPassword2Route: (context) => ForgetPasswordScreen2(),
                 AppRoutes.addApartmentRoute: (context) => AddApartment(),
                 AppRoutes.apartmentDetailsRoute: (context) => ApartmentDetails(),
+                AppRoutes.locationPickerRoute: (context) => LocationPicker(),
 
               },
               theme: ThemeData.light()

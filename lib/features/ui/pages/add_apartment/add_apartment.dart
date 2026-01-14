@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
 import 'package:video_player/video_player.dart';
@@ -13,6 +15,7 @@ import 'package:video_player/video_player.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
+import '../../../../core/cache/provider/location_provider.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_routes.dart';
 import '../../widgets/alert_dialog_utils.dart';
@@ -37,11 +40,19 @@ class _AddApartmentState extends State<AddApartment> {
   int bathrooms = 0;
   int livingRooms = 0;
   TextEditingController descriptionCRl=TextEditingController(text: "");
+  TextEditingController priceCRl=TextEditingController(text: "");
+
+  late LocationProvider  locationProvider;
+
 
   @override
   void initState() {
     super.initState();
     apartmentImages = [];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<LocationProvider>(context, listen: false)
+          .clearEventLocation();
+    });
   }
 
   Future<void> pickVideo(ImageSource source) async {
@@ -108,6 +119,7 @@ class _AddApartmentState extends State<AddApartment> {
 
   @override
   Widget build(BuildContext context) {
+     locationProvider=Provider.of<LocationProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Apartment", style: AppStyles.bold20black),
@@ -222,25 +234,51 @@ class _AddApartmentState extends State<AddApartment> {
 
               Row(
                 children: [
-                  Image.asset(AppAssets.locationIcon, width: 14.w),
+                  InkWell(onTap: () => Navigator.pushNamed(context, AppRoutes.locationPickerRoute),
+                      child: Image.asset(AppAssets.locationIcon, width: 14.w)),
                   SizedBox(width: 4.w),
                   Expanded(
-                    child: Text(
-                      "Jakarta, Indonesia",
+                    child:
+                    AutoSizeText(maxLines: 10,
+                      locationProvider.eventAddress==null ?
+                       "Select Location"                          :
+                      "${locationProvider.eventAddress}",
+                      style: AppStyles.medium10blueDarkColor ,
+
+                      ),
+
+                    // Text(
+                    //   locationProvider.eventAddress! ?? "Select Location",
+                    //   maxLines: 1,
+                    //   overflow: TextOverflow.ellipsis,
+                    //   style: AppStyles.medium10blueDarkColor,
+                    // ),
+                  ),
+                  Expanded(
+                    child: CustomTextFormField(controller: priceCRl,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppStyles.medium10blueDarkColor,
+                      borderRadius: 50,
+                        suffixIconName: Icon(Icons.attach_money_outlined,color: AppColors.primaryColor,),
+                        paddingHorizontal: 5.w,
+                        paddingVertical: 0.h
+                      ,hintText:"Enter price",
+                      borderSideColor: AppColors.transparentColor,
+                      keyboardType: TextInputType.number,
+                      hintStyle: AppStyles.bold12Primary,
+                      validator: (text) {
+                        if (text==null || text.trim().isEmpty) {
+                          return "Please enter a price";
+                        }
+                        return null;
+                      },
                     ),
                   ),
-                  Spacer(),
+
+
                   RichText(
                     text: TextSpan(
                       children: [
-                        TextSpan(
-                          text: "EG 290/",
-                          style: AppStyles.bold18PrimaryColor,
-                        ),
-                        TextSpan(text: "month", style: AppStyles.bold8Primary),
+                        TextSpan(text: " EG/ month", style: AppStyles.bold12Primary),
                       ],
                     ),
                   ),

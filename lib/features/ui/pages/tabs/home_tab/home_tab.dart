@@ -5,10 +5,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
+import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
 
 import '../../../../../core/cache/provider/location_provider.dart';
 import '../../../../../core/utils/app_styles.dart';
+import '../../../widgets/featured_estates_card.dart';
+import '../../../widgets/nearby_estate_card.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -109,9 +112,10 @@ class _HomeTabState extends State<HomeTab> {
                   child: GoogleMap(
                     initialCameraPosition:
                     CameraPosition(target: initialTarget, zoom: 15),
-                    zoomControlsEnabled: false,
+                    zoomControlsEnabled: true,
                     myLocationEnabled: true,
                     myLocationButtonEnabled: true,
+                    scrollGesturesEnabled: true,
                     markers: locationProvider.eventLocation != null
                         ? {
                       Marker(
@@ -135,8 +139,10 @@ class _HomeTabState extends State<HomeTab> {
                   Text("Featured Estates",
                       style: AppStyles.bold18PrimaryColor),
                   const Spacer(),
-                  Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),
+                  TextButton(onPressed: (){
+                    Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
+                  }, child: Text("View all",
+                      style: AppStyles.semiBold10PrimaryColor),)
                 ],
               ),
 
@@ -150,81 +156,7 @@ class _HomeTabState extends State<HomeTab> {
                   itemCount: 5,
                   separatorBuilder: (_, __) => SizedBox(width: 10.w),
                   itemBuilder: (_, __) {
-                    return Container(
-                      width: 270.w,
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.offWhiteColor,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(AppAssets.image,
-                              width: 120.w, fit: BoxFit.fill),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceAround,
-                              children: [
-                                AutoSizeText(
-                                  "Sky Dandelions Apartment",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppStyles.bold12Primary,
-                                ),
-                                Row(
-                                  children: [
-                                    Image.asset(AppAssets.star,
-                                        width: 14.w),
-                                    SizedBox(width: 4.w),
-                                    Text("4.9",
-                                        style:
-                                        AppStyles.bold12Primary),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Image.asset(
-                                        AppAssets.locationIcon,
-                                        width: 14.w),
-                                    SizedBox(width: 4.w),
-                                    Expanded(
-                                      child: Text(
-                                        "Jakarta, Indonesia",
-                                        maxLines: 1,
-                                        overflow:
-                                        TextOverflow.ellipsis,
-                                        style: AppStyles
-                                            .medium10blueDarkColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "EG 290/",
-                                        style: AppStyles
-                                            .bold18PrimaryColor,
-                                      ),
-                                      TextSpan(
-                                        text: "month",
-                                        style:
-                                        AppStyles.bold8Primary,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    return FeaturedEstatesCard();
                   },
                 ),
               ),
@@ -237,8 +169,11 @@ class _HomeTabState extends State<HomeTab> {
                   Text("Top Location",
                       style: AppStyles.bold18PrimaryColor),
                   const Spacer(),
-                  Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),
+                  TextButton(onPressed: (){
+                    Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
+                  }, child: Text("View all",
+                      style: AppStyles.semiBold10PrimaryColor),)
+
                 ],
               ),
 
@@ -284,13 +219,14 @@ class _HomeTabState extends State<HomeTab> {
                   Text("Nearby Estate",
                       style: AppStyles.bold18PrimaryColor),
                   const Spacer(),
-                  Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),
+                  TextButton(onPressed: (){
+                    Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
+                  }, child: Text("View all",
+                      style: AppStyles.semiBold10PrimaryColor),)
                 ],
               ),
 
               SizedBox(height: 10.h),
-
               SizedBox(
                 height: 250.h,
                 child: ListView.separated(
@@ -298,82 +234,7 @@ class _HomeTabState extends State<HomeTab> {
                   itemCount: 5,
                   separatorBuilder: (_, __) => SizedBox(width: 10.w),
                   itemBuilder: (_, __) {
-                    return Container(
-                      width: 168.w,
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.offWhiteColor,
-                        borderRadius: BorderRadius.circular(27),
-                      ),
-                      child:
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AspectRatio(
-                            aspectRatio: 1,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                AppAssets.imageC,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: 8.h),
-
-                          Text(
-                            "Bungalow House",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppStyles.bold12Primary,
-                          ),
-
-                          SizedBox(height: 6.h),
-
-                          Row(
-                            children: [
-                              Image.asset(AppAssets.locationOrange, width: 14.w),
-                              SizedBox(width: 4.w),
-                              Expanded(
-                                child: Text(
-                                  "Jakarta, Indonesia",
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppStyles.medium10blueDarkColor,
-                                ),
-                              ),
-                              Image.asset(AppAssets.downIcon, width: 12.w),
-                            ],
-                          ),
-
-                          SizedBox(height: 10.h), // 👈 بدل Spacer
-
-                          Row(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "EG 290/",
-                                      style: AppStyles.bold18PrimaryColor,
-                                    ),
-                                    TextSpan(
-                                      text: "month",
-                                      style: AppStyles.bold8Primary,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Spacer(),
-                              Image.asset(AppAssets.star, width: 14.w),
-                              SizedBox(width: 4.w),
-                              Text("4.7", style: AppStyles.bold12Primary),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
+                    return NearbyEstateCard();
                   },
                 ),
               ),

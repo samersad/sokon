@@ -35,6 +35,12 @@ class AppStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.primaryColor,
   );
+  static TextStyle bold24Primary = TextStyle(
+    fontFamily: 'Lato',
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+    color: AppColors.primaryColor,
+  );
   static TextStyle semiBold20White = TextStyle(
     fontFamily: 'Montserrat',
 

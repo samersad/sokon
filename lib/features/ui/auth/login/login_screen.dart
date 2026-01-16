@@ -114,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         CustomElevatedButtom(
                           onPressed: () {
                             //viewModel.login();
+                            Navigator.of(context).pushReplacementNamed(AppRoutes.homeScreenRoute);
                           },
                           text: "Login",
                           width: 200,

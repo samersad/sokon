@@ -98,7 +98,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   OutlineInputBorder bulitOutLineInputBorder({required Color borderSideColor,double radius=10}) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(radius),
-      borderSide: BorderSide(color: borderSideColor, width: 2),
+      borderSide: BorderSide(color: borderSideColor, width: 1),
     );
   }
 }

@@ -7,12 +7,15 @@ import 'package:sokon/features/ui/auth/register/register_screen.dart';
 import 'package:sokon/features/ui/auth/verification/verification_screen.dart';
 import 'package:sokon/features/ui/location_picker/location_picker.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
+import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
 
 import 'core/cache/provider/location_provider.dart';
 import 'core/utils/app_routes.dart';
 import 'features/ui/auth/login/login_screen.dart';
 import 'features/ui/pages/add_apartment/add_apartment.dart';
 import 'features/ui/pages/apartment_details_screen/apartment_details.dart';
+import 'features/ui/pages/featured_estates_screen/featured_estate_screen.dart';
+import 'features/ui/pages/nearby_estate_screen/nearby_estate_screen.dart';
 
 Future<void> main() async {
 WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +50,9 @@ class MyApp extends StatelessWidget {
                 AppRoutes.addApartmentRoute: (context) => AddApartment(),
                 AppRoutes.apartmentDetailsRoute: (context) => ApartmentDetails(),
                 AppRoutes.locationPickerRoute: (context) => LocationPicker(),
+                AppRoutes.topLocationRoute: (context) => TopLocationScreen(),
+                AppRoutes.nearbyEstateRoute: (context) => NearbyEstateScreen(),
+                AppRoutes.featuredEstateRoute: (context) => FeaturedEstateScreen(),
 
               },
               theme: ThemeData.light()

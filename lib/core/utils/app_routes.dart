@@ -8,6 +8,9 @@ class AppRoutes {
   static String addApartmentRoute = "add_apartment";
   static String apartmentDetailsRoute = "apartment_details";
   static String locationPickerRoute = "location_picker";
+  static String topLocationRoute = "top_location";
+  static String nearbyEstateRoute = "nearby_estate";
+  static String featuredEstateRoute = "featured_estate";
 
 
 }

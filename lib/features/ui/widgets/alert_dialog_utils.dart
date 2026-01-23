@@ -43,12 +43,18 @@ class AlertDialogUtils{
         navAction?.call();
       }, child: nav));
     }
-    showDialog(context: context, builder: (context) {
+    showDialog(context: context,  useRootNavigator: true,
+      builder: (context) {
       return AlertDialog(
 
-          content: Text(msg,style:AppStyles.bold20blackIner,),
-          title:Text(title ?? "" ,style: AppStyles.semiBold14Primary,) ,
-          actions: actions
+          content: Text(msg,style:AppStyles.medium16black,),
+          title:Text(title ?? "" ,style: AppStyles.bold20blackIner,) ,
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: actions,
+          )
+        ],
       );
     },);
   }

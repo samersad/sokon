@@ -7,6 +7,7 @@ import 'package:sokon/features/ui/auth/register/register_screen.dart';
 import 'package:sokon/features/ui/auth/verification/verification_screen.dart';
 import 'package:sokon/features/ui/location_picker/location_picker.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
+import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
 
 import 'core/cache/provider/location_provider.dart';
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
                 AppRoutes.topLocationRoute: (context) => TopLocationScreen(),
                 AppRoutes.nearbyEstateRoute: (context) => NearbyEstateScreen(),
                 AppRoutes.featuredEstateRoute: (context) => FeaturedEstateScreen(),
+                AppRoutes.settingsScreenRoute: (context) => SettingsScreen(),
 
               },
               theme: ThemeData.light()

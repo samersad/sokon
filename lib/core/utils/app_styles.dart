@@ -48,12 +48,26 @@ class AppStyles {
     fontWeight: FontWeight.w500,
     color: AppColors.whiteColor,
   );
+  static TextStyle semiBold14White = TextStyle(
+    fontFamily: 'Montserrat',
+
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.whiteColor,
+  );
   static TextStyle semiBold14Primary = TextStyle(
     fontFamily: 'Montserrat',
 
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: AppColors.primaryColor,
+  );
+  static TextStyle semiBold14DarkPrimary = TextStyle(
+    fontFamily: 'Inter',
+
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.darkPrimaryColor,
   );
   static TextStyle bold20blackIner = TextStyle(
     fontFamily: 'Inter',
@@ -185,6 +199,12 @@ class AppStyles {
       fontFamily: "Raleway"
 
   );
+  static TextStyle medium16RedColor = TextStyle(
+      color: AppColors.redColor,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      fontFamily: "Inter"
 
+  );
 
 }

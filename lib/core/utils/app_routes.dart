@@ -11,6 +11,8 @@ class AppRoutes {
   static String topLocationRoute = "top_location";
   static String nearbyEstateRoute = "nearby_estate";
   static String featuredEstateRoute = "featured_estate";
+  static String settingsScreenRoute = "settings";
+  static String profileRoute = "featured_estate";
 
 
 }

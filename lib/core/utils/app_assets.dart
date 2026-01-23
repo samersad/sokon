@@ -42,7 +42,14 @@ class AppAssets{
   static const String moneySine = 'assets/images/moneySine.png';
   static const String backArrow = 'assets/images/backArrow.png';
   static const String topImage = 'assets/images/top_image.png';
+  static const String profileImage = 'assets/images/profileImage.png';
+  static const String cameraIconProfle = 'assets/images/cameraIconProfle.png';
 
+  static const String settingsIcon = 'assets/images/SettingsIcon.png';
+  static const String paymentIcon = 'assets/images/PaymentIcon.png';
+  static const String notificationIcon = 'assets/images/NotificationIcon.png';
+  static const String aboutIcon = 'assets/images/AboutIcon.png';
 
+  static const String calendarIcon = 'assets/images/CalendarIcon.png';
 
 }

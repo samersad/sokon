@@ -6,8 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 class LocationProvider extends ChangeNotifier {
   LatLng? userLocation;
-  LatLng? eventLocation;
-  String? eventAddress;
+  LatLng? apartmentLocation;
+  String? apartmentAddress;
 
   Future<void> getCurrentLocation() async {
     PermissionStatus permission = await Permission.location.request();
@@ -25,21 +25,21 @@ class LocationProvider extends ChangeNotifier {
   }
 
   Future<void> changeEventLocation(LatLng latLng) async {
-    eventLocation = latLng;
-    eventAddress = await getLocationFromAddress();
+    apartmentLocation = latLng;
+    apartmentAddress = await getLocationFromAddress();
 
     notifyListeners();
   }
 
   Future<String> getLocationFromAddress() async {
     List<Placemark> placemarks = await placemarkFromCoordinates(
-      eventLocation!.latitude,
-      eventLocation!.longitude,
+      apartmentLocation!.latitude,
+      apartmentLocation!.longitude,
     );
     print("eventAddress");
 
     print("${placemarks[0]}");
-    print(eventAddress);
+    print(apartmentAddress);
 
     return "${placemarks[0].name}, "
         "${placemarks[0].street},"
@@ -50,8 +50,8 @@ class LocationProvider extends ChangeNotifier {
   }
 
   void clearEventLocation() {
-    eventLocation = null;
-    eventAddress = null;
+    apartmentLocation = null;
+    apartmentAddress = null;
     notifyListeners();
   }
 }

@@ -231,59 +231,70 @@ class _AddApartmentState extends State<AddApartment> {
               SizedBox(height: 20.h),
               Text("Sky Dandelions Apartment:", style: AppStyles.bold20black),
               SizedBox(height: 5.h),
-
-              Row(
-                children: [
-                  InkWell(onTap: () => Navigator.pushNamed(context, AppRoutes.locationPickerRoute),
-                      child: Image.asset(AppAssets.locationIcon, width: 14.w)),
-                  SizedBox(width: 4.w),
-                  Expanded(
-                    child:
-                    AutoSizeText(maxLines: 10,
-                      locationProvider.eventAddress==null ?
-                       "Select Location"                          :
-                      "${locationProvider.eventAddress}",
-                      style: AppStyles.medium10blueDarkColor ,
-
-                      ),
-
-                    // Text(
-                    //   locationProvider.eventAddress! ?? "Select Location",
-                    //   maxLines: 1,
-                    //   overflow: TextOverflow.ellipsis,
-                    //   style: AppStyles.medium10blueDarkColor,
-                    // ),
-                  ),
-                  Expanded(
-                    child: CustomTextFormField(controller: priceCRl,
-                      maxLines: 1,
-                      borderRadius: 50,
-                        suffixIconName: Icon(Icons.attach_money_outlined,color: AppColors.primaryColor,),
-                        paddingHorizontal: 5.w,
-                        paddingVertical: 0.h
-                      ,hintText:"Enter price",
-                      borderSideColor: AppColors.transparentColor,
-                      keyboardType: TextInputType.number,
-                      hintStyle: AppStyles.bold12Primary,
-                      validator: (text) {
-                        if (text==null || text.trim().isEmpty) {
-                          return "Please enter a price";
-                        }
-                        return null;
-                      },
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.locationPickerRoute,
                     ),
-                  ),
-
-
-                  RichText(
-                    text: TextSpan(
+                    child: Row(
                       children: [
-                        TextSpan(text: " EG/ month", style: AppStyles.bold12Primary),
+                        Image.asset(
+                          AppAssets.locationIcon,
+                          width: 14.w,
+                        ),
+                        SizedBox(width: 4.w),
+                        Expanded(
+                          child: AutoSizeText(
+                            locationProvider.apartmentAddress == null
+                                ? "Select Location"
+                                : locationProvider.apartmentAddress!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppStyles.medium10blueDarkColor,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                SizedBox(width: 6.w),
+
+                Expanded(
+                  child: CustomTextFormField(
+                    controller: priceCRl,
+                    maxLines: 1,
+                    borderRadius: 50,
+                    suffixIconName: Icon(
+                      Icons.attach_money_outlined,
+                      color: AppColors.primaryColor,
+                    ),
+                    paddingHorizontal: 5.w,
+                    paddingVertical: 0.h,
+                    hintText: "Enter price",
+                    borderSideColor: AppColors.transparentColor,
+                    keyboardType: TextInputType.number,
+                    hintStyle: AppStyles.bold12Primary,
+                    validator: (text) {
+                      if (text == null || text.trim().isEmpty) {
+                        return "Please enter a price";
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+
+                SizedBox(width: 4.w),
+
+                Text(
+                  "EG / month",
+                  style: AppStyles.bold12Primary,
+                ),
+              ],
+            ),
               SizedBox(height: 20.h),
               Text("Description:", style: AppStyles.medium16black),
               CustomTextFormField(controller: descriptionCRl,

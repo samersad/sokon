@@ -33,8 +33,8 @@ class _LocationPickerState extends State<LocationPicker> {
             builder: (context, locationProvider, child) {
 
               LatLng initialTarget;
-              if (locationProvider.eventLocation != null) {
-                initialTarget = locationProvider.eventLocation!;
+              if (locationProvider.apartmentLocation != null) {
+                initialTarget = locationProvider.apartmentLocation!;
               } else if (locationProvider.userLocation != null) {
                 initialTarget = locationProvider.userLocation!;
               } else {
@@ -50,11 +50,11 @@ class _LocationPickerState extends State<LocationPicker> {
                   mapType: MapType.normal,
                   myLocationEnabled: true,
                   myLocationButtonEnabled: true,
-                  markers: locationProvider.eventLocation != null
+                  markers: locationProvider.apartmentLocation != null
                       ? {
                     Marker(
                       markerId: const MarkerId("Selected Location"),
-                      position: locationProvider.eventLocation!,
+                      position: locationProvider.apartmentLocation!,
                     ),
                   }
                       : {},

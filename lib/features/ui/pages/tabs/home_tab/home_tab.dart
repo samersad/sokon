@@ -35,7 +35,7 @@ class _HomeTabState extends State<HomeTab> {
     final locationProvider = Provider.of<LocationProvider>(context);
 
     final LatLng initialTarget =
-        locationProvider.eventLocation ??
+        locationProvider.apartmentLocation ??
             locationProvider.userLocation ??
             const LatLng(30.0444, 31.2357);
 
@@ -116,13 +116,13 @@ class _HomeTabState extends State<HomeTab> {
                     myLocationEnabled: true,
                     myLocationButtonEnabled: true,
                     scrollGesturesEnabled: true,
-                    markers: locationProvider.eventLocation != null
+                    markers: locationProvider.apartmentLocation != null
                         ? {
                       Marker(
                         markerId:
                         const MarkerId("Selected Location"),
                         position:
-                        locationProvider.eventLocation!,
+                        locationProvider.apartmentLocation!,
                       )
                     }
                         : {},

@@ -28,7 +28,6 @@ class ApartmentDetails extends StatefulWidget {
 class _ApartmentDetailsState extends State<ApartmentDetails> {
   VideoPlayerController? _controllerVideo;
 
-
   late List<String> apartmentImages;
 
   @override
@@ -40,14 +39,16 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       AppAssets.imageC,
       AppAssets.imageC,
       AppAssets.imageC,
-
     ];
     _controllerVideo =
-    VideoPlayerController.networkUrl( Uri.parse( 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4', ), )
-      ..initialize().then((_) {
-      setState(() {});
-    });
-
+        VideoPlayerController.networkUrl(
+            Uri.parse(
+              'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+            ),
+          )
+          ..initialize().then((_) {
+            setState(() {});
+          });
   }
 
   String formatDuration(Duration duration) {
@@ -58,8 +59,6 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
 
     return "${twoDigits(minutes)}:${twoDigits(seconds)}";
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -73,14 +72,17 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               SizedBox(height: 50.h),
               buildVideoPlayer(),
               SizedBox(height: 20.h),
-              Text("Sky Dandelions Apartment:", style: AppStyles.bold18PrimaryColor),
+              Text(
+                "Sky Dandelions Apartment:",
+                style: AppStyles.bold18PrimaryColor,
+              ),
               SizedBox(height: 10.h),
 
               Row(
                 children: [
                   Expanded(
                     child: AutoSizeText(
-                    "Jakarta, Indonesia",
+                      "Jakarta, Indonesia",
                       maxLines: 5,
                       style: AppStyles.medium16black,
                     ),
@@ -104,9 +106,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   propertyDetailsColumn(
-                      name: "Bedrooms",
-                      imageName: AppAssets.bedroomsIcon,
-                      value: "1"
+                    name: "Bedrooms",
+                    imageName: AppAssets.bedroomsIcon,
+                    value: "1",
                   ),
                   propertyDetailsColumn(
                     name: "Bathrooms",
@@ -125,10 +127,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 children: [
                   Text("Description:", style: AppStyles.bold18PrimaryColor),
                   Spacer(),
-                  Image.asset(AppAssets.yesIcon)  ,
+                  Image.asset(AppAssets.yesIcon),
                   SizedBox(width: 5.h),
                   Text("Verified:", style: AppStyles.medium16whiteBlue),
-
                 ],
               ),
               SizedBox(height: 10.h),
@@ -146,107 +147,116 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               SizedBox(height: 10.h),
 
               Container(
-              height: 80.h,
-              width: double.infinity,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.black12,
-                borderRadius: BorderRadius.circular(39.sp),
-              ),
-              child:Padding(
-                padding:  EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h ),
-                child: Row(
-                  children: [
-                    CircleAvatar(radius: 54.r,backgroundColor: AppColors.transparentColor,
-                      child: Image.asset(AppAssets.avatar,width: 64.w,height: 64.h,fit: BoxFit.cover,),),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-
-                        Text("Emmett Perry", style: AppStyles.bold16PrimaryColor),
-                        SizedBox(height: 5.h,),
-                        Text("Owner", style: AppStyles.bold12PrimaryColor),
-
-
-                      ],
-                    ),
-                    Spacer(),
-                    Image.asset(AppAssets.callIcon),
-                    SizedBox(width: 10.w,),
-                    Image.asset(AppAssets.messageIcon),
-                    SizedBox(width: 10.w,),
-                  ],
+                height: 80.h,
+                width: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(39.sp),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 10.h,
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 54.r,
+                        backgroundColor: AppColors.transparentColor,
+                        child: Image.asset(
+                          AppAssets.avatar,
+                          width: 64.w,
+                          height: 64.h,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Emmett Perry",
+                            style: AppStyles.bold16PrimaryColor,
+                          ),
+                          SizedBox(height: 5.h),
+                          Text("Owner", style: AppStyles.bold12PrimaryColor),
+                        ],
+                      ),
+                      Spacer(),
+                      Image.asset(AppAssets.callIcon),
+                      SizedBox(width: 10.w),
+                      Image.asset(AppAssets.messageIcon),
+                      SizedBox(width: 10.w),
+                    ],
+                  ),
                 ),
               ),
-
-                
-            ),
               SizedBox(height: 10.h),
 
               Text("Gallery", style: AppStyles.bold18PrimaryColor),
               Text("Take a look inside", style: AppStyles.medium13Gray),
               SizedBox(height: 10.h),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 100.h,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: apartmentImages.length > 3
-                          ? 3
-                          : apartmentImages.length,
-                      separatorBuilder: (context, index) => SizedBox(width: 20.w),
-                      itemBuilder: (context, index) {
-                        final bool isLast =
-                            index == 2 && apartmentImages.length > 3;
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 100.h,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: apartmentImages.length > 3
+                            ? 3
+                            : apartmentImages.length,
+                        separatorBuilder: (context, index) =>
+                            SizedBox(width: 20.w),
+                        itemBuilder: (context, index) {
+                          final bool isLast =
+                              index == 2 && apartmentImages.length > 3;
 
-                        return InkWell(
-                          onTap: () => openFullScreenGallery(index),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Stack(
-                              children: [
-                                Image.asset(
-                                  apartmentImages[index],
-                                  width: 100.w,
-                                  height: 100.h,
-                                  fit: BoxFit.cover,
-                                ),
-
-                                if (isLast)
-                                  Container(
+                          return InkWell(
+                            onTap: () => openFullScreenGallery(index),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Stack(
+                                children: [
+                                  Image.asset(
+                                    apartmentImages[index],
                                     width: 100.w,
                                     height: 100.h,
-                                    color: Colors.black.withOpacity(0.5),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "+${apartmentImages.length - 2}",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 26.sp,
-                                        fontWeight: FontWeight.bold,
+                                    fit: BoxFit.cover,
+                                  ),
+
+                                  if (isLast)
+                                    Container(
+                                      width: 100.w,
+                                      height: 100.h,
+                                      color: Colors.black.withOpacity(0.5),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "+${apartmentImages.length - 2}",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 26.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
               SizedBox(height: 30.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CustomElevatedButtom(
-                    onPressed: () {
-                    },
+                    onPressed: () {},
                     text: "Buy Now",
                     width: 120.w,
                     customPadding: 10,
@@ -255,8 +265,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                     textStyle: AppStyles.semiBold20White,
                   ),
                   CustomElevatedButtom(
-                    onPressed: () {
-                    },
+                    onPressed: () {},
                     text: "Rent Now",
                     width: 120.w,
                     customPadding: 10,
@@ -265,11 +274,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                     backgroundColorElevated: AppColors.darkBlueColor,
                     textStyle: AppStyles.semiBold20White,
                   ),
-
                 ],
               ),
               SizedBox(height: 30.h),
-
             ],
           ),
         ),
@@ -283,24 +290,33 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     super.dispose();
   }
 
-  Row propertyDetailsColumn({
+  Expanded propertyDetailsColumn({
     required String imageName,
     required String name,
     required String value,
-
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(imageName),
-        SizedBox(width: 5.w),
-        Text(value, style: AppStyles.medium13GrayWithOpacity),
-        SizedBox(width: 3.h),
-        Text(name, style: AppStyles.medium13GrayWithOpacity),
-
-      ],
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(imageName),
+          SizedBox(width: 5.w),
+          Text(value, style: AppStyles.medium10blueDarkColor),
+          SizedBox(width: 3.w),
+          Flexible(
+            child:
+            AutoSizeText(
+              name,
+              maxLines: 5,
+              style: AppStyles.medium10blueDarkColor,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
+
 
   void openFullScreenGallery(int initialIndex) {
     Navigator.push(
@@ -328,9 +344,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       ),
     );
   }
+
   Widget buildVideoPlayer() {
-    if (_controllerVideo == null ||
-        !_controllerVideo!.value.isInitialized) {
+    if (_controllerVideo == null || !_controllerVideo!.value.isInitialized) {
       return Container(
         height: 220.h,
         alignment: Alignment.center,
@@ -366,9 +382,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
             });
           },
           child: Icon(
-            _controllerVideo!.value.isPlaying
-                ? Icons.pause
-                : Icons.play_arrow,
+            _controllerVideo!.value.isPlaying ? Icons.pause : Icons.play_arrow,
             color: AppColors.blackColor,
             size: 40.r,
           ),
@@ -391,5 +405,4 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       ],
     );
   }
-
 }

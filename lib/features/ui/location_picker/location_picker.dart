@@ -38,9 +38,8 @@ class _LocationPickerState extends State<LocationPicker> {
               } else if (locationProvider.userLocation != null) {
                 initialTarget = locationProvider.userLocation!;
               } else {
-                initialTarget = const LatLng(30.0444, 31.2357);
+                initialTarget = const LatLng( 27.185472212549193, 31.18254273654902);
               }
-
               return
                 GoogleMap(
                   initialCameraPosition: CameraPosition(

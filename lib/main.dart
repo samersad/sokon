@@ -17,7 +17,7 @@ import 'features/ui/pages/add_apartment/add_apartment.dart';
 import 'features/ui/pages/apartment_details_screen/apartment_details.dart';
 import 'features/ui/pages/featured_estates_screen/featured_estate_screen.dart';
 import 'features/ui/pages/nearby_estate_screen/nearby_estate_screen.dart';
-
+import 'features/ui/pages/notifaction_screen/notifaction_screen.dart';
 Future<void> main() async {
 WidgetsFlutterBinding.ensureInitialized();
 
@@ -55,6 +55,8 @@ class MyApp extends StatelessWidget {
                 AppRoutes.nearbyEstateRoute: (context) => NearbyEstateScreen(),
                 AppRoutes.featuredEstateRoute: (context) => FeaturedEstateScreen(),
                 AppRoutes.settingsScreenRoute: (context) => SettingsScreen(),
+                AppRoutes.notificationRoute: (context) => NotifactionScreen(),
+              
 
               },
               theme: ThemeData.light()

@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 
 import '../../../core/utils/app_assets.dart';
-import '../../../core/utils/app_colors.dart';
 import '../../../core/utils/app_styles.dart';
 
 class NearbyEstateCard extends StatelessWidget {

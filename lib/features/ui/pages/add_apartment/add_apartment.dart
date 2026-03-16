@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
-import 'package:readmore/readmore.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
 import 'package:video_player/video_player.dart';
 //
@@ -296,7 +295,9 @@ class _AddApartmentState extends State<AddApartment> {
               ],
             ),
               SizedBox(height: 20.h),
-              Text("Description:", style: AppStyles.medium16black),
+              Text("Description:",
+
+                  style: AppStyles.medium16black),
               CustomTextFormField(controller: descriptionCRl,
                 maxLines: 4
                 ,hintText:"Enter Apartment Description",

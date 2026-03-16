@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_routes.dart';
-import '../add_apartment/add_apartment.dart';
 import '../tabs/home_tab/home_tab.dart';
 import '../tabs/message_tab/message_tab.dart';
 import '../tabs/profile_tab/profile_tab.dart';

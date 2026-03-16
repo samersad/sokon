@@ -1,10 +1,7 @@
-import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:readmore/readmore.dart';
@@ -15,8 +12,6 @@ import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
 import '../../../../core/utils/app_assets.dart';
-import '../../../../core/utils/app_routes.dart';
-import '../../widgets/alert_dialog_utils.dart';
 
 class ApartmentDetails extends StatefulWidget {
   const ApartmentDetails({super.key});
@@ -159,7 +154,8 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                     horizontal: 10.w,
                     vertical: 10.h,
                   ),
-                  child: Row(
+                  child: 
+                  Row(
                     children: [
                       CircleAvatar(
                         radius: 54.r,

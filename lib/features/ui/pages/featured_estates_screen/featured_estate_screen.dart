@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 
-import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_styles.dart';
 import '../../widgets/back_container.dart';
 import '../../widgets/featured_estates_card.dart';

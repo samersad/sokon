@@ -13,6 +13,7 @@ class AppRoutes {
   static String featuredEstateRoute = "featured_estate";
   static String settingsScreenRoute = "settings";
   static String profileRoute = "featured_estate";
+  static String notificationRoute = "notification";
 
 
 }

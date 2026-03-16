@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/widgets/alert_dialog_utils.dart';

@@ -51,5 +51,6 @@ class AppAssets{
   static const String aboutIcon = 'assets/images/AboutIcon.png';
 
   static const String calendarIcon = 'assets/images/CalendarIcon.png';
+  static const String messageImage = 'assets/images/message_image.png';
 
 }

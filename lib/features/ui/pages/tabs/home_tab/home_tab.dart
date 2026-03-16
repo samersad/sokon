@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -6,12 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
-import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
 
 import '../../../../../core/cache/provider/location_provider.dart';
 import '../../../../../core/utils/app_styles.dart';
 import '../../../widgets/featured_estates_card.dart';
 import '../../../widgets/nearby_estate_card.dart';
+import '../../../widgets/search_widget.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -82,25 +81,19 @@ class _HomeTabState extends State<HomeTab> {
 
                   Image.asset(AppAssets.chatBot, width: 24.w),
                   SizedBox(width: 10.w),
-                  Image.asset(AppAssets.notification, width: 24.w),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.notificationRoute);
+                    },
+
+                    child: Image.asset(AppAssets.notification, width: 24.w)),
                 ],
               ),
 
               SizedBox(height: 20.h),
 
               ///  Search
-              CustomTextFormField(
-                borderRadius: 14,
-                fillColor: AppColors.whiteColor,
-                borderSideColor: AppColors.grayColor,
-                hintText: "Search House, Apartment, etc",
-                hintStyle: AppStyles.medium12gray,
-                prefixIconName: Image.asset(AppAssets.searchIcon),
-                suffixIconName: InkWell(
-                  onTap: () {},
-                  child: Image.asset(AppAssets.filterIcon),
-                ),
-              ),
+              SearchWidget(hintText: "Search House, Apartment, etc",),
 
               SizedBox(height: 20.h),
 

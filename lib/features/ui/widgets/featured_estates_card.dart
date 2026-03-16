@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/utils/app_assets.dart';
-import '../../../core/utils/app_colors.dart';
 import '../../../core/utils/app_routes.dart';
 import '../../../core/utils/app_styles.dart';
 
 class FeaturedEstatesCard extends StatelessWidget {
-  const FeaturedEstatesCard({Key? key}) : super(key: key);
+  const FeaturedEstatesCard({super.key});
 
   @override
   Widget build(BuildContext context) {

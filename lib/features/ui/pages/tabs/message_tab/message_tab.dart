@@ -40,8 +40,6 @@ class MessageTab extends StatelessWidget {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.grayColor.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Image.asset(
                             AppAssets.messageImage,

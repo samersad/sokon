@@ -6,6 +6,8 @@ import 'package:sokon/features/ui/auth/forget_password/forget_password_screen2.d
 import 'package:sokon/features/ui/auth/register/register_screen.dart';
 import 'package:sokon/features/ui/auth/verification/verification_screen.dart';
 import 'package:sokon/features/ui/location_picker/location_picker.dart';
+import 'package:sokon/features/ui/pages/add_card_screen/add_card_screen.dart';
+import 'package:sokon/features/ui/pages/booking_screen/booking_screen.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
@@ -56,6 +58,8 @@ class MyApp extends StatelessWidget {
                 AppRoutes.featuredEstateRoute: (context) => FeaturedEstateScreen(),
                 AppRoutes.settingsScreenRoute: (context) => SettingsScreen(),
                 AppRoutes.notificationRoute: (context) => NotifactionScreen(),
+                AppRoutes.addCardRoute: (context) => AddCardScreen(),
+                AppRoutes.bookingRoute: (context) => BookingScreen(),
               
 
               },

@@ -69,7 +69,9 @@ class _ProfileTabState extends State<ProfileTab> {
                 buildRowTile(
                   iconName: AppAssets.paymentIcon,
                   title: "Payment",
-                  onTap: () => print("settings"),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.addCardRoute),
                 ),
                 SizedBox(height: 20.h),
                 buildRowTile(

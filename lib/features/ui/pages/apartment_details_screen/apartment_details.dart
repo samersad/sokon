@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:readmore/readmore.dart';
+import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
 import 'package:video_player/video_player.dart';
 
@@ -248,29 +249,15 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 ],
               ),
               SizedBox(height: 30.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  CustomElevatedButtom(
-                    onPressed: () {},
-                    text: "Buy Now",
-                    width: 120.w,
-                    customPadding: 10,
-                    borderRadius: 25.r,
-                    backgroundColorElevated: AppColors.darkBlueColor,
-                    textStyle: AppStyles.semiBold20White,
-                  ),
-                  CustomElevatedButtom(
-                    onPressed: () {},
-                    text: "Rent Now",
-                    width: 120.w,
-                    customPadding: 10,
-
-                    borderRadius: 25.r,
-                    backgroundColorElevated: AppColors.darkBlueColor,
-                    textStyle: AppStyles.semiBold20White,
-                  ),
-                ],
+              CustomElevatedButtom(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(AppRoutes.bookingRoute);
+                },
+                text: "Rent Now",
+                customPadding: 20,
+                borderRadius: 25.r,
+                backgroundColorElevated: AppColors.darkBlueColor,
+                textStyle: AppStyles.semiBold20White,
               ),
               SizedBox(height: 30.h),
             ],

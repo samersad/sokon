@@ -52,5 +52,8 @@ class AppAssets{
 
   static const String calendarIcon = 'assets/images/CalendarIcon.png';
   static const String messageImage = 'assets/images/message_image.png';
+  static const String dateIcon = 'assets/images/date_icon.png';
+  static const String mastercardIcon = 'assets/images/mastercard_icon.png';
+  static const String successBg = 'assets/images/success_bg.png';
 
 }

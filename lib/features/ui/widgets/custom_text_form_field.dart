@@ -17,16 +17,17 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.obscuringCharacter = '•',
-     this.controller,
+    this.controller,
     this.prefixIconColor,
     this.suffixIconColor,
-    this.maxLines=1,
-    this.onChanged, this.fillColor,
-    this.borderRadius=10,
-    this.paddingVertical=10,
-    this.paddingHorizontal=20
+    this.maxLines = 1,
+    this.onChanged,
+    this.fillColor,
+    this.borderRadius = 10,
+    this.paddingVertical = 10,
+    this.paddingHorizontal = 20,
   });
-//
+  //
   final Color? borderSideColor;
   final Color? fillColor;
   final String? hintText;
@@ -43,13 +44,11 @@ class CustomTextFormField extends StatefulWidget {
   final Color? prefixIconColor;
   final Color? suffixIconColor;
   final int maxLines;
-  void Function(String)? onChanged ;
-  final double borderRadius ;
+  final void Function(String)? onChanged;
+  final double borderRadius;
 
-  final double paddingVertical ;
-  final double paddingHorizontal ;
-
-
+  final double paddingVertical;
+  final double paddingHorizontal;
 
   @override
   State<CustomTextFormField> createState() => _CustomTextFormFieldState();
@@ -70,8 +69,11 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       cursorErrorColor: AppColors.redColor,
       style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
-        contentPadding:EdgeInsetsGeometry.symmetric(vertical:  widget.paddingVertical.h,horizontal: widget.paddingHorizontal.w) ,
-        fillColor:widget.fillColor??AppColors.offWhiteColor,
+        contentPadding: EdgeInsetsGeometry.symmetric(
+          vertical: widget.paddingVertical.h,
+          horizontal: widget.paddingHorizontal.w,
+        ),
+        fillColor: widget.fillColor ?? AppColors.offWhiteColor,
         filled: true,
         enabledBorder: bulitOutLineInputBorder(
           borderSideColor: widget.borderSideColor ?? AppColors.primaryColor,
@@ -81,8 +83,12 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           borderSideColor: widget.borderSideColor ?? AppColors.primaryColor,
         ),
 
-        errorBorder: bulitOutLineInputBorder(borderSideColor: AppColors.redColor),
-        focusedErrorBorder: bulitOutLineInputBorder(borderSideColor: AppColors.redColor),
+        errorBorder: bulitOutLineInputBorder(
+          borderSideColor: AppColors.redColor,
+        ),
+        focusedErrorBorder: bulitOutLineInputBorder(
+          borderSideColor: AppColors.redColor,
+        ),
         hintText: widget.hintText,
         hintStyle: widget.hintStyle ?? Theme.of(context).textTheme.bodyMedium,
         labelText: widget.labelText,
@@ -95,7 +101,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     );
   }
 
-  OutlineInputBorder bulitOutLineInputBorder({required Color borderSideColor,double radius=10}) {
+  OutlineInputBorder bulitOutLineInputBorder({
+    required Color borderSideColor,
+    double radius = 10,
+  }) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(radius),
       borderSide: BorderSide(color: borderSideColor, width: 1),

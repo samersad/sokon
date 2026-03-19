@@ -16,11 +16,12 @@ class AppValidators {
   }
 
   static String? validatePassword(String? val) {
-    RegExp passwordRegex = RegExp(r'^( ?=.* [a-zA-Z]) ( ?=.* [0-9]) ');
+    // Fixed regex: removed extra spaces and improved lookahead groups
+    RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])');
     if (val == null || val.isEmpty) {
       return 'this field is required';
     } else if (val.length < 8 || !passwordRegex.hasMatch(val)) {
-      return 'strong password please';
+      return 'password must be at least 8 characters and include letters and numbers';
     } else {
       return null;
     }
@@ -56,7 +57,7 @@ class AppValidators {
   }
 
   static String? validatePhoneNumber(String? val) {
-    if (val == null) {
+    if (val == null || val.trim().isEmpty) {
       return 'this field is required';
     } else if (int.tryParse(val.trim()) == null) {
       return 'enter numbers only';

@@ -1,18 +1,20 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sokon/core/model/apartment.dart';
 
 import '../../../core/utils/app_assets.dart';
 import '../../../core/utils/app_routes.dart';
 import '../../../core/utils/app_styles.dart';
 
 class FeaturedEstatesCard extends StatelessWidget {
-  const FeaturedEstatesCard({super.key});
+  final Apartment apartment;
+  const FeaturedEstatesCard({super.key, required this.apartment});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.apartmentDetailsRoute),
+      onTap: () => Navigator.of(context).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
 
       child: SizedBox(
         height: 150.h,
@@ -25,8 +27,18 @@ class FeaturedEstatesCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Image.asset(AppAssets.image,
-                  width: 120.w, fit: BoxFit.fill),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: apartment.images != null && apartment.images!.isNotEmpty
+                    ? Image.network(
+                        apartment.images![0],
+                        width: 120.w,
+                        height: 130.h,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(AppAssets.image, width: 120.w, fit: BoxFit.fill),
+                      )
+                    : Image.asset(AppAssets.image, width: 120.w, fit: BoxFit.fill),
+              ),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
@@ -34,7 +46,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     AutoSizeText(
-                      "Sky Dandelions Apartment",
+                      apartment.name ?? "No Name",
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyles.bold12Primary,
@@ -57,7 +69,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
-                            "Jakarta, Indonesia",
+                            apartment.address ?? "No Address",
                             maxLines: 1,
                             overflow:
                             TextOverflow.ellipsis,
@@ -71,7 +83,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "EG 290/",
+                            text: "EG ${apartment.price ?? 0}/",
                             style: AppStyles
                                 .bold18PrimaryColor,
                           ),

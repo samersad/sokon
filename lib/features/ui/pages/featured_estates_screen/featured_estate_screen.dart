@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 
 import '../../../../core/utils/app_styles.dart';
@@ -11,6 +13,8 @@ class FeaturedEstateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var apartmentProvider = Provider.of<ApartmentListProvider>(context);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -30,12 +34,14 @@ class FeaturedEstateScreen extends StatelessWidget {
                 SizedBox(height: 10.h,),
                 SizedBox(
                   height: 859.h,
-                  child: ListView.separated(
+                  child: apartmentProvider.apartmentList.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.separated(
                       itemBuilder:(context, index) {
-                        return FeaturedEstatesCard();
+                        return FeaturedEstatesCard(apartment: apartmentProvider.apartmentList[index],);
                       }
                       , separatorBuilder: (context, index) => SizedBox(height: 10.h,)
-                      , itemCount: 12)
+                      , itemCount: apartmentProvider.apartmentList.length)
                 )
 
               ],

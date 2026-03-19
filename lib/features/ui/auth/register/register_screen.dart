@@ -18,13 +18,9 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController userCtrl = TextEditingController(text: "samer");
-  final TextEditingController emailCtrl = TextEditingController(
-    text: "samer99@gmail.com",
-  );
-  final TextEditingController passwordCtrl = TextEditingController(
-    text: "Samer@1234",
-  );
+  final TextEditingController userCtrl = TextEditingController();
+  final TextEditingController emailCtrl = TextEditingController();
+  final TextEditingController passwordCtrl = TextEditingController();
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
   bool hidePassword = true;
@@ -63,10 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: "Username",
                           fillColor: AppColors.offWhiteColor,
                           borderSideColor: AppColors.grayColor,
-                          validator: (val) {
-                            AppValidators.validateUsername(val);
-                            return null;
-                          },
+                          validator: (val) => AppValidators.validateUsername(val),
                         ),
                         SizedBox(height: 16.h),
                         CustomTextFormField(
@@ -75,10 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: "Email",
                           fillColor: AppColors.offWhiteColor,
                           borderSideColor: AppColors.grayColor,
-                          validator: (val) {
-                            AppValidators.validateEmail(val);
-                            return null;
-                          },
+                          validator: (val) => AppValidators.validateEmail(val),
                         ),
                         SizedBox(height: 16.h),
 
@@ -90,10 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           fillColor: AppColors.offWhiteColor,
                           borderSideColor: AppColors.grayColor,
                           obscureText: hidePassword,
-                          validator: (val) {
-                            AppValidators.validatePassword(val);
-                            return null;
-                          },
+                          validator: (val) => AppValidators.validatePassword(val),
                           suffixIconName: IconButton(
                             icon: Icon(
                               hidePassword
@@ -108,44 +95,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         SizedBox(height: 79.h),
                         CustomElevatedButtom(
                           onPressed: () {
-                            AlertDialogUtils.showMessage(
-                              context: context,
-                              posAction: () {
-                                Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.homeScreenRoute, (route) => false,);
-                              }, navAction: () {
-                                Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.homeScreenRoute, (route) => false,);
-                              },
-                              msg: "Welcome! Please choose your role:",
-                              pos: Container(
-                                width: 100.w,
-                                height: 50.h,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Owner",
-                                    style: AppStyles.semiBold20White,
+                            if (formkey.currentState!.validate()) {
+                              AlertDialogUtils.showMessage(
+                                context: context,
+                                posAction: () {
+                                  Navigator.of(context).pushNamedAndRemoveUntil(
+                                    AppRoutes.homeScreenRoute,
+                                    (route) => false,
+                                  );
+                                },
+                                navAction: () {
+                                  Navigator.of(context).pushNamedAndRemoveUntil(
+                                    AppRoutes.homeScreenRoute,
+                                    (route) => false,
+                                  );
+                                },
+                                msg: "Welcome! Please choose your role:",
+                                pos: Container(
+                                  width: 100.w,
+                                  height: 50.h,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "Owner",
+                                      style: AppStyles.semiBold20White,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              nav: Container(
-                                width: 100.w,
-                                height: 50.h,
-
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Client",
-                                    style: AppStyles.semiBold20White,
+                                nav: Container(
+                                  width: 100.w,
+                                  height: 50.h,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "Client",
+                                      style: AppStyles.semiBold20White,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
+                              );
+                            }
                           },
                           text: "Sign up",
                           width: 250.w,
@@ -202,7 +197,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ],
                         ),
-                       // SizedBox(height: 80.h),
                       ],
                     ),
                   ),

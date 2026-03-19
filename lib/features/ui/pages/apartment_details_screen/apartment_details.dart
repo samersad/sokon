@@ -1,10 +1,10 @@
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:readmore/readmore.dart';
+import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
 import 'package:video_player/video_player.dart';
@@ -23,33 +23,27 @@ class ApartmentDetails extends StatefulWidget {
 
 class _ApartmentDetailsState extends State<ApartmentDetails> {
   VideoPlayerController? _controllerVideo;
-
-  late List<String> apartmentImages;
+  late Apartment apartment;
+  bool isInitialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    apartmentImages = [
-      AppAssets.imageC,
-      AppAssets.imageC,
-      AppAssets.imageC,
-      AppAssets.imageC,
-      AppAssets.imageC,
-    ];
-    _controllerVideo =
-        VideoPlayerController.networkUrl(
-            Uri.parse(
-              'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-            ),
-          )
-          ..initialize().then((_) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!isInitialized) {
+      apartment = ModalRoute.of(context)!.settings.arguments as Apartment;
+      if (apartment.videoUrl != null && apartment.videoUrl!.isNotEmpty) {
+        _controllerVideo = VideoPlayerController.networkUrl(
+          Uri.parse(apartment.videoUrl!),
+        )..initialize().then((_) {
             setState(() {});
           });
+      }
+      isInitialized = true;
+    }
   }
 
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
 
@@ -59,36 +53,37 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+      body: SafeArea(
         child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 50.h),
+              SizedBox(height: 10.h),
               buildVideoPlayer(),
               SizedBox(height: 20.h),
               Text(
-                "Sky Dandelions Apartment:",
+                "${apartment.name ?? "Apartment"}:",
                 style: AppStyles.bold18PrimaryColor,
               ),
               SizedBox(height: 10.h),
-
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: AutoSizeText(
-                      "Jakarta, Indonesia",
-                      maxLines: 5,
+                      apartment.address ?? "No Address Provided",
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: AppStyles.medium16black,
                     ),
                   ),
-                  Spacer(),
+                  SizedBox(width: 10.w),
                   RichText(
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "EG 290/",
+                          text: "EG ${apartment.price ?? 0}/",
                           style: AppStyles.medium16black,
                         ),
                         TextSpan(text: "month", style: AppStyles.bold10black),
@@ -97,24 +92,24 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                   ),
                 ],
               ),
-              SizedBox(height: 10.h),
+              SizedBox(height: 20.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   propertyDetailsColumn(
                     name: "Bedrooms",
                     imageName: AppAssets.bedroomsIcon,
-                    value: "1",
+                    value: "${apartment.bedrooms ?? 0}",
                   ),
                   propertyDetailsColumn(
                     name: "Bathrooms",
                     imageName: AppAssets.bathroomsIcon,
-                    value: "2",
+                    value: "${apartment.bathrooms ?? 0}",
                   ),
                   propertyDetailsColumn(
                     name: "Living Rooms",
                     imageName: AppAssets.livingRoomsIcon,
-                    value: "3",
+                    value: "${apartment.livingRooms ?? 0}",
                   ),
                 ],
               ),
@@ -122,16 +117,15 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               Row(
                 children: [
                   Text("Description:", style: AppStyles.bold18PrimaryColor),
-                  Spacer(),
-                  Image.asset(AppAssets.yesIcon),
-                  SizedBox(width: 5.h),
+                  const Spacer(),
+                  Image.asset(AppAssets.yesIcon, width: 18.w),
+                  SizedBox(width: 5.w),
                   Text("Verified:", style: AppStyles.medium16whiteBlue),
                 ],
               ),
               SizedBox(height: 10.h),
-
               ReadMoreText(
-                "Experience comfortable living at Sky Dandelions Apartment in Jakarta.This modern space offers 3 spacious bedrooms, 2 bathrooms, a bright living room with large windows, and a fully equipped kitchen Conveniently located near restaurants, shops, and public transport, it's perfect for short or long stays",
+                apartment.description ?? "No description available.",
                 trimLength: 150,
                 style: AppStyles.medium13PrimaryColor,
                 trimMode: TrimMode.Length,
@@ -140,100 +134,99 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 trimExpandedText: '  Read less',
                 moreStyle: AppStyles.bold12Primary,
               ),
-              SizedBox(height: 10.h),
-
+              SizedBox(height: 20.h),
               Container(
-                height: 80.h,
                 width: double.infinity,
-                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(39.sp),
+                  color: Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 10.h,
+                    horizontal: 12.w,
+                    vertical: 12.h,
                   ),
-                  child: 
-                  Row(
+                  child: Row(
                     children: [
                       CircleAvatar(
-                        radius: 54.r,
-                        backgroundColor: AppColors.transparentColor,
-                        child: Image.asset(
-                          AppAssets.avatar,
-                          width: 64.w,
-                          height: 64.h,
-                          fit: BoxFit.cover,
+                        radius: 25.r,
+                        backgroundColor: Colors.grey.shade200,
+                        backgroundImage: AssetImage(AppAssets.avatar),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Owner", // You might want to fetch owner name later
+                              style: AppStyles.bold16PrimaryColor,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 2.h),
+                            Text("Professional Owner", style: AppStyles.bold12PrimaryColor),
+                          ],
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Emmett Perry",
-                            style: AppStyles.bold16PrimaryColor,
-                          ),
-                          SizedBox(height: 5.h),
-                          Text("Owner", style: AppStyles.bold12PrimaryColor),
-                        ],
+                      SizedBox(width: 10.w),
+                      InkWell(
+                        onTap: () {},
+                        child: Image.asset(AppAssets.callIcon, width: 32.w),
                       ),
-                      Spacer(),
-                      Image.asset(AppAssets.callIcon),
                       SizedBox(width: 10.w),
-                      Image.asset(AppAssets.messageIcon),
-                      SizedBox(width: 10.w),
+                      InkWell(
+                        onTap: () {},
+                        child: Image.asset(AppAssets.messageIcon, width: 32.w),
+                      ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 10.h),
-
+              SizedBox(height: 20.h),
               Text("Gallery", style: AppStyles.bold18PrimaryColor),
               Text("Take a look inside", style: AppStyles.medium13Gray),
               SizedBox(height: 10.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 100.h,
-                      child: ListView.separated(
+              SizedBox(
+                height: 110.h,
+                child: (apartment.images == null || apartment.images!.isEmpty)
+                    ? const Center(child: Text("No images available"))
+                    : ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        itemCount: apartmentImages.length > 3
+                        itemCount: apartment.images!.length > 3
                             ? 3
-                            : apartmentImages.length,
+                            : apartment.images!.length,
                         separatorBuilder: (context, index) =>
-                            SizedBox(width: 20.w),
+                            SizedBox(width: 15.w),
                         itemBuilder: (context, index) {
                           final bool isLast =
-                              index == 2 && apartmentImages.length > 3;
+                              index == 2 && apartment.images!.length > 3;
 
                           return InkWell(
                             onTap: () => openFullScreenGallery(index),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12.r),
                               child: Stack(
                                 children: [
-                                  Image.asset(
-                                    apartmentImages[index],
+                                  Image.network(
+                                    apartment.images![index],
                                     width: 100.w,
-                                    height: 100.h,
+                                    height: 110.h,
                                     fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Image.asset(AppAssets.imageC, width: 100.w, height: 110.h, fit: BoxFit.cover),
                                   ),
-
                                   if (isLast)
                                     Container(
                                       width: 100.w,
-                                      height: 100.h,
+                                      height: 110.h,
                                       color: Colors.black.withOpacity(0.5),
                                       alignment: Alignment.center,
                                       child: Text(
-                                        "+${apartmentImages.length - 2}",
+                                        "+${apartment.images!.length - 2}",
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 26.sp,
+                                          fontSize: 20.sp,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -244,18 +237,16 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                           );
                         },
                       ),
-                    ),
-                  ),
-                ],
               ),
               SizedBox(height: 30.h),
               CustomElevatedButtom(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.bookingRoute);
+                  Navigator.of(context).pushNamed(AppRoutes.bookingRoute, arguments: apartment);
                 },
                 text: "Rent Now",
-                customPadding: 20,
-                borderRadius: 25.r,
+                width: 500.w,
+                customPadding: 16.h,
+                borderRadius: 12.r,
                 backgroundColorElevated: AppColors.darkBlueColor,
                 textStyle: AppStyles.semiBold20White,
               ),
@@ -282,15 +273,14 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(imageName),
-          SizedBox(width: 5.w),
+          Image.asset(imageName, width: 20.w, fit: BoxFit.contain),
+          SizedBox(width: 4.w),
           Text(value, style: AppStyles.medium10blueDarkColor),
-          SizedBox(width: 3.w),
+          SizedBox(width: 2.w),
           Flexible(
-            child:
-            AutoSizeText(
+            child: AutoSizeText(
               name,
-              maxLines: 5,
+              maxLines: 1,
               style: AppStyles.medium10blueDarkColor,
               overflow: TextOverflow.ellipsis,
             ),
@@ -300,8 +290,8 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-
   void openFullScreenGallery(int initialIndex) {
+    if (apartment.images == null) return;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -309,19 +299,20 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           backgroundColor: Colors.black,
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: Text("${initialIndex + 1} / ${apartmentImages.length}"),
+            foregroundColor: Colors.white,
+            title: Text("${initialIndex + 1} / ${apartment.images!.length}"),
           ),
           body: PhotoViewGallery.builder(
-            itemCount: apartmentImages.length,
+            itemCount: apartment.images!.length,
             pageController: PageController(initialPage: initialIndex),
             builder: (context, index) {
               return PhotoViewGalleryPageOptions(
-                imageProvider: AssetImage(apartmentImages[index]),
+                imageProvider: NetworkImage(apartment.images![index]),
                 minScale: PhotoViewComputedScale.contained,
               );
             },
-            scrollPhysics: BouncingScrollPhysics(),
-            backgroundDecoration: BoxDecoration(color: Colors.black),
+            scrollPhysics: const BouncingScrollPhysics(),
+            backgroundDecoration: const BoxDecoration(color: Colors.black),
           ),
         ),
       ),
@@ -329,33 +320,46 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   }
 
   Widget buildVideoPlayer() {
+    if (apartment.videoUrl == null || apartment.videoUrl!.isEmpty) {
+       return Container(
+        height: 220.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.black12,
+          borderRadius: BorderRadius.circular(24.r),
+          image: apartment.images != null && apartment.images!.isNotEmpty
+              ? DecorationImage(image: NetworkImage(apartment.images![0]), fit: BoxFit.cover)
+              : null,
+        ),
+        child: const Icon(Icons.videocam_off, color: Colors.white, size: 50),
+      );
+    }
+
     if (_controllerVideo == null || !_controllerVideo!.value.isInitialized) {
       return Container(
         height: 220.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.black12,
-          borderRadius: BorderRadius.circular(24.sp),
+          borderRadius: BorderRadius.circular(24.r),
         ),
-        child: const CircularProgressIndicator(),
+        child: CircularProgressIndicator(color: AppColors.primaryColor),
       );
     }
     return Stack(
       alignment: Alignment.center,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(24.sp),
+          borderRadius: BorderRadius.circular(24.r),
           child: AspectRatio(
             aspectRatio: _controllerVideo!.value.aspectRatio,
             child: VideoPlayer(_controllerVideo!),
           ),
         ),
         FloatingActionButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(70),
-            side: BorderSide(color: AppColors.blackColor, width: 4),
-          ),
-          backgroundColor: Colors.transparent,
+          mini: true,
+          shape: const CircleBorder(),
+          backgroundColor: Colors.white.withOpacity(0.5),
           elevation: 0,
           onPressed: () {
             setState(() {
@@ -367,7 +371,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           child: Icon(
             _controllerVideo!.value.isPlaying ? Icons.pause : Icons.play_arrow,
             color: AppColors.blackColor,
-            size: 40.r,
+            size: 30.r,
           ),
         ),
         Positioned(
@@ -377,7 +381,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
               formatDuration(_controllerVideo!.value.duration),

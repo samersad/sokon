@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
@@ -26,12 +27,14 @@ class _HomeTabState extends State<HomeTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<LocationProvider>(context, listen: false)
           .getCurrentLocation();
+      Provider.of<ApartmentListProvider>(context, listen: false).getAllApartments();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationProvider>(context);
+    final apartmentProvider = Provider.of<ApartmentListProvider>(context);
 
     final LatLng initialTarget =
         locationProvider.apartmentLocation ??
@@ -48,36 +51,37 @@ class _HomeTabState extends State<HomeTab> {
               ///  Top Bar
               Row(
                 children: [
-                  InkWell(
-                    onTap: () {},
-                    child: Container(
-                      height: 50.h,
-                      width: 160.w, //
-                      padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.whiteColor,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: AppColors.grayColor),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(AppAssets.locationIcon, width: 16.w),
-                          SizedBox(width: 6.w),
-                          Expanded(
-                            child: Text(
-                              "Jakarta, Indonesia",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppStyles.medium10blueDarkColor,
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {},
+                      child: Container(
+                        height: 50.h,
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.whiteColor,
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(color: AppColors.grayColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(AppAssets.locationIcon, width: 16.w),
+                            SizedBox(width: 6.w),
+                            Expanded(
+                              child: Text(
+                                "Jakarta, Indonesia",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppStyles.medium10blueDarkColor,
+                              ),
                             ),
-                          ),
-                          Image.asset(AppAssets.downIcon, width: 14.w),
-                        ],
+                            Image.asset(AppAssets.downIcon, width: 14.w),
+                          ],
+                        ),
                       ),
                     ),
                   ),
 
-                  const Spacer(),
+                  SizedBox(width: 10.w),
 
                   Image.asset(AppAssets.chatBot, width: 24.w),
                   SizedBox(width: 10.w),
@@ -85,8 +89,8 @@ class _HomeTabState extends State<HomeTab> {
                     onTap: () {
                       Navigator.of(context).pushNamed(AppRoutes.notificationRoute);
                     },
-
-                    child: Image.asset(AppAssets.notification, width: 24.w)),
+                    child: Image.asset(AppAssets.notification, width: 24.w),
+                  ),
                 ],
               ),
 
@@ -143,13 +147,15 @@ class _HomeTabState extends State<HomeTab> {
 
               ///  Featured list
               SizedBox(
-                height: 170.h,
-                child: ListView.separated(
+                height: 185.h,
+                child: apartmentProvider.apartmentList.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: 5,
+                  itemCount: apartmentProvider.apartmentList.length,
                   separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, __) {
-                    return FeaturedEstatesCard();
+                  itemBuilder: (_, index) {
+                    return FeaturedEstatesCard(apartment: apartmentProvider.apartmentList[index]);
                   },
                 ),
               ),
@@ -173,14 +179,14 @@ class _HomeTabState extends State<HomeTab> {
               SizedBox(height: 10.h),
 
               SizedBox(
-                height: 52.h,
+                height: 60.h,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: 5,
                   separatorBuilder: (_, __) => SizedBox(width: 10.w),
                   itemBuilder: (_, __) {
                     return Container(
-                      width: 123.w,
+                      width: 130.w,
                       padding: EdgeInsets.symmetric(horizontal: 8.w),
                       decoration: BoxDecoration(
                         color: AppColors.offWhiteColor,
@@ -221,13 +227,15 @@ class _HomeTabState extends State<HomeTab> {
 
               SizedBox(height: 10.h),
               SizedBox(
-                height: 250.h,
-                child: ListView.separated(
+                height: 285.h,
+                child: apartmentProvider.apartmentList.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: 5,
+                  itemCount: apartmentProvider.apartmentList.length,
                   separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, __) {
-                    return NearbyEstateCard();
+                  itemBuilder: (_, index) {
+                    return NearbyEstateCard(apartment: apartmentProvider.apartmentList[index]);
                   },
                 ),
               ),
@@ -240,5 +248,3 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 }
-
-

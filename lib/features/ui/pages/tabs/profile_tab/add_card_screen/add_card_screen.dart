@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/utils/app_colors.dart';
-import '../../../../core/utils/app_styles.dart';
-import '../../widgets/custom_elevated_buttom.dart';
+import '../../../../../../core/utils/app_colors.dart';
+import '../../../../../../core/utils/app_styles.dart';
+import '../../../../widgets/custom_elevated_buttom.dart';
+
 
 class AddCardScreen extends StatefulWidget {
   const AddCardScreen({super.key});

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_styles.dart';
@@ -11,6 +13,8 @@ class NearbyEstateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var apartmentProvider = Provider.of<ApartmentListProvider>(context);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -29,19 +33,22 @@ class NearbyEstateScreen extends StatelessWidget {
                     style: AppStyles.medium13GrayWithOpacity),
                 SizedBox(height: 10.h,),
                 SizedBox(
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2,
+                  child: apartmentProvider.apartmentList.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
                         crossAxisSpacing: 2.w,
                         mainAxisSpacing: 5.h,
                         childAspectRatio: 0.6
                     )
                     , shrinkWrap: true,
-                    itemCount: 12,
-                    physics: NeverScrollableScrollPhysics()
+                    itemCount: apartmentProvider.apartmentList.length,
+                    physics: const NeverScrollableScrollPhysics()
                     , itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: NearbyEstateCard(),
+                      child: NearbyEstateCard(apartment: apartmentProvider.apartmentList[index],),
                       );
                   },),
                 )

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "423605434651",
+    "project_id": "sokon-30008",
+    "storage_bucket": "sokon-30008.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:423605434651:android:8d5c80d7b9461f06553bbe",
+        "android_client_info": {
+          "package_name": "com.example.sokon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "423605434651-dg7l1qetq7ugebq0v8rkb3jd53ain08q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sokon",
+            "certificate_hash": "71b51370700cfcc120ede10fafc25ba7ea6cd809"
+          }
+        },
+        {
+          "client_id": "423605434651-uq8ebl0invkahkls0kticpet7kp8f6m4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATAdhpFUSC0qkMNXMa-0ewikLeimfBLFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "423605434651-uq8ebl0invkahkls0kticpet7kp8f6m4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "423605434651-93je0v98u2p8atnn1gvtn1kivkkh3e3a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sokon"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

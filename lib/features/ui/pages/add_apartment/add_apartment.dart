@@ -189,7 +189,7 @@ class _AddApartmentState extends State<AddApartment> {
         FirebaseAuth.instance.currentUser!.uid,
       );
 
-      if (mounted) Navigator.pop(context);
+       Navigator.pop(context);
 
       AlertDialogUtils.showMessage(
         context: context,
@@ -201,7 +201,7 @@ class _AddApartmentState extends State<AddApartment> {
         },
       );
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+       Navigator.pop(context);
       _showError("Error: $e");
     }
   }

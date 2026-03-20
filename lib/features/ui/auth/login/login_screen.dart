@@ -113,33 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         SizedBox(height: 27.h),
                         CustomElevatedButtom(
-                          onPressed: () async {
-                            if (formkey.currentState!.validate()) {
-                              try {
-                                AlertDialogUtils.showLoading(context: context, msg: 'Logging in...');
-                                UserCredential userCredential = await FirebaseAuth.instance
-                                    .signInWithEmailAndPassword(
-                                    email: emailCtrl.text,
-                                    password: passwordCtrl.text);
+                          onPressed: () {
 
-                                // Fetch user and update role if needed
-                                var user = await FireBaseUtils.readUserFromFireStore(userCredential.user!.uid);
-                                if (user != null) {
-                                  userProvider.updateUser(user);
-                                }
-
-                                if (mounted) {
-                                  AlertDialogUtils.hideLoading(context: context);
-                                  Navigator.of(context).pushReplacementNamed(AppRoutes.homeScreenRoute);
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  AlertDialogUtils.hideLoading(context: context);
-                                  AlertDialogUtils.showMessage(
-                                      context: context, msg: e.toString(), title: "Error");
-                                }
-                              }
-                            }
                           },
                           text: "Login",
                           width: 200,
@@ -241,13 +216,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     user.role = role;
                     await FireBaseUtils.addUserToFirestore(user);
                     userProvider.updateUser(user);
-                    if (mounted) {
+
                       Navigator.pop(context);
                       Navigator.of(context).pushNamedAndRemoveUntil(
                         AppRoutes.homeScreenRoute,
                             (route) => false,
                       );
-                    }
+
                   },
                   child: const Text("Confirm"),
                 ),
@@ -291,28 +266,28 @@ class _LoginScreenState extends State<LoginScreen> {
             email: firebaseUser.email ?? "",
             role: null,
           );
-          if (mounted) {
+
             showRoleSelectionDialog(newUser, userProvider);
-          }
+
         } else {
           // Existing user with role
           userProvider.updateUser(user);
-          if (mounted) {
+
             Navigator.of(context).pushNamedAndRemoveUntil(
               AppRoutes.homeScreenRoute,
                   (route) => false,
             );
-          }
+
         }
       }
     } catch (e) {
-      if (mounted) {
+
         AlertDialogUtils.showMessage(
           context: context,
           msg: e.toString(),
           title: "Google Sign-In Error",
         );
-      }
+
     }
   }
 }

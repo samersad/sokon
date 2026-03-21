@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/booking.dart';
 import 'package:sokon/core/model/my_user.dart';
 
 
@@ -21,11 +25,9 @@ class FireBaseUtils{
 
   static Future<void> addApartmentToFirestore(Apartment apartment,String uId){
     CollectionReference<Apartment> collectionRef=getApartmentCollections( uId);
-    //todo create doc
     var docRef=  collectionRef.doc();
-    apartment.id= docRef.id; //auto id
-    return
-      docRef.set(apartment); //todo save date
+    apartment.id= docRef.id; 
+    return docRef.set(apartment);
   }
 
   static CollectionReference<MyUser> getUsersCollections() {
@@ -34,21 +36,35 @@ class FireBaseUtils{
       fromFirestore: (snapshot, _) => MyUser.fromFireStore(snapshot.data()!),
       toFirestore: (myUser, _) => myUser.toFireStore(),
     );}
+
   static Future<void> addUserToFirestore(MyUser myUser){
    return getUsersCollections().doc(myUser.id).set(myUser);
   }
+
   static Future<MyUser?> readUserFromFireStore(String id) async {
     var querySnapshot= await getUsersCollections().doc(id).get();
     return querySnapshot.data();
   }
 
+  static CollectionReference<Booking> getBookingCollections() {
+    return FirebaseFirestore.instance.collection(Booking.collectionName)
+        .withConverter<Booking>(
+      fromFirestore: (snapshot, _) => Booking.fromFireStore(snapshot.data()!),
+      toFirestore: (booking, _) => booking.toFireStore(),
+    );
+  }
 
+  static Future<void> addBookingToFirestore(Booking booking) {
+    var docRef = getBookingCollections().doc();
+    booking.id = docRef.id;
+    return docRef.set(booking);
+  }
 
-
-//todo firebase => json
-  //todo [] => json array  , {} => json object
-  //todo developers =>object
-
-  // todo json=> object
-  // todo object => json
+  static Stream<QuerySnapshot<Booking>> getBookingsStream(String userId, bool isOwner) {
+    if (isOwner) {
+      return getBookingCollections().where('ownerId', isEqualTo: userId).snapshots();
+    } else {
+      return getBookingCollections().where('clientId', isEqualTo: userId).snapshots();
+    }
+  }
 }

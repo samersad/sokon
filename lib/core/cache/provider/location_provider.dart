@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class LocationProvider extends ChangeNotifier {
   LatLng? userLocation;
+  String? userAddress;
   LatLng? apartmentLocation;
   String? apartmentAddress;
 
@@ -16,40 +17,38 @@ class LocationProvider extends ChangeNotifier {
         desiredAccuracy: LocationAccuracy.high,
       );
       userLocation = LatLng(position.latitude, position.longitude);
-      print(userLocation);
-
+      userAddress = await getAddressFromLatLng(userLocation!);
       notifyListeners();
     } else if (permission.isPermanentlyDenied) {
       openAppSettings();
-    } else {}
+    }
   }
 
-  Future<void> changeEventLocation(LatLng latLng) async {
+  Future<void> changeApartmentLocation(LatLng latLng) async {
     apartmentLocation = latLng;
-    apartmentAddress = await getLocationFromAddress();
-
+    apartmentAddress = await getAddressFromLatLng(apartmentLocation!);
     notifyListeners();
   }
 
-  Future<String> getLocationFromAddress() async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      apartmentLocation!.latitude,
-      apartmentLocation!.longitude,
-    );
-    print("eventAddress");
-
-    print("${placemarks[0]}");
-    print(apartmentAddress);
-
-    return "${placemarks[0].name}, "
-        "${placemarks[0].street},"
-        "${placemarks[0].thoroughfare},"
-        " ${placemarks[0].subLocality}, "
-        "${placemarks[0].locality},"
-        " ${placemarks[0].postalCode},";
+  Future<String> getAddressFromLatLng(LatLng latLng) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latLng.latitude,
+        latLng.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        return "${place.name},${place.street} ,${place.subLocality}, ${place.locality}, ${place.locality}";
+      }
+    } catch (e) {
+      debugPrint("Error getting address: $e");
+    }
+    return "Unknown Address";
   }
 
-  void clearEventLocation() {
+  // Keeping the old method name for compatibility if used elsewhere, 
+  // but redirecting to the new generic one.
+  void clearApartmentLocation() {
     apartmentLocation = null;
     apartmentAddress = null;
     notifyListeners();

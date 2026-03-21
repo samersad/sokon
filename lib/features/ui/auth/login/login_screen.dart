@@ -265,29 +265,31 @@ class _LoginScreenState extends State<LoginScreen> {
             name: firebaseUser.displayName ?? "",
             email: firebaseUser.email ?? "",
             role: null,
+            photoUrl: firebaseUser.photoURL,
           );
 
             showRoleSelectionDialog(newUser, userProvider);
 
         } else {
-          // Existing user with role
+          // Existing user - Update photoUrl if changed
+          if (user.photoUrl != firebaseUser.photoURL) {
+            user.photoUrl = firebaseUser.photoURL;
+            await FireBaseUtils.addUserToFirestore(user);
+          }
           userProvider.updateUser(user);
 
             Navigator.of(context).pushNamedAndRemoveUntil(
               AppRoutes.homeScreenRoute,
                   (route) => false,
             );
-
         }
       }
     } catch (e) {
-
         AlertDialogUtils.showMessage(
           context: context,
           msg: e.toString(),
           title: "Google Sign-In Error",
         );
-
     }
   }
 }

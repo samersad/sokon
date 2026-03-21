@@ -2,7 +2,12 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/provider/user_provider.dart';
+import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/booking.dart';
 import 'package:sokon/core/utils/app_assets.dart';
+import 'package:sokon/firebase_utils.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_routes.dart';
@@ -17,14 +22,22 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-
-  /// 🔹 Card Data
   String? cardNumber;
   String? cardHolder;
   String? expiryDate;
 
-  /// 🔹 Date
   DateTimeRange? selectedDate;
+  late Apartment apartment;
+  bool isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!isInitialized) {
+      apartment = ModalRoute.of(context)!.settings.arguments as Apartment;
+      isInitialized = true;
+    }
+  }
 
   Future<void> pickDateRange() async {
     final picked = await showDateRangePicker(
@@ -60,6 +73,49 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  void confirmBooking() async {
+    if (selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a date range")),
+      );
+      return;
+    }
+
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please login to book")),
+      );
+      return;
+    }
+
+    Booking booking = Booking(
+      apartmentId: apartment.id,
+      apartmentName: apartment.name,
+      apartmentAddress: apartment.address,
+      apartmentImage: (apartment.images != null && apartment.images!.isNotEmpty)
+          ? apartment.images![0]
+          : null,
+      clientId: userProvider.user!.id,
+      clientName: userProvider.user!.name,
+      ownerId: apartment.ownerId,
+      ownerName: apartment.ownerName,
+      startDate: selectedDate!.start,
+      endDate: selectedDate!.end,
+      totalPrice: apartment.price, // Simplified
+      status: 'pending',
+    );
+
+    try {
+      await FireBaseUtils.addBookingToFirestore(booking);
+      showSuccessDialog(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,9 +133,8 @@ class _BookingScreenState extends State<BookingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Container(
-                  height: 110.h,
+                  constraints: BoxConstraints(minHeight: 110.h),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12.sp),
                     border: Border.all(color: AppColors.grayColor, width: 2),
@@ -88,39 +143,50 @@ class _BookingScreenState extends State<BookingScreen> {
                     padding: EdgeInsets.all(10.w),
                     child: Row(
                       children: [
-                        Image.asset(AppAssets.image),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: (apartment.images != null &&
+                                  apartment.images!.isNotEmpty)
+                              ? Image.network(
+                                  apartment.images![0],
+                                  width: 80.w,
+                                  height: 80.h,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(AppAssets.image,
+                                  width: 80.w, height: 80.h),
+                        ),
                         SizedBox(width: 10.w),
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               AutoSizeText(
-                                "Batavia Apartments",
+                                apartment.name ?? "Apartment",
                                 style: AppStyles.semiBold14DarkPrimary,
                                 maxLines: 2,
                               ),
                               SizedBox(height: 5.h),
-
                               Row(
                                 children: [
-                                  Image.asset(AppAssets.locationIcon, width: 14.w),
+                                  Image.asset(AppAssets.locationIcon,
+                                      width: 14.w),
                                   SizedBox(width: 4.w),
                                   Expanded(
                                     child: AutoSizeText(
-                                      "Jakarta City",
+                                      apartment.address ?? "No Address",
                                       style: AppStyles.medium12gray,
                                       maxLines: 2,
                                     ),
                                   ),
                                 ],
                               ),
-
                               SizedBox(height: 5.h),
-
                               Row(
                                 children: [
-                                  Text("340/month", style: AppStyles.regular14black),
+                                  Text("${apartment.price ?? 0}/month",
+                                      style: AppStyles.regular14black),
                                   Spacer(),
                                   Image.asset(AppAssets.star, width: 14.w),
                                   SizedBox(width: 4.w),
@@ -137,7 +203,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
                 SizedBox(height: 20.h),
 
-                /// 🔹 Period
                 Text("Period", style: AppStyles.bold20black),
 
                 InkWell(
@@ -176,9 +241,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   children: [
                     if (cardNumber != null)
                       Image.asset(AppAssets.mastercardIcon),
-
                     SizedBox(width: 10.w),
-
                     Expanded(
                       child: Text(
                         cardNumber == null
@@ -187,7 +250,6 @@ class _BookingScreenState extends State<BookingScreen> {
                         style: AppStyles.bold20black,
                       ),
                     ),
-
                     TextButton(
                       onPressed: goToAddCard,
                       child: Text(
@@ -214,18 +276,17 @@ class _BookingScreenState extends State<BookingScreen> {
 
                 Text("Price Details", style: AppStyles.bold20black),
 
-                buildRow("Period time", "1 Month"),
-                buildRow("Monthly payment", "320 EG"),
+                buildRow("Period time",
+                    selectedDate == null ? "-" : "${selectedDate!.duration.inDays} Days"),
+                buildRow("Monthly payment", "${apartment.price ?? 0} EG"),
                 buildRow("Tax", "10 EG"),
-                buildRow("Total", "330 EG", isTotal: true),
+                buildRow("Total", "${(apartment.price ?? 0) + 10} EG",
+                    isTotal: true),
 
                 SizedBox(height: 40.h),
 
                 CustomElevatedButtom(
-                  onPressed: () {
-                    showSuccessDialog(context); // 👈 هنا
-
-                  },
+                  onPressed: confirmBooking,
                   text: "Confirm and Pay",
                   customPadding: 20,
                   borderRadius: 10.r,
@@ -260,6 +321,7 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
+
   void showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -271,40 +333,36 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(AppAssets.successBg),
-
-                 SizedBox(height: 20),
-                 Text(
-                  "Yey, your booking success",
-                  textAlign: TextAlign.center,
-                  style: AppStyles.bold20black,
-                ),
-
-                const SizedBox(height: 10),
-
-                 Text(
-                  "you have successfully booked a property, enjoy your property",
-                  textAlign: TextAlign.center,
-                  style: AppStyles.regular14gray
-                ),
-
-                 SizedBox(height: 25),
-
-                CustomElevatedButtom(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  text: "successfully",
-                  customPadding: 15,
-                  borderRadius: 10.r,
-                  backgroundColorElevated: AppColors.darkBlueColor,
-                  textStyle: AppStyles.semiBold20White,
-                )
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(AppAssets.successBg),
+                  SizedBox(height: 20),
+                  Text(
+                    "Yey, your booking success",
+                    textAlign: TextAlign.center,
+                    style: AppStyles.bold20black,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                      "you have successfully booked a property, enjoy your property",
+                      textAlign: TextAlign.center,
+                      style: AppStyles.regular14gray),
+                  SizedBox(height: 25),
+                  CustomElevatedButtom(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    text: "successfully",
+                    customPadding: 15,
+                    borderRadius: 10.r,
+                    backgroundColorElevated: AppColors.darkBlueColor,
+                    textStyle: AppStyles.semiBold20White,
+                  )
+                ],
+              ),
             ),
           ),
         );

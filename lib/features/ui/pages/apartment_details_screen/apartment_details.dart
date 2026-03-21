@@ -1,9 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
+import 'package:sokon/core/cache/provider/user_provider.dart';
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
@@ -52,6 +55,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
 
   @override
   Widget build(BuildContext context) {
+    var userProvider = Provider.of<UserProvider>(context);
+    bool isClient = userProvider.user?.role == 'client';
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -148,18 +154,22 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 25.r,
-                        backgroundColor: Colors.grey.shade200,
-                        backgroundImage: AssetImage(AppAssets.avatar),
-                      ),
+                     CircleAvatar(
+                            radius: 25.r,
+                            backgroundColor: Colors.grey.shade200,
+                            backgroundImage: (apartment.ownerPhotoUrl != null && apartment.ownerPhotoUrl!.isNotEmpty)
+                                ? NetworkImage(apartment.ownerPhotoUrl!)
+                                : AssetImage(AppAssets.profileImage) as ImageProvider,
+                          ),
+
+
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Owner", // You might want to fetch owner name later
+                              apartment.ownerName ?? "Owner",
                               style: AppStyles.bold16PrimaryColor,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -175,10 +185,27 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                         child: Image.asset(AppAssets.callIcon, width: 32.w),
                       ),
                       SizedBox(width: 10.w),
-                      InkWell(
-                        onTap: () {},
-                        child: Image.asset(AppAssets.messageIcon, width: 32.w),
-                      ),
+                      if (isClient )
+                        InkWell(
+                          onTap: () {
+                            if (apartment.ownerId != null) {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.chatRoute,
+                                arguments: {
+                                  'receiverId': apartment.ownerId,
+                                  'receiverName': apartment.ownerName ?? "Owner",
+                                  'receiverPhotoUrl': apartment.ownerPhotoUrl,
+                                },
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Owner contact information not available")),
+                              );
+                            }
+                          },
+                          child: Image.asset(AppAssets.messageIcon, width: 32.w),
+                        ),
                     ],
                   ),
                 ),
@@ -239,17 +266,18 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                       ),
               ),
               SizedBox(height: 30.h),
-              CustomElevatedButtom(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.bookingRoute, arguments: apartment);
-                },
-                text: "Rent Now",
-                width: 500.w,
-                customPadding: 16.h,
-                borderRadius: 12.r,
-                backgroundColorElevated: AppColors.darkBlueColor,
-                textStyle: AppStyles.semiBold20White,
-              ),
+              if (isClient)
+                CustomElevatedButtom(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(AppRoutes.bookingRoute, arguments: apartment);
+                  },
+                  text: "Rent Now",
+                  width: 500.w,
+                  customPadding: 16.h,
+                  borderRadius: 12.r,
+                  backgroundColorElevated: AppColors.darkBlueColor,
+                  textStyle: AppStyles.semiBold20White,
+                ),
               SizedBox(height: 30.h),
             ],
           ),

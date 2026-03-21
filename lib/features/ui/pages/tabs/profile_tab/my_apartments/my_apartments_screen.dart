@@ -50,6 +50,9 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
               Expanded(
                 child: Consumer<ApartmentListProvider>(
                   builder: (context, provider, child) {
+                    if (provider.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
                     if (provider.apartmentList.isEmpty) {
                       return const Center(child: Text("No apartments found."));
                     }

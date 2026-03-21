@@ -16,6 +16,9 @@ class Apartment {
   String? address;
   double? lat;
   double? lng;
+  String? ownerId;
+  String? ownerName;
+  String? ownerPhotoUrl;
 
   Apartment({
     this.id,
@@ -30,6 +33,9 @@ class Apartment {
     this.address,
     this.lat,
     this.lng,
+    this.ownerId,
+    this.ownerName,
+    this.ownerPhotoUrl,
   });
 
   /// 🔄 من Firestore
@@ -53,6 +59,9 @@ class Apartment {
       address: data["address"],
       lat: (data["lat"] as num?)?.toDouble(),
       lng: (data["lng"] as num?)?.toDouble(),
+      ownerId: data["ownerId"],
+      ownerName: data["ownerName"],
+      ownerPhotoUrl: data["ownerPhotoUrl"],
     );
   }
 
@@ -71,6 +80,9 @@ class Apartment {
       'address': address,
       'lat': lat,
       'lng': lng,
+      'ownerId': ownerId,
+      'ownerName': ownerName,
+      'ownerPhotoUrl': ownerPhotoUrl,
     };
   }
 }

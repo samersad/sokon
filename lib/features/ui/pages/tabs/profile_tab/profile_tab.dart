@@ -29,6 +29,8 @@ class _ProfileTabState extends State<ProfileTab> {
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context);
     bool isOwner = userProvider.user?.role == 'owner';
+    bool isClient = userProvider.user?.role == 'client';
+    String? photoUrl = userProvider.user?.photoUrl;
 
     return Scaffold(
       backgroundColor: AppColors.whiteColor,
@@ -40,36 +42,63 @@ class _ProfileTabState extends State<ProfileTab> {
               children: [
                 SizedBox(height: 60.h),
                 Center(
-                  child: CircleAvatar(
-                    radius: 70.r,
-                    backgroundImage: profileImage != null
-                        ? FileImage(profileImage!)
-                        : AssetImage(AppAssets.profileImage) as ImageProvider,
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.primaryColor, width: 3.w),
+                        ),
+                        child: CircleAvatar(
+                          radius: 70.r,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: profileImage != null
+                              ? FileImage(profileImage!)
+                              : (photoUrl != null && photoUrl.isNotEmpty
+                                  ? NetworkImage(photoUrl)
+                                  : AssetImage(AppAssets.profileImage)) as ImageProvider,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 15.h),
-                Text(userProvider.user?.name ?? "No Name", style: AppStyles.semiBold15black),
+                Text(userProvider.user?.name ?? "No Name", style: AppStyles.bold20black),
                 SizedBox(height: 5.h),
-                Text(userProvider.user?.email ?? "No Email", style: AppStyles.regular14gray),
+                Text(userProvider.user?.email ?? "No Email", style: AppStyles.regular14black),
                 SizedBox(height: 40.h),
-                Divider(color: AppColors.grayColor, thickness: 1.h),
+                Divider(color: AppColors.grayColor.withOpacity(0.3), thickness: 1.h),
                 SizedBox(height: 20.h),
                 buildRowTile(
-                  iconName: AppAssets.settingsIcon,
+                  icon: Icons.settings_outlined,
                   title: "Settings",
+                  color: Colors.blue,
                   onTap: () => Navigator.of(context).pushNamed(AppRoutes.settingsScreenRoute),
                 ),
                 SizedBox(height: 20.h),
                 buildRowTile(
-                  iconName: AppAssets.paymentIcon,
+                  icon: Icons.payment_outlined,
                   title: "Payment",
+                  color: Colors.orange,
                   onTap: () => Navigator.of(context).pushNamed(AppRoutes.addCardRoute),
                 ),
+                if (isClient) ...[
+                  SizedBox(height: 20.h),
+                  buildRowTile(
+                    icon: Icons.bookmark_border_outlined,
+                    title: "My Bookings",
+                    color: Colors.pink,
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.myBookingsRoute);
+                    },
+                  ),
+                ],
                 if (isOwner) ...[
                   SizedBox(height: 20.h),
                   buildRowTile(
-                    iconName: AppAssets.avatar,
+                    icon: Icons.apartment_outlined,
                     title: "My Apartments",
+                    color: Colors.green,
                     onTap: () {
                       Navigator.of(context).pushNamed(AppRoutes.myApartmentsRoute);
                     },
@@ -77,14 +106,16 @@ class _ProfileTabState extends State<ProfileTab> {
                 ],
                 SizedBox(height: 20.h),
                 buildRowTile(
-                  iconName: AppAssets.notificationIcon,
+                  icon: Icons.notifications_none_outlined,
                   title: "Notification",
+                  color: Colors.purple,
                   onTap: () {},
                 ),
                 SizedBox(height: 20.h),
                 buildRowTile(
-                  iconName: AppAssets.aboutIcon,
+                  icon: Icons.info_outline,
                   title: "About",
+                  color: Colors.teal,
                   onTap: () {},
                 ),
                 SizedBox(height: 40.h),
@@ -149,17 +180,25 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   Widget buildRowTile({
-    required String iconName,
+    required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required Color color,
   }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 5.h),
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
         child: Row(
           children: [
-            Image.asset(iconName, width: 24.w, height: 24.w, fit: BoxFit.contain),
+            Container(
+              padding: EdgeInsets.all(8.sp),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(icon, color: color, size: 24.sp),
+            ),
             SizedBox(width: 15.w),
             Expanded(
               child: Text(title, style: AppStyles.semiBold15black),

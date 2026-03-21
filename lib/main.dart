@@ -11,6 +11,8 @@ import 'package:sokon/features/ui/auth/verification/verification_screen.dart';
 import 'package:sokon/features/ui/location_picker/location_picker.dart';
 import 'package:sokon/features/ui/pages/booking_screen/booking_screen.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
+import 'package:sokon/features/ui/pages/tabs/message_tab/chat_screen.dart';
+import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/my_bookings_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
 
@@ -26,35 +28,35 @@ import 'features/ui/pages/notifaction_screen/notifaction_screen.dart';
 import 'features/ui/pages/tabs/profile_tab/add_card_screen/add_card_screen.dart';
 import 'features/ui/pages/tabs/profile_tab/my_apartments/my_apartments_screen.dart';
 import 'firebase_options.dart';
+
 Future<void> main() async {
-WidgetsFlutterBinding.ensureInitialized(); // Initialize Flutter binding because main is async function
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
-await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await dotenv.load(fileName: ".env");
 
   runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) =>LocationProvider() ,),
-        ChangeNotifierProvider(create: (context) =>ApartmentListProvider() ,),
-        ChangeNotifierProvider(create: (context) => UserProvider(),)
-        
+        ChangeNotifierProvider(create: (context) => LocationProvider()),
+        ChangeNotifierProvider(create: (context) => ApartmentListProvider()),
+        ChangeNotifierProvider(create: (context) => UserProvider()),
       ],
-
-      child: const MyApp()));}
+      child: const MyApp()));
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-        designSize:  Size( 393, 852),
+        designSize: const Size(393, 852),
         minTextAdapt: true,
         splitScreenMode: true,
-        builder: (context, child){
+        builder: (context, child) {
           return MaterialApp(
-             debugShowCheckedModeBanner: false,
-            initialRoute: AppRoutes.loginRoute,
+              debugShowCheckedModeBanner: false,
+              initialRoute: AppRoutes.loginRoute,
               routes: {
                 AppRoutes.homeScreenRoute: (context) => HomeScreen(),
                 AppRoutes.loginRoute: (context) => LoginScreen(),
@@ -73,14 +75,10 @@ class MyApp extends StatelessWidget {
                 AppRoutes.addCardRoute: (context) => AddCardScreen(),
                 AppRoutes.bookingRoute: (context) => BookingScreen(),
                 AppRoutes.myApartmentsRoute: (context) => MyApartmentsScreen(),
-              
-
+                AppRoutes.chatRoute: (context) => const ChatScreen(),
+                AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
               },
-              theme: ThemeData.light()
-          );
-        }
-    );
+              theme: ThemeData.light());
+        });
   }
-
-
 }

@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:sokon/cloudinary_service.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
+import 'package:sokon/firebase_utils.dart';
 
+import '../../../../../../core/cache/provider/user_provider.dart';
 import '../../../../../../core/utils/app_assets.dart';
 import '../../../../../../core/utils/app_colors.dart';
 import '../../../../widgets/custom_text_form_field.dart';
@@ -22,9 +26,29 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final ImagePicker _imagePicker = ImagePicker();
   File? profileImage;
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    nameController = TextEditingController(text: user?.name ?? "");
+    emailController = TextEditingController(text: user?.email ?? "");
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    var userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.whiteColor,
@@ -34,109 +58,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       backgroundColor: AppColors.whiteColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 100.h),
-                Center(
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 70.r,
-                        backgroundImage: profileImage != null
-                            ? FileImage(profileImage!)
-                            : AssetImage(AppAssets.profileImage)
-                        as ImageProvider,
-                      ),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Padding(
+                padding:  EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 100.h),
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 70.r,
+                            backgroundColor: Colors.grey.shade200,
+                            backgroundImage: profileImage != null 
+                                ? FileImage(profileImage!)
+                                : (userProvider.user?.photoUrl != null && userProvider.user!.photoUrl!.isNotEmpty
+                                    ? NetworkImage(userProvider.user!.photoUrl!)
+                                    : AssetImage(AppAssets.avatar)) as ImageProvider,
+                          ),
 
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: InkWell(
-                          onTap: () => pickImage(ImageSource.gallery),
-                          child: CircleAvatar(
-                            radius: 20.r,
-                            backgroundColor: AppColors.transparentColor,
-                            child: Image.asset(
-                              AppAssets.cameraIconProfle,scale: 0.8,
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: InkWell(
+                              onTap: () {
+                                pickImage(ImageSource.gallery);
+                              },
+                              
+                              child: CircleAvatar(
+                                radius: 20.r,
+                                backgroundColor: AppColors.transparentColor,
+                                child: Image.asset(
+                                  AppAssets.cameraIconProfle,scale: 0.8,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 80.h),
+                    Text("Username",style: AppStyles.semiBold14DarkPrimary,),
+                    SizedBox(height: 5.h),
+                    CustomTextFormField(
+                      hintText: "Username",
+                      controller: nameController,
+                      paddingVertical: 15.h,
+                      borderSideColor: AppColors.grayColor,
+                      hintStyle: AppStyles.regular14black,
+                      fillColor: AppColors.transparentColor,
+                    ),
+                    SizedBox(height:20.h),
+                    Text("Email",style: AppStyles.semiBold14DarkPrimary,),
+                    SizedBox(height: 5.h),
+                    CustomTextFormField(
+                      hintText: "Email",
+                      controller: emailController,
+                      paddingVertical: 15.h,
+                      borderSideColor: AppColors.grayColor,
+                      hintStyle: AppStyles.regular14black,
+                      fillColor: AppColors.transparentColor,
+                    ),
+                    SizedBox(height: 70.h),
+                    CustomElevatedButtom(
+                      onPressed: () async {
+                        if (userProvider.user == null) return;
+                        
+                        setState(() => isLoading = true);
+                        
+                        try {
+                          String? photoUrl = userProvider.user?.photoUrl;
+                          if (profileImage != null) {
+                            photoUrl = await CloudinaryService.uploadImage(profileImage!);
+                          }
+
+                          userProvider.user!.name = nameController.text;
+                          userProvider.user!.photoUrl = photoUrl;
+
+                          await FireBaseUtils.addUserToFirestore(userProvider.user!);
+                          userProvider.updateUser(userProvider.user);
+                          
+                         Navigator.pop(context);
+                        } catch (e) {
+                           debugPrint("Error saving changes: $e");
+                        } finally {
+                         setState(() => isLoading = false);
+                        }
+                      },
+                      text: "Save Change",
+                      width: 500,
+                      borderRadius: 10,
+                      backgroundColorElevated: AppColors.darkBlueColor,
+                      textStyle: AppStyles.semiBold20White,
+                    )
+                  ],
                 ),
-                SizedBox(height: 80.h),
-                Text("Username",style: AppStyles.semiBold14DarkPrimary,),
-                SizedBox(height: 5.h),
-                CustomTextFormField(
-                  hintText: "Username",
-                  controller: TextEditingController(text: "Brooklynsim"),
-                  paddingVertical: 15.h,
-                  borderSideColor: AppColors.grayColor,
-                  hintStyle: AppStyles.regular14black,
-                  fillColor: AppColors.transparentColor,
-                ),
-                SizedBox(height:20.h),
-                Text("Email",style: AppStyles.semiBold14DarkPrimary,),
-                SizedBox(height: 5.h),
-                CustomTextFormField(
-                  hintText: "Email",
-                  controller: TextEditingController(text: "brooklynsim@gmail.com"),
-                  paddingVertical: 15.h,
-                  borderSideColor: AppColors.grayColor,
-                  hintStyle: AppStyles.regular14black,
-
-                  fillColor: AppColors.transparentColor,
-                ),
-                SizedBox(height:20.h),
-                Text("Date of birth",style: AppStyles.semiBold14DarkPrimary,),
-                SizedBox(height: 5.h),
-                CustomTextFormField(
-                  hintText: "Date of birth",
-                  controller: TextEditingController(text: "November/21/1992"),
-                  paddingVertical: 15.h,
-                  borderSideColor: AppColors.grayColor,
-                  hintStyle: AppStyles.regular14black,
-                  fillColor: AppColors.transparentColor,
-                  suffixIconName:  Image.asset(AppAssets.calendarIcon),
-                ),
-                SizedBox(height: 70.h),
-                CustomElevatedButtom(onPressed: () {
-                  //todo save change
-                },
-                  text: "Save Change",
-                  width: 500,
-                  borderRadius: 10,
-                  backgroundColorElevated: AppColors.darkBlueColor,
-                  textStyle: AppStyles.semiBold20White,
-                )
-
-
-
-
-              ],
+              ),
             ),
-          ),
+            if (isLoading)
+              Container(
+                color: Colors.black26,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+          ],
         ),
       ),
     );
-  }
-  Widget buildRowTile({required String iconName,required String title,required VoidCallback onTap}) {
-    return  Row(
-      children: [
-        Image.asset(iconName,scale: 0.8,),
-        SizedBox(width: 10.w),
-        Text(title,style: AppStyles.semiBold15black, ),
-        Spacer(),
-        IconButton(onPressed: () => onTap,
-            icon: Icon(Icons.arrow_forward_ios,color: AppColors.grayColor,))
-      ],
-    );
-
   }
 
   Future<void> pickImage(ImageSource source) async {

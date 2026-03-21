@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
+import 'package:sokon/core/cache/provider/user_provider.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
@@ -35,6 +36,8 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationProvider>(context);
     final apartmentProvider = Provider.of<ApartmentListProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
 
     final LatLng initialTarget =
         locationProvider.apartmentLocation ??
@@ -68,7 +71,7 @@ class _HomeTabState extends State<HomeTab> {
                             SizedBox(width: 6.w),
                             Expanded(
                               child: Text(
-                                "Jakarta, Indonesia",
+                                locationProvider.apartmentAddress ?? locationProvider.userAddress ?? "Select Location",
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppStyles.medium10blueDarkColor,
@@ -83,13 +86,31 @@ class _HomeTabState extends State<HomeTab> {
 
                   SizedBox(width: 10.w),
 
-                  Image.asset(AppAssets.chatBot, width: 24.w),
+                  InkWell(
+                    onTap: () {
+                      // Add chatbot navigation
+                    },
+                    child: Image.asset(AppAssets.chatBot, width: 24.w),
+                  ),
                   SizedBox(width: 10.w),
                   InkWell(
                     onTap: () {
                       Navigator.of(context).pushNamed(AppRoutes.notificationRoute);
                     },
                     child: Image.asset(AppAssets.notification, width: 24.w),
+                  ),
+                  SizedBox(width: 10.w),
+                  InkWell(
+                    onTap: () {
+                      // Navigate to profile tab or show profile quickly
+                    },
+                    child: CircleAvatar(
+                      radius: 18.r,
+                      backgroundColor: Colors.grey.shade200,
+                      backgroundImage: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                          ? NetworkImage(user.photoUrl!)
+                          : AssetImage(AppAssets.profileImage),
+                    ),
                   ),
                 ],
               ),
@@ -123,7 +144,9 @@ class _HomeTabState extends State<HomeTab> {
                       )
                     }
                         : {},
-                    onTap: locationProvider.changeEventLocation,
+                    onTap: (argument) {
+
+                    },
                   ),
                 ),
               ),
@@ -148,8 +171,10 @@ class _HomeTabState extends State<HomeTab> {
               ///  Featured list
               SizedBox(
                 height: 185.h,
-                child: apartmentProvider.apartmentList.isEmpty
+                child: apartmentProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
+                    : apartmentProvider.apartmentList.isEmpty
+                    ? const Center(child: Text("No apartments found"))
                     : ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: apartmentProvider.apartmentList.length,
@@ -228,8 +253,10 @@ class _HomeTabState extends State<HomeTab> {
               SizedBox(height: 10.h),
               SizedBox(
                 height: 285.h,
-                child: apartmentProvider.apartmentList.isEmpty
+                child: apartmentProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
+                    : apartmentProvider.apartmentList.isEmpty
+                    ? const Center(child: Text("No apartments found"))
                     : ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: apartmentProvider.apartmentList.length,

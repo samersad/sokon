@@ -59,7 +59,7 @@ class _LocationPickerState extends State<LocationPicker> {
                   }
                       : {},
                   onTap: (LatLng latLng) {
-                    locationProvider.changeEventLocation(latLng);
+                    locationProvider.changeApartmentLocation(latLng);
                     Future.delayed(const Duration(milliseconds: 300), () {
                       Navigator.pop(context);
                     });

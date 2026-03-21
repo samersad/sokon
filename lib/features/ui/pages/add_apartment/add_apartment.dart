@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,10 +9,11 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/provider/user_provider.dart';
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
 import 'package:video_player/video_player.dart';
-//
+
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
@@ -56,7 +56,7 @@ class _AddApartmentState extends State<AddApartment> {
     super.initState();
     apartmentImages = [];
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LocationProvider>(context, listen: false).clearEventLocation();
+      Provider.of<LocationProvider>(context, listen: false).clearApartmentLocation();
     });
   }
 
@@ -170,6 +170,8 @@ class _AddApartmentState extends State<AddApartment> {
         }
       }
 
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
       Apartment apartment = Apartment(
         name: nameCRl.text,
         description: descriptionCRl.text,
@@ -182,13 +184,15 @@ class _AddApartmentState extends State<AddApartment> {
         address: locationProvider.apartmentAddress,
         lat: locationProvider.apartmentLocation?.latitude,
         lng: locationProvider.apartmentLocation?.longitude,
+        ownerId: userProvider.user?.id,
+        ownerName: userProvider.user?.name,
+        ownerPhotoUrl: userProvider.user?.photoUrl,
       );
 
       await FireBaseUtils.addApartmentToFirestore(
         apartment,
         FirebaseAuth.instance.currentUser!.uid,
       );
-
        Navigator.pop(context);
 
       AlertDialogUtils.showMessage(

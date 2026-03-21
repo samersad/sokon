@@ -36,49 +36,55 @@ Future<void> main() async {
   );
   await dotenv.load(fileName: ".env");
 
-  runApp(MultiProvider(
+  runApp(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LocationProvider()),
         ChangeNotifierProvider(create: (context) => ApartmentListProvider()),
         ChangeNotifierProvider(create: (context) => UserProvider()),
       ],
-      child: const MyApp()));
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-        designSize: const Size(393, 852),
-        minTextAdapt: true,
-        splitScreenMode: true,
-        builder: (context, child) {
-          return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              initialRoute: AppRoutes.loginRoute,
-              routes: {
-                AppRoutes.homeScreenRoute: (context) => HomeScreen(),
-                AppRoutes.loginRoute: (context) => LoginScreen(),
-                AppRoutes.registerRoute: (context) => RegisterScreen(),
-                AppRoutes.forgetPasswordRoute: (context) => ForgetPasswordScreen(),
-                AppRoutes.verificationRoute: (context) => VerificationScreen(),
-                AppRoutes.forgetPassword2Route: (context) => ForgetPasswordScreen2(),
-                AppRoutes.addApartmentRoute: (context) => AddApartment(),
-                AppRoutes.apartmentDetailsRoute: (context) => ApartmentDetails(),
-                AppRoutes.locationPickerRoute: (context) => LocationPicker(),
-                AppRoutes.topLocationRoute: (context) => TopLocationScreen(),
-                AppRoutes.nearbyEstateRoute: (context) => NearbyEstateScreen(),
-                AppRoutes.featuredEstateRoute: (context) => FeaturedEstateScreen(),
-                AppRoutes.settingsScreenRoute: (context) => SettingsScreen(),
-                AppRoutes.notificationRoute: (context) => NotifactionScreen(),
-                AppRoutes.addCardRoute: (context) => AddCardScreen(),
-                AppRoutes.bookingRoute: (context) => BookingScreen(),
-                AppRoutes.myApartmentsRoute: (context) => MyApartmentsScreen(),
-                AppRoutes.chatRoute: (context) => const ChatScreen(),
-                AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
-              },
-              theme: ThemeData.light());
-        });
+      designSize: const Size(393, 852),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          initialRoute: AppRoutes.loginRoute,
+          routes: {
+            AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
+            AppRoutes.loginRoute: (context) => const LoginScreen(),
+            AppRoutes.registerRoute: (context) => const RegisterScreen(),
+            AppRoutes.forgetPasswordRoute: (context) => const ForgetPasswordScreen(),
+            AppRoutes.verificationRoute: (context) => const VerificationScreen(),
+            AppRoutes.forgetPassword2Route: (context) => const ForgetPasswordScreen2(),
+            AppRoutes.addApartmentRoute: (context) => const AddApartment(),
+            AppRoutes.apartmentDetailsRoute: (context) => const ApartmentDetails(),
+            AppRoutes.locationPickerRoute: (context) => const LocationPicker(),
+            AppRoutes.topLocationRoute: (context) => const TopLocationScreen(),
+            AppRoutes.nearbyEstateRoute: (context) => const NearbyEstateScreen(),
+            AppRoutes.featuredEstateRoute: (context) => const FeaturedEstateScreen(),
+            AppRoutes.settingsScreenRoute: (context) => const SettingsScreen(),
+            AppRoutes.notificationRoute: (context) => const NotifactionScreen(),
+            AppRoutes.addCardRoute: (context) => const AddCardScreen(),
+            AppRoutes.bookingRoute: (context) => const BookingScreen(),
+            AppRoutes.myApartmentsRoute: (context) => const MyApartmentsScreen(),
+            AppRoutes.chatRoute: (context) => const ChatScreen(),
+            AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
+          },
+          theme: ThemeData.light(),
+        );
+      },
+    );
   }
 }

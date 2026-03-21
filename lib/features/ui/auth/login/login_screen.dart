@@ -1,8 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/cache/provider/user_provider.dart';
 import '../../../../core/model/my_user.dart';
@@ -11,11 +9,12 @@ import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_routes.dart';
 import '../../../../core/utils/app_styles.dart';
 import '../../../../core/utils/app_validator.dart';
-import '../../../../firebase_utils.dart';
 import '../../widgets/alert_dialog_utils.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 import '../../widgets/custom_text_form_field.dart';
 import '../widgets/circle_avatar_container.dart';
+import 'cubit/login_states.dart';
+import 'cubit/login_view_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,271 +24,185 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailCtrl = TextEditingController();
-  final TextEditingController passwordCtrl = TextEditingController();
-  GlobalKey<FormState> formkey = GlobalKey<FormState>();
-
-  bool hidePassword = true;
-  String selectedRole = 'client'; // Default role
+  final LoginViewModel viewModel = LoginViewModel();
 
   @override
   Widget build(BuildContext context) {
-    var userProvider = Provider.of<UserProvider>(context);
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    return Scaffold(
-      backgroundColor: AppColors.offWhiteColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: 50.h),
-              Image.asset(AppAssets.SOKON),
-              SizedBox(height: 50.h),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(67),
-                    topLeft: Radius.circular(67),
-                  ),
-                ),
-                child: Form(
-                  key: formkey,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 37.w),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 36.h),
-                        Center(
-                          child: Text("Login", style: AppStyles.bold32Primary),
-                        ),
-                        SizedBox(height: 48.h),
-                        CustomTextFormField(
-                          controller: emailCtrl,
-                          hintStyle: AppStyles.medium12gray,
-                          hintText: "Email",
-                          fillColor: AppColors.offWhiteColor,
-                          borderSideColor: AppColors.grayColor,
-                          validator: (val) => AppValidators.validateEmail(val),
-                        ),
-                        SizedBox(height: 13.h),
-
-                        /// PASSWORD FIELD
-                        CustomTextFormField(
-                          controller: passwordCtrl,
-                          hintStyle: AppStyles.medium12gray,
-                          hintText: "Password",
-                          fillColor: AppColors.offWhiteColor,
-                          borderSideColor: AppColors.grayColor,
-                          obscureText: hidePassword,
-                          validator: (val) => AppValidators.validatePassword(val),
-                          suffixIconName: IconButton(
-                            icon: Icon(
-                              hidePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() => hidePassword = !hidePassword);
-                            },
-                          ),
-                        ),
-                        SizedBox(height: 15.h),
-
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.of(
-                                context,
-                              ).pushNamed(AppRoutes.forgetPasswordRoute);
-                            },
-                            child: Text(
-                              "Forgot password ?",
-                              style: AppStyles.semiBold14Primary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 27.h),
-                        CustomElevatedButtom(
-                          onPressed: () {
-
-                          },
-                          text: "Login",
-                          width: 200,
-                          backgroundColorElevated: AppColors.primaryColor,
-                          textStyle: AppStyles.semiBold20White,
-                          borderColor: Colors.transparent,
-                          customPadding: 19.h,
-                        ),
-                        SizedBox(height: 30.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return BlocProvider(
+      create: (context) => viewModel,
+      child: BlocListener<LoginViewModel, LoginStates>(
+        listener: (context, state) {
+          if (state is LoginLoadingStates) {
+            AlertDialogUtils.showLoading(context: context, msg: 'Loading...');
+          } else if (state is LoginErrorStates) {
+            AlertDialogUtils.hideLoading(context: context);
+            AlertDialogUtils.showMessage(
+              context: context,
+              msg: state.message,
+              pos: Text("Ok", style: AppStyles.semiBold14Primary),
+            );
+          } else if (state is LoginSuccessStates) {
+            AlertDialogUtils.hideLoading(context: context);
+            Navigator.of(context).pushReplacementNamed(AppRoutes.homeScreenRoute);
+          } else if (state is LoginNeedsRoleStates) {
+            AlertDialogUtils.hideLoading(context: context);
+            viewModel.showRoleSelectionDialog(context, state.user, userProvider);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.offWhiteColor,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: 50.h),
+                  Image.asset(AppAssets.SOKON),
+                  SizedBox(height: 50.h),
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(67),
+                        topLeft: Radius.circular(67),
+                      ),
+                    ),
+                    child: Form(
+                      key: viewModel.formKey,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 37.w),
+                        child: Column(
                           children: [
-                            InkWell(
-                              onTap: () {
-                                signInWithGoogle(userProvider);
+                            SizedBox(height: 36.h),
+                            Center(
+                              child:
+                                  Text("Login", style: AppStyles.bold32Primary),
+                            ),
+                            SizedBox(height: 48.h),
+                            CustomTextFormField(
+                              controller: viewModel.emailCtrl,
+                              hintStyle: AppStyles.medium12gray,
+                              hintText: "Email",
+                              fillColor: AppColors.offWhiteColor,
+                              borderSideColor: AppColors.grayColor,
+                              validator: (val) =>
+                                  AppValidators.validateEmail(val),
+                            ),
+                            SizedBox(height: 13.h),
+                            BlocBuilder<LoginViewModel, LoginStates>(
+                              buildWhen: (previous, current) =>
+                                  current is ChangePasswordVisibilityState,
+                              builder: (context, state) {
+                                return CustomTextFormField(
+                                  controller: viewModel.passwordCtrl,
+                                  hintStyle: AppStyles.medium12gray,
+                                  hintText: "Password",
+                                  fillColor: AppColors.offWhiteColor,
+                                  borderSideColor: AppColors.grayColor,
+                                  obscureText: viewModel.hidePassword,
+                                  validator: (val) =>
+                                      AppValidators.validatePassword(val),
+                                  suffixIconName: IconButton(
+                                    icon: Icon(
+                                      viewModel.hidePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                    ),
+                                    onPressed: () {
+                                      viewModel.changePasswordVisibility();
+                                    },
+                                  ),
+                                );
                               },
-                              child: CircleAvatarContainer(
-                                image: AppAssets.googleIcon,
+                            ),
+                            SizedBox(height: 15.h),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pushNamed(
+                                      AppRoutes.forgetPasswordRoute);
+                                },
+                                child: Text(
+                                  "Forgot password ?",
+                                  style: AppStyles.semiBold14Primary,
+                                ),
                               ),
                             ),
-                            InkWell(
-                              onTap: () {},
-                              child: CircleAvatarContainer(
-                                image: AppAssets.appleIcon,
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () {},
-                              child: CircleAvatarContainer(
-                                image: AppAssets.facebookIcon,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 30.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Don't have an account?",
-                              style: AppStyles.regular14gray,
-                            ),
-                            TextButton(
+                            SizedBox(height: 27.h),
+                            CustomElevatedButtom(
                               onPressed: () {
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed(AppRoutes.registerRoute);
+                                viewModel.login(userProvider);
                               },
-                              child: Text(
-                                "Sign Up",
-                                style: AppStyles.semiBold14Primary,
-                              ),
+                              text: "Login",
+                              width: 200,
+                              backgroundColorElevated: AppColors.primaryColor,
+                              textStyle: AppStyles.semiBold20White,
+                              borderColor: Colors.transparent,
+                              customPadding: 19.h,
                             ),
-                            SizedBox(height: 50.h),
+                            SizedBox(height: 30.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    viewModel.signInWithGoogle(userProvider);
+                                  },
+                                  child: CircleAvatarContainer(
+                                    image: AppAssets.googleIcon,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {},
+                                  child: CircleAvatarContainer(
+                                    image: AppAssets.appleIcon,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {},
+                                  child: CircleAvatarContainer(
+                                    image: AppAssets.facebookIcon,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 30.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Don't have an account?",
+                                  style: AppStyles.regular14gray,
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacementNamed(
+                                        AppRoutes.registerRoute);
+                                  },
+                                  child: Text(
+                                    "Sign Up",
+                                    style: AppStyles.semiBold14Primary,
+                                  ),
+                                ),
+                                SizedBox(height: 50.h),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void showRoleSelectionDialog(MyUser user, UserProvider userProvider) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        String role = 'client';
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text("Select Role"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RadioListTile<String>(
-                    title: const Text("Client"),
-                    value: 'client',
-                    groupValue: role,
-                    onChanged: (value) => setState(() => role = value!),
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Owner"),
-                    value: 'owner',
-                    groupValue: role,
-                    onChanged: (value) => setState(() => role = value!),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    user.role = role;
-                    await FireBaseUtils.addUserToFirestore(user);
-                    userProvider.updateUser(user);
 
-                      Navigator.pop(context);
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        AppRoutes.homeScreenRoute,
-                            (route) => false,
-                      );
-
-                  },
-                  child: const Text("Confirm"),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> signInWithGoogle(UserProvider userProvider) async {
-    try {
-      final GoogleSignIn signIn = GoogleSignIn.instance;
-      await signIn.initialize(
-        clientId: dotenv.env['server_client_id'],
-      );
-
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
-      if (googleUser == null) {
-        return;
-      }
-
-      final googleAuth = await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
-
-      var firebaseUser = userCredential.user;
-
-      if (firebaseUser != null) {
-        var user = await FireBaseUtils.readUserFromFireStore(firebaseUser.uid);
-        if (user == null || user.role == null) {
-          MyUser newUser = MyUser(
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName ?? "",
-            email: firebaseUser.email ?? "",
-            role: null,
-            photoUrl: firebaseUser.photoURL,
-          );
-
-            showRoleSelectionDialog(newUser, userProvider);
-
-        } else {
-          // Existing user - Update photoUrl if changed
-          if (user.photoUrl != firebaseUser.photoURL) {
-            user.photoUrl = firebaseUser.photoURL;
-            await FireBaseUtils.addUserToFirestore(user);
-          }
-          userProvider.updateUser(user);
-
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRoutes.homeScreenRoute,
-                  (route) => false,
-            );
-        }
-      }
-    } catch (e) {
-        AlertDialogUtils.showMessage(
-          context: context,
-          msg: e.toString(),
-          title: "Google Sign-In Error",
-        );
-    }
-  }
 }

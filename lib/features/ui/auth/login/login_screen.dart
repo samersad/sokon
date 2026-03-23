@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/cache/provider/user_provider.dart';
+import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import '../../../../core/model/my_user.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -26,10 +26,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final LoginViewModel viewModel = LoginViewModel();
 
+
   @override
   Widget build(BuildContext context) {
-    var userProvider = Provider.of<UserProvider>(context, listen: false);
-
+    final userViewModel = context.read<UserViewModel>();
     return BlocProvider(
       create: (context) => viewModel,
       child: BlocListener<LoginViewModel, LoginStates>(
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.of(context).pushReplacementNamed(AppRoutes.homeScreenRoute);
           } else if (state is LoginNeedsRoleStates) {
             AlertDialogUtils.hideLoading(context: context);
-            viewModel.showRoleSelectionDialog(context, state.user, userProvider);
+            viewModel.showRoleSelectionDialog(context, state.user, userViewModel);
           }
         },
         child: Scaffold(
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(height: 27.h),
                             CustomElevatedButtom(
                               onPressed: () {
-                                viewModel.login(userProvider);
+                                viewModel.login(userViewModel);
                               },
                               text: "Login",
                               width: 200,
@@ -149,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 InkWell(
                                   onTap: () {
-                                    viewModel.signInWithGoogle(userProvider);
+                                    viewModel.signInWithGoogle(userViewModel);
                                   },
                                   child: CircleAvatarContainer(
                                     image: AppAssets.googleIcon,

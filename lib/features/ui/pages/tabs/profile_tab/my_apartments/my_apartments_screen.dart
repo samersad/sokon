@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
-import 'package:sokon/core/cache/provider/user_provider.dart';
+import 'package:sokon/core/cache/cubit_manger/apartment_states.dart';
+import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
+import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
@@ -18,16 +19,14 @@ class MyApartmentsScreen extends StatefulWidget {
 }
 
 class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = Provider.of<UserProvider>(context, listen: false).user;
-      if (user != null) {
-        Provider.of<ApartmentListProvider>(context, listen: false)
-            .getAllApartmentForOwner(user.id);
-      }
-    });
+    final user = context.read<UserViewModel>().user;
+    if (user != null) {
+      context.read<ApartmentViewModel>().getAllApartmentForOwner(user.id);
+    }
   }
 
   @override
@@ -48,61 +47,65 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                   style: AppStyles.medium13GrayWithOpacity),
               SizedBox(height: 20.h),
               Expanded(
-                child: Consumer<ApartmentListProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.isLoading) {
+                child: BlocBuilder<ApartmentViewModel, ApartmentState>(
+                  builder: (context, state) {
+                    if (state is ApartmentLoading) {
                       return const Center(child: CircularProgressIndicator());
-                    }
-                    if (provider.apartmentList.isEmpty) {
-                      return const Center(child: Text("No apartments found."));
-                    }
-                    return GridView.builder(
-                      itemCount: provider.apartmentList.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 10.w,
-                        mainAxisSpacing: 10.h,
-                        childAspectRatio: 0.65,
-                      ),
-                      itemBuilder: (context, index) {
-                        return Stack(
-                          children: [
-                            NearbyEstateCard(
-                              apartment: provider.apartmentList[index],
-                            ),
-                            Positioned(
-                              top: 5,
-                              right: 5,
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.white,
-                                    radius: 15,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.edit, size: 15, color: Colors.blue),
-                                      onPressed: () {
-                                        // TODO: Navigate to Edit Screen
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(width: 5.w),
-                                  CircleAvatar(
-                                    backgroundColor: Colors.white,
-                                    radius: 15,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.delete, size: 15, color: Colors.red),
-                                      onPressed: () {
-                                        // TODO: Implement Delete Logic
-                                      },
-                                    ),
-                                  ),
-                                ],
+                    } else if (state is ApartmentError) {
+                      return Center(child: Text(state.message));
+                    } else if (state is ApartmentLoaded) {
+                      if (state.apartments.isEmpty) {
+                        return const Center(child: Text("No apartments found."));
+                      }
+                      return GridView.builder(
+                        itemCount: state.apartments.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10.w,
+                          mainAxisSpacing: 10.h,
+                          childAspectRatio: 0.65,
+                        ),
+                        itemBuilder: (context, index) {
+                          return Stack(
+                            children: [
+                              NearbyEstateCard(
+                                apartment: state.apartments[index],
                               ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      radius: 15,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.edit, size: 15, color: Colors.blue),
+                                        onPressed: () {
+                                          // TODO: Navigate to Edit Screen
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(width: 5.w),
+                                    CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      radius: 15,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.delete, size: 15, color: Colors.red),
+                                        onPressed: () {
+                                          // TODO: Implement Delete Logic
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
               ),

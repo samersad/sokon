@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import '../../../../../core/cache/provider/user_provider.dart';
+import '../../../../../core/cache/cubit_manger/user_view_model.dart';
 import '../../../../../core/model/my_user.dart';
 import '../../../../../firebase_utils.dart';
 import 'login_states.dart';
@@ -23,7 +23,7 @@ class LoginViewModel extends Cubit<LoginStates> {
     emit(ChangePasswordVisibilityState());
   }
 
-  Future<void> login(UserProvider userProvider) async {
+  Future<void> login(UserViewModel userCubit) async {
     if (formKey.currentState?.validate() ?? false) {
       emit(LoginLoadingStates());
       try {
@@ -35,7 +35,7 @@ class LoginViewModel extends Cubit<LoginStates> {
         if (credential.user != null) {
           var user = await FireBaseUtils.readUserFromFireStore(credential.user!.uid);
           if (user != null) {
-            userProvider.updateUser(user);
+            userCubit.updateUser(user);
             emit(LoginSuccessStates(user));
           } else {
             emit(LoginErrorStates("User data not found in database."));
@@ -49,7 +49,7 @@ class LoginViewModel extends Cubit<LoginStates> {
     }
   }
 
-  Future<void> signInWithGoogle(UserProvider userProvider) async {
+  Future<void> signInWithGoogle(UserViewModel userCubit) async {
     try {
       emit(LoginLoadingStates());
       final GoogleSignIn signIn = GoogleSignIn.instance;
@@ -90,7 +90,7 @@ class LoginViewModel extends Cubit<LoginStates> {
             user.photoUrl = firebaseUser.photoURL;
             await FireBaseUtils.addUserToFirestore(user);
           }
-          userProvider.updateUser(user);
+          userCubit.updateUser(user);
           emit(LoginSuccessStates(user));
         }
       }
@@ -99,19 +99,19 @@ class LoginViewModel extends Cubit<LoginStates> {
     }
   }
 
-  Future<void> updateUserRole(MyUser user, String role, UserProvider userProvider) async {
+  Future<void> updateUserRole(MyUser user, String role,UserViewModel userCubit) async {
     try {
       emit(LoginLoadingStates());
       user.role = role;
       await FireBaseUtils.addUserToFirestore(user);
-      userProvider.updateUser(user);
+      userCubit.updateUser(user);
       emit(LoginSuccessStates(user));
     } catch (e) {
       emit(LoginErrorStates("Failed to save user role: ${e.toString()}"));
     }
   }
   void showRoleSelectionDialog(
-      BuildContext context, MyUser user, UserProvider userProvider) {
+      BuildContext context, MyUser user, UserViewModel userCubit) {
     String? selectedRole;
     showDialog(
       context: context,
@@ -143,7 +143,7 @@ class LoginViewModel extends Cubit<LoginStates> {
                   onPressed: () {
                     if (selectedRole != null) {
                       Navigator.pop(context);
-                      updateUserRole(user, selectedRole!, userProvider);
+                      updateUserRole(user, selectedRole!, userCubit);
                     }
                   },
                   child: const Text("Confirm"),

@@ -1,10 +1,17 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/material.dart';
 
-class LocationProvider extends ChangeNotifier {
+import 'location_states.dart';
+
+
+
+class LocationViewModel extends Cubit<LocationState> {
+  LocationViewModel() : super(LocationInitial());
+
   LatLng? userLocation;
   String? userAddress;
   LatLng? apartmentLocation;
@@ -13,21 +20,33 @@ class LocationProvider extends ChangeNotifier {
   Future<void> getCurrentLocation() async {
     PermissionStatus permission = await Permission.location.request();
     if (permission.isGranted) {
+      emit(LocationLoading());
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
       userLocation = LatLng(position.latitude, position.longitude);
       userAddress = await getAddressFromLatLng(userLocation!);
-      notifyListeners();
+      emit(LocationUpdated(
+        userLocation: userLocation,
+        userAddress: userAddress,
+        apartmentLocation: apartmentLocation,
+        apartmentAddress: apartmentAddress,
+      ));
     } else if (permission.isPermanentlyDenied) {
       openAppSettings();
     }
   }
 
   Future<void> changeApartmentLocation(LatLng latLng) async {
+    emit(LocationLoading());
     apartmentLocation = latLng;
     apartmentAddress = await getAddressFromLatLng(apartmentLocation!);
-    notifyListeners();
+    emit(LocationUpdated(
+      userLocation: userLocation,
+      userAddress: userAddress,
+      apartmentLocation: apartmentLocation,
+      apartmentAddress: apartmentAddress,
+    ));
   }
 
   Future<String> getAddressFromLatLng(LatLng latLng) async {
@@ -46,11 +65,14 @@ class LocationProvider extends ChangeNotifier {
     return "Unknown Address";
   }
 
-  // Keeping the old method name for compatibility if used elsewhere, 
-  // but redirecting to the new generic one.
   void clearApartmentLocation() {
     apartmentLocation = null;
     apartmentAddress = null;
-    notifyListeners();
+    emit(LocationUpdated(
+      userLocation: userLocation,
+      userAddress: userAddress,
+      apartmentLocation: apartmentLocation,
+      apartmentAddress: apartmentAddress,
+    ));
   }
 }

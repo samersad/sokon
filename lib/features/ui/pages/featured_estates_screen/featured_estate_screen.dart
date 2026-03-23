@@ -1,49 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
+import 'package:sokon/features/ui/pages/featured_estates_screen/cubit/featured_estates_states.dart';
+import 'package:sokon/features/ui/pages/featured_estates_screen/cubit/featured_estates_view_model.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 
 import '../../../../core/utils/app_styles.dart';
 import '../../widgets/back_container.dart';
 import '../../widgets/featured_estates_card.dart';
 
-class FeaturedEstateScreen extends StatelessWidget {
+class FeaturedEstateScreen extends StatefulWidget {
   const FeaturedEstateScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    var apartmentProvider = Provider.of<ApartmentListProvider>(context);
+  State<FeaturedEstateScreen> createState() => _FeaturedEstateScreenState();
+}
 
+class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<FeaturedEstateViewModel>().getFeaturedEstates();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.whiteColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 20.w,vertical: 15.h),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BackContainer(),
-                SizedBox(height: 20.h,),
-                Text("Featured Estates",
-                    style: AppStyles.bold24Primary),
-                SizedBox(height: 5.h,),
+                const BackContainer(),
+                SizedBox(height: 20.h),
+                Text("Featured Estates", style: AppStyles.bold24Primary),
+                SizedBox(height: 5.h),
                 Text("Find the best recommendations place to live",
                     style: AppStyles.medium13GrayWithOpacity),
-                SizedBox(height: 10.h,),
-                SizedBox(
-                  height: 859.h,
-                  child: apartmentProvider.apartmentList.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : ListView.separated(
-                      itemBuilder:(context, index) {
-                        return FeaturedEstatesCard(apartment: apartmentProvider.apartmentList[index],);
+                SizedBox(height: 10.h),
+                BlocBuilder<FeaturedEstateViewModel, FeaturedEstateStates>(
+                  builder: (context, state) {
+                    if (state is FeaturedEstateLoading) {
+                      return SizedBox(
+                        height: 400.h,
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (state is FeaturedEstateError) {
+                      return Center(child: Text(state.message));
+                    } else if (state is FeaturedEstateSuccess) {
+                      if (state.apartments.isEmpty) {
+                        return const Center(child: Text("No featured apartments found"));
                       }
-                      , separatorBuilder: (context, index) => SizedBox(height: 10.h,)
-                      , itemCount: apartmentProvider.apartmentList.length)
+                      return SizedBox(
+                        height: 859.h,
+                        child: ListView.separated(
+                          itemCount: state.apartments.length,
+                          separatorBuilder: (context, index) =>
+                              SizedBox(height: 10.h),
+                          itemBuilder: (context, index) {
+                            return FeaturedEstatesCard(
+                              apartment: state.apartments[index],
+                            );
+                          },
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 )
-
               ],
             ),
           ),

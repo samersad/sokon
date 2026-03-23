@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/cubit_manger/location_states.dart';
+import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 
-import '../../../core/cache/provider/location_provider.dart';
 import '../../../core/utils/app_colors.dart';
 import '../../../core/utils/app_styles.dart';
 
@@ -18,70 +19,77 @@ class _LocationPickerState extends State<LocationPicker> {
   @override
   void initState() {
     super.initState();
+    // Get the global location if needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LocationProvider>(context,listen: false).getCurrentLocation();
-
+      context.read<LocationViewModel>().getCurrentLocation();
     });
   }
+
   @override
   Widget build(BuildContext context) {
+    final locationViewModel = context.read<LocationViewModel>();
 
     return Scaffold(
-      body:  Stack(
+      body: Stack(
         children: [
-          Consumer<LocationProvider>(
-            builder: (context, locationProvider, child) {
-
+          BlocBuilder<LocationViewModel, LocationState>(
+            builder: (context, state) {
               LatLng initialTarget;
-              if (locationProvider.apartmentLocation != null) {
-                initialTarget = locationProvider.apartmentLocation!;
-              } else if (locationProvider.userLocation != null) {
-                initialTarget = locationProvider.userLocation!;
+              if (locationViewModel.apartmentLocation != null) {
+                initialTarget = locationViewModel.apartmentLocation!;
+              } else if (locationViewModel.userLocation != null) {
+                initialTarget = locationViewModel.userLocation!;
               } else {
-                initialTarget = const LatLng( 27.185472212549193, 31.18254273654902);
+                initialTarget = const LatLng(27.185472212549193, 31.18254273654902);
               }
-              return
-                GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: initialTarget,
-                    zoom: 15,
+
+              return GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: initialTarget,
+                  zoom: 15,
+                ),
+                zoomControlsEnabled: false,
+                mapType: MapType.normal,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                markers: locationViewModel.apartmentLocation != null
+                    ? {
+                  Marker(
+                    markerId: const MarkerId("Selected Location"),
+                    position: locationViewModel.apartmentLocation!,
                   ),
-                  zoomControlsEnabled: false,
-                  mapType: MapType.normal,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  markers: locationProvider.apartmentLocation != null
-                      ? {
-                    Marker(
-                      markerId: const MarkerId("Selected Location"),
-                      position: locationProvider.apartmentLocation!,
-                    ),
-                  }
-                      : {},
-                  onTap: (LatLng latLng) {
-                    locationProvider.changeApartmentLocation(latLng);
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      Navigator.pop(context);
-                    });
-                  },
-                );
+                }
+                    : {},
+                onTap: (LatLng latLng) {
+                  // 3. This now updates the global state that AddApartment is watching
+                  locationViewModel.changeApartmentLocation(latLng);
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    Navigator.pop(context);
+                  });
+                },
+              );
             },
           ),
           Positioned(
             right: 0,
             left: 0,
-              bottom: 0,
-              child: Container(
-                padding: EdgeInsets.all(10),
-                width: double.infinity,
-                height: 70,
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              width: double.infinity,
+              height: 70,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+              ),
+              child: Center(
+                child: Text(
+                  "Tap On Location To Select ",
+                  style: AppStyles.bold20blackIner,
+                ),
+              ),
             ),
-            child: Center(child: Text("Tap On Location To Select ",style: AppStyles.bold20blackIner,)),
-          )),
-
-    ],
+          ),
+        ],
       ),
     );
   }

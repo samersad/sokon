@@ -1,22 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-import 'package:sokon/core/cache/provider/user_provider.dart';
+import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/message_states.dart';
+import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/message_view_model.dart';
 import 'package:sokon/features/ui/widgets/search_widget.dart';
 
 import '../../../../../core/utils/app_assets.dart';
 import '../../../../../core/utils/app_colors.dart';
 import '../../../../../core/utils/app_styles.dart';
 
-class MessageTab extends StatelessWidget {
+class MessageTab extends StatefulWidget {
   const MessageTab({super.key});
 
   @override
+  State<MessageTab> createState() => _MessageTabState();
+}
+
+class _MessageTabState extends State<MessageTab> {
+  @override
+  void initState() {
+    super.initState();
+    final user = context.read<UserViewModel>().user;
+    if (user != null) {
+      context.read<MessageViewModel>().getChats(user.id);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final userId = userProvider.user?.id ?? '';
+    final userId = context.read<UserViewModel>().user?.id ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -31,55 +46,53 @@ class MessageTab extends StatelessWidget {
               SearchWidget(hintText: "Search"),
               SizedBox(height: 10.h),
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('chats')
-                      .where('users', arrayContains: userId)
-                      .orderBy('timestamp', descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                child: BlocBuilder<MessageViewModel, MessageStates>(
+                  builder: (context, state) {
+                    if (state is MessageLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (snapshot.hasError) {
-                      return Center(child: Text("Error loading chats: ${snapshot.error}"));
+                    if (state is MessageError) {
+                      return Center(child: Text("Error loading chats: ${state.message}"));
                     }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text("No messages yet"));
-                    }
+                    if (state is MessageLoaded) {
+                      if (state.chats.isEmpty) {
+                        return const Center(child: Text("No messages yet"));
+                      }
 
-                    var chats = snapshot.data!.docs;
+                      var chats = state.chats;
 
-                    return ListView.separated(
-                      itemCount: chats.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 10.h),
-                      itemBuilder: (context, index) {
-                        var chatData = chats[index].data() as Map<String, dynamic>;
-                        List users = chatData['users'] ?? [];
-                        String receiverId = users.firstWhere((id) => id != userId, orElse: () => '');
-                        
-                        return FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance.collection('users').doc(receiverId).get(),
-                          builder: (context, userSnapshot) {
-                            String displayName = "User";
-                            String? photoUrl;
-                            
-                            if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                              var data = userSnapshot.data!.data() as Map<String, dynamic>?;
-                              displayName = data?['name'] ?? "User";
-                              photoUrl = data?['photoUrl'];
-                            } else {
-                               Map<String, dynamic>? displayNames = chatData['displayNames'] as Map<String, dynamic>?;
-                               Map<String, dynamic>? displayPhotos = chatData['displayPhotos'] as Map<String, dynamic>?;
-                               displayName = displayNames?[receiverId] ?? (userSnapshot.connectionState == ConnectionState.waiting ? "Loading..." : "User");
-                               photoUrl = displayPhotos?[receiverId];
+                      return ListView.separated(
+                        itemCount: chats.length,
+                        separatorBuilder: (context, index) => SizedBox(height: 10.h),
+                        itemBuilder: (context, index) {
+                          var chatData = chats[index].data() as Map<String, dynamic>;
+                          List users = chatData['users'] ?? [];
+                          String receiverId = users.firstWhere((id) => id != userId, orElse: () => '');
+                          
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance.collection('users').doc(receiverId).get(),
+                            builder: (context, userSnapshot) {
+                              String displayName = "User";
+                              String? photoUrl;
+                              
+                              if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                                var data = userSnapshot.data!.data() as Map<String, dynamic>?;
+                                displayName = data?['name'] ?? "User";
+                                photoUrl = data?['photoUrl'];
+                              } else {
+                                 Map<String, dynamic>? displayNames = chatData['displayNames'] as Map<String, dynamic>?;
+                                 Map<String, dynamic>? displayPhotos = chatData['displayPhotos'] as Map<String, dynamic>?;
+                                 displayName = displayNames?[receiverId] ?? (userSnapshot.connectionState == ConnectionState.waiting ? "Loading..." : "User");
+                                 photoUrl = displayPhotos?[receiverId];
+                              }
+                              
+                              return buildChatItem(context, receiverId, displayName, chatData['lastMessage'] ?? "", photoUrl);
                             }
-                            
-                            return buildChatItem(context, receiverId, displayName, chatData['lastMessage'] ?? "", photoUrl);
-                          }
-                        );
-                      },
-                    );
+                          );
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
               ),

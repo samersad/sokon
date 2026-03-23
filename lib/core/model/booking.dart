@@ -1,0 +1,69 @@
+class Booking {
+  static const String collectionName = "bookings";
+
+  String? id;
+  String? apartmentId;
+  String? apartmentName;
+  String? apartmentAddress;
+  String? apartmentImage;
+  String? clientId;
+  String? clientName;
+  String? ownerId;
+  String? ownerName;
+  DateTime? startDate;
+  DateTime? endDate;
+  double? totalPrice;
+  String? status; // 'pending', 'confirmed', 'cancelled'
+
+  Booking({
+    this.id,
+    this.apartmentId,
+    this.apartmentName,
+    this.apartmentAddress,
+    this.apartmentImage,
+    this.clientId,
+    this.clientName,
+    this.ownerId,
+    this.ownerName,
+    this.startDate,
+    this.endDate,
+    this.totalPrice,
+    this.status = 'pending',
+  });
+
+  factory Booking.fromFireStore(Map<String, dynamic> data) {
+    return Booking(
+      id: data["id"],
+      apartmentId: data["apartmentId"],
+      apartmentName: data["apartmentName"],
+      apartmentAddress: data["apartmentAddress"],
+      apartmentImage: data["apartmentImage"],
+      clientId: data["clientId"],
+      clientName: data["clientName"],
+      ownerId: data["ownerId"],
+      ownerName: data["ownerName"],
+      startDate: data["startDate"] != null ? DateTime.parse(data["startDate"]) : null,
+      endDate: data["endDate"] != null ? DateTime.parse(data["endDate"]) : null,
+      totalPrice: (data["totalPrice"] as num?)?.toDouble(),
+      status: data["status"],
+    );
+  }
+
+  Map<String, dynamic> toFireStore() {
+    return {
+      'id': id,
+      'apartmentId': apartmentId,
+      'apartmentName': apartmentName,
+      'apartmentAddress': apartmentAddress,
+      'apartmentImage': apartmentImage,
+      'clientId': clientId,
+      'clientName': clientName,
+      'ownerId': ownerId,
+      'ownerName': ownerName,
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
+      'totalPrice': totalPrice,
+      'status': status,
+    };
+  }
+}

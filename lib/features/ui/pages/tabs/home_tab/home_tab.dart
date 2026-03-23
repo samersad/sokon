@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
-import 'package:sokon/core/cache/provider/apartment_list_provider.dart';
+import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_states.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart';
 
-import '../../../../../core/cache/provider/location_provider.dart';
 import '../../../../../core/utils/app_styles.dart';
 import '../../../widgets/featured_estates_card.dart';
 import '../../../widgets/nearby_estate_card.dart';
@@ -24,22 +25,15 @@ class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LocationProvider>(context, listen: false)
-          .getCurrentLocation();
-      Provider.of<ApartmentListProvider>(context, listen: false).getAllApartments();
-    });
+    context.read<HomeTabViewModel>().getUserLocationData();
+    context.read<HomeTabViewModel>().getFeaturedEstateData();
+    context.read<HomeTabViewModel>().getNearbyEstateData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final locationProvider = Provider.of<LocationProvider>(context);
-    final apartmentProvider = Provider.of<ApartmentListProvider>(context);
-
-    final LatLng initialTarget =
-        locationProvider.apartmentLocation ??
-            locationProvider.userLocation ??
-            const LatLng(30.0444, 31.2357);
+    final userViewModel = context.read<UserViewModel>();
+    final user = userViewModel.user;
 
     return Scaffold(
       body: SafeArea(
@@ -48,7 +42,6 @@ class _HomeTabState extends State<HomeTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ///  Top Bar
               Row(
                 children: [
                   Expanded(
@@ -67,11 +60,20 @@ class _HomeTabState extends State<HomeTab> {
                             Image.asset(AppAssets.locationIcon, width: 16.w),
                             SizedBox(width: 6.w),
                             Expanded(
-                              child: Text(
-                                "Jakarta, Indonesia",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppStyles.medium10blueDarkColor,
+                              child: BlocBuilder<HomeTabViewModel, HomeTabStates>(
+                                buildWhen: (previous, current) => current is HomeTabUserAddressLoaded || current is HomeTabUserLocationLoaded,
+                                builder: (context, state) {
+                                  String address = "Select Location";
+                                  if (state is HomeTabUserAddressLoaded) {
+                                    address = state.address ?? "Select Location";
+                                  }
+                                  return Text(
+                                    address,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppStyles.medium10blueDarkColor,
+                                  );
+                                },
                               ),
                             ),
                             Image.asset(AppAssets.downIcon, width: 14.w),
@@ -80,10 +82,11 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                     ),
                   ),
-
                   SizedBox(width: 10.w),
-
-                  Image.asset(AppAssets.chatBot, width: 24.w),
+                  InkWell(
+                    onTap: () {},
+                    child: Image.asset(AppAssets.chatBot, width: 24.w),
+                  ),
                   SizedBox(width: 10.w),
                   InkWell(
                     onTap: () {
@@ -91,88 +94,110 @@ class _HomeTabState extends State<HomeTab> {
                     },
                     child: Image.asset(AppAssets.notification, width: 24.w),
                   ),
+                  SizedBox(width: 10.w),
+                  InkWell(
+                    onTap: () {},
+                    child: CircleAvatar(
+                      radius: 18.r,
+                      backgroundColor: Colors.grey.shade200,
+                      backgroundImage: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                          ? NetworkImage(user.photoUrl!)
+                          : AssetImage(AppAssets.profileImage) as ImageProvider,
+                    ),
+                  ),
                 ],
               ),
 
               SizedBox(height: 20.h),
 
-              ///  Search
-              SearchWidget(hintText: "Search House, Apartment, etc",),
+              const SearchWidget(
+                hintText: "Search House, Apartment, etc",
+              ),
 
               SizedBox(height: 20.h),
-
-              /// Map
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
                   height: 170.h,
-                  child: GoogleMap(
-                    initialCameraPosition:
-                    CameraPosition(target: initialTarget, zoom: 15),
-                    zoomControlsEnabled: true,
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
-                    scrollGesturesEnabled: true,
-                    markers: locationProvider.apartmentLocation != null
-                        ? {
-                      Marker(
-                        markerId:
-                        const MarkerId("Selected Location"),
-                        position:
-                        locationProvider.apartmentLocation!,
-                      )
-                    }
-                        : {},
-                    onTap: locationProvider.changeEventLocation,
+                  child: BlocBuilder<HomeTabViewModel, HomeTabStates>(
+                    buildWhen: (previous, current) => current is HomeTabUserLocationLoaded,
+                    builder: (context, state) {
+                      LatLng? location;
+                      if (state is HomeTabUserLocationLoaded) {
+                        location = state.userLocation;
+                      }
+                      return GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                            target: location ?? const LatLng(30.0444, 31.2357),
+                            zoom: 15),
+                        zoomControlsEnabled: true,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                        scrollGesturesEnabled: true,
+                        markers: location != null
+                            ? {
+                                Marker(
+                                  markerId: const MarkerId("Current Location"),
+                                  position: location,
+                                )
+                              }
+                            : {},
+                      );
+                    },
                   ),
                 ),
               ),
 
               SizedBox(height: 20.h),
-
-              ///  Featured title
               Row(
                 children: [
-                  Text("Featured Estates",
-                      style: AppStyles.bold18PrimaryColor),
+                  Text("Featured Estates", style: AppStyles.bold18PrimaryColor),
                   const Spacer(),
-                  TextButton(onPressed: (){
-                    Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
-                  }, child: Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),)
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
+                    },
+                    child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
+                  )
                 ],
               ),
 
               SizedBox(height: 10.h),
 
-              ///  Featured list
               SizedBox(
                 height: 185.h,
-                child: apartmentProvider.apartmentList.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: apartmentProvider.apartmentList.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, index) {
-                    return FeaturedEstatesCard(apartment: apartmentProvider.apartmentList[index]);
+                child: BlocBuilder<HomeTabViewModel, HomeTabStates>(
+                  buildWhen: (previous, current) => current is HomeTabFeaturedEstateLoaded || current is HomeTabLoading,
+                  builder: (context, state) {
+                    if (state is HomeTabLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is HomeTabFeaturedEstateLoaded) {
+                      return ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: state.allApartments.length,
+                        separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                        itemBuilder: (_, index) {
+                          return FeaturedEstatesCard(apartment: state.allApartments[index]);
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
               ),
 
               SizedBox(height: 20.h),
-
-              ///  Top location
               Row(
                 children: [
-                  Text("Top Location",
-                      style: AppStyles.bold18PrimaryColor),
+                  Text("Top Location", style: AppStyles.bold18PrimaryColor),
                   const Spacer(),
-                  TextButton(onPressed: (){
-                    Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
-                  }, child: Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),)
-
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
+                    },
+                    child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
+                  )
                 ],
               ),
 
@@ -194,8 +219,7 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                       child: Row(
                         children: [
-                          Image.asset(AppAssets.imageS,
-                              width: 28.w),
+                          Image.asset(AppAssets.imageS, width: 28.w),
                           SizedBox(width: 6.w),
                           Expanded(
                             child: Text(
@@ -212,35 +236,43 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
               SizedBox(height: 10.h),
-
               Row(
                 children: [
-                  Text("Nearby Estate",
-                      style: AppStyles.bold18PrimaryColor),
+                  Text("Nearby Estate", style: AppStyles.bold18PrimaryColor),
                   const Spacer(),
-                  TextButton(onPressed: (){
-                    Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
-                  }, child: Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),)
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
+                    },
+                    child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
+                  )
                 ],
               ),
 
               SizedBox(height: 10.h),
               SizedBox(
                 height: 285.h,
-                child: apartmentProvider.apartmentList.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: apartmentProvider.apartmentList.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, index) {
-                    return NearbyEstateCard(apartment: apartmentProvider.apartmentList[index]);
+                child: BlocBuilder<HomeTabViewModel, HomeTabStates>(
+                  buildWhen: (previous, current) => current is HomeTabNearbyEstateLoaded || current is HomeTabLoading,
+                  builder: (context, state) {
+                     if (state is HomeTabLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is HomeTabNearbyEstateLoaded) {
+                      return ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: state.allApartments.length,
+                        separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                        itemBuilder: (_, index) {
+                          return NearbyEstateCard(apartment: state.allApartments[index]);
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
               ),
               SizedBox(height: 60.h),
-
             ],
           ),
         ),

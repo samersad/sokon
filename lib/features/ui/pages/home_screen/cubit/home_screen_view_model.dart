@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import '../../../../../core/utils/app_assets.dart';
 import '../../tabs/home_tab/home_tab.dart';
 import '../../tabs/message_tab/message_tab.dart';
@@ -7,6 +8,7 @@ import '../../tabs/profile_tab/profile_tab.dart';
 import '../../tabs/search_tab/search_tab.dart';
 import 'home_screen_states.dart';
 
+@injectable
 class HomeScreenViewModel extends Cubit<HomeScreenStates> {
   HomeScreenViewModel() : super(HomeScreenInitial());
   final List<Widget> tabs = [

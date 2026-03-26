@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import '../../../../core/di/di.dart';
 import '../../../../core/model/my_user.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -24,7 +25,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final LoginViewModel viewModel = LoginViewModel();
+  final LoginViewModel viewModel = getIt<LoginViewModel>();
 
 
   @override

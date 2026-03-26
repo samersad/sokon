@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/model/booking.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
@@ -21,9 +22,9 @@ class MyBookingsScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (context) {
-        var viewModel = MyBookingsViewModel();
+        final viewModel = getIt<MyBookingsViewModel>();
         if (user != null) {
-          viewModel.getMyBookings(user.id!);
+          viewModel.getMyBookings(user.id);
         }
         return viewModel;
       },

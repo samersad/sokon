@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/model/booking.dart';
-import 'package:sokon/firebase_utils.dart';
+import '../../../../../data/repository/booking/repository/booking_repository.dart';
 import 'booking_states.dart';
 
+@injectable
 class BookingViewModel extends Cubit<BookingStates> {
   final UserViewModel userViewModel;
-  BookingViewModel(this.userViewModel) : super(BookingInitial());
+  final BookingRepository bookingRepository;
+
+  BookingViewModel(this.userViewModel, this.bookingRepository)
+      : super(BookingInitial());
 
   DateTimeRange? selectedDate;
   String? cardNumber;
@@ -69,7 +74,7 @@ class BookingViewModel extends Cubit<BookingStates> {
     );
 
     try {
-      await FireBaseUtils.addBookingToFirestore(booking);
+      await bookingRepository.addBooking(booking);
       emit(BookingSuccess());
     } catch (e) {
       emit(BookingError(e.toString()));

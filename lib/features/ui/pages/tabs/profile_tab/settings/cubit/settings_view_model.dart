@@ -1,15 +1,18 @@
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../../../../../../cloudinary_service.dart';
 import '../../../../../../../core/cache/cubit_manger/user_view_model.dart';
-import '../../../../../../../firebase_utils.dart';
+import '../../../../../../../data/repository/auth/repository/auth_repository.dart';
 import 'settings_states.dart';
 
+@injectable
 class SettingsViewModel extends Cubit<SettingsState> {
   final UserViewModel userViewModel;
-  SettingsViewModel(this.userViewModel) : super(SettingsInitial());
+  final AuthRepository authRepository;
+
+  SettingsViewModel(this.userViewModel, this.authRepository) : super(SettingsInitial());
 
   File? profileImage;
 
@@ -28,7 +31,7 @@ class SettingsViewModel extends Cubit<SettingsState> {
     if (source == ImageSource.camera) {
       await Permission.camera.request();
     } else {
-      await Permission.storage.request();
+      await Permission.photos.request();
     }
   }
 
@@ -38,17 +41,9 @@ class SettingsViewModel extends Cubit<SettingsState> {
 
     emit(SettingsLoading());
     try {
-      String? photoUrl = user.photoUrl;
-      if (profileImage != null) {
-        photoUrl = await CloudinaryService.uploadImage(profileImage!);
-      }
-
-      user.name = name;
-      user.photoUrl = photoUrl;
-
-      await FireBaseUtils.addUserToFirestore(user);
-      userViewModel.updateUser(user);
-      emit(SettingsSuccess(user));
+      final updatedUser = await authRepository.updateProfile(user, name, profileImage);
+      userViewModel.updateUser(updatedUser);
+      emit(SettingsSuccess(updatedUser));
     } catch (e) {
       emit(SettingsError(e.toString()));
     }

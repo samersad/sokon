@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sokon/core/di/di.dart'; // أضفنا الـ DI
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/features/ui/pages/booking_screen/cubit/booking_states.dart';
@@ -21,6 +22,7 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  final BookingViewModel viewModel = getIt<BookingViewModel>();
   late Apartment apartment;
   bool isInitialized = false;
 
@@ -35,218 +37,219 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<BookingViewModel>();
-
-    return Scaffold(
-      appBar: AppBar(
+    return BlocProvider(
+      create: (context) => viewModel,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.whiteColor,
+          elevation: 0,
+          title: Text("Booking", style: AppStyles.bold20blackIner),
+          centerTitle: true,
+        ),
         backgroundColor: AppColors.whiteColor,
-        elevation: 0,
-        title: Text("Booking", style: AppStyles.bold20blackIner),
-        centerTitle: true,
-      ),
-      backgroundColor: AppColors.whiteColor,
-      body: SafeArea(
-        child: BlocListener<BookingViewModel, BookingStates>(
-          listener: (context, state) {
-            if (state is BookingLoading) {
-              AlertDialogUtils.showLoading(context: context, msg: "Processing...");
-            } else if (state is BookingError) {
-              AlertDialogUtils.hideLoading(context: context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            } else if (state is BookingSuccess) {
-              AlertDialogUtils.hideLoading(context: context);
-              showSuccessDialog(context);
-            }
-          },
-          child: BlocBuilder<BookingViewModel, BookingStates>(
-            builder: (context, state) {
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        constraints: BoxConstraints(minHeight: 110.h),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.sp),
-                          border: Border.all(color: AppColors.grayColor, width: 2),
+        body: SafeArea(
+          child: BlocListener<BookingViewModel, BookingStates>(
+            listener: (context, state) {
+              if (state is BookingLoading) {
+                AlertDialogUtils.showLoading(context: context, msg: "Processing...");
+              } else if (state is BookingError) {
+                AlertDialogUtils.hideLoading(context: context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              } else if (state is BookingSuccess) {
+                AlertDialogUtils.hideLoading(context: context);
+                showSuccessDialog(context);
+              }
+            },
+            child: BlocBuilder<BookingViewModel, BookingStates>(
+              builder: (context, state) {
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          constraints: BoxConstraints(minHeight: 110.h),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12.sp),
+                            border: Border.all(color: AppColors.grayColor, width: 2),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(10.w),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  child: (apartment.images != null &&
+                                      apartment.images!.isNotEmpty)
+                                      ? Image.network(
+                                    apartment.images![0],
+                                    width: 80.w,
+                                    height: 80.h,
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Image.asset(AppAssets.imageS,
+                                      width: 80.w, height: 80.h),
+                                ),
+                                SizedBox(width: 10.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AutoSizeText(
+                                        apartment.name ?? "Apartment",
+                                        style: AppStyles.semiBold14DarkPrimary,
+                                        maxLines: 2,
+                                      ),
+                                      SizedBox(height: 5.h),
+                                      Row(
+                                        children: [
+                                          Image.asset(AppAssets.locationIcon,
+                                              width: 14.w),
+                                          SizedBox(width: 4.w),
+                                          Expanded(
+                                            child: AutoSizeText(
+                                              apartment.address ?? "No Address",
+                                              style: AppStyles.medium12gray,
+                                              maxLines: 2,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 5.h),
+                                      Row(
+                                        children: [
+                                          Text("${apartment.price ?? 0}/month",
+                                              style: AppStyles.regular14black),
+                                          const Spacer(),
+                                          Image.asset(AppAssets.star, width: 14.w),
+                                          SizedBox(width: 4.w),
+                                          Text("4.8", style: AppStyles.regular14black),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.all(10.w),
+
+                        SizedBox(height: 20.h),
+
+                        Text("Period", style: AppStyles.bold20black),
+
+                        InkWell(
+                          onTap: () async {
+                            final picked = await showDateRangePicker(
+                              context: context,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(2100),
+                            );
+                            viewModel.selectDateRange(picked);
+                          },
                           child: Row(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8.r),
-                                child: (apartment.images != null &&
-                                        apartment.images!.isNotEmpty)
-                                    ? Image.network(
-                                        apartment.images![0],
-                                        width: 80.w,
-                                        height: 80.h,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.asset(AppAssets.imageS,
-                                        width: 80.w, height: 80.h),
-                              ),
+                              Image.asset(AppAssets.dateIcon),
                               SizedBox(width: 10.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    AutoSizeText(
-                                      apartment.name ?? "Apartment",
-                                      style: AppStyles.semiBold14DarkPrimary,
-                                      maxLines: 2,
-                                    ),
-                                    SizedBox(height: 5.h),
-                                    Row(
-                                      children: [
-                                        Image.asset(AppAssets.locationIcon,
-                                            width: 14.w),
-                                        SizedBox(width: 4.w),
-                                        Expanded(
-                                          child: AutoSizeText(
-                                            apartment.address ?? "No Address",
-                                            style: AppStyles.medium12gray,
-                                            maxLines: 2,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 5.h),
-                                    Row(
-                                      children: [
-                                        Text("${apartment.price ?? 0}/month",
-                                            style: AppStyles.regular14black),
-                                        const Spacer(),
-                                        Image.asset(AppAssets.star, width: 14.w),
-                                        SizedBox(width: 4.w),
-                                        Text("4.8", style: AppStyles.regular14black),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              )
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Date", style: AppStyles.regular14gray),
+                                  Text(viewModel.getFormattedDate(),
+                                      style: AppStyles.medium16black),
+                                ],
+                              ),
                             ],
                           ),
                         ),
-                      ),
 
-                      SizedBox(height: 20.h),
+                        SizedBox(height: 10.h),
+                        Divider(color: AppColors.grayColor),
 
-                      Text("Period", style: AppStyles.bold20black),
+                        SizedBox(height: 10.h),
 
-                      InkWell(
-                        onTap: () async {
-                          final picked = await showDateRangePicker(
-                            context: context,
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(2100),
-                          );
-                          viewModel.selectDateRange(picked);
-                        },
-                        child: Row(
+                        Text(
+                          "Make sure to check your date before making any sort of payments",
+                          style: AppStyles.regular14gray,
+                        ),
+
+                        SizedBox(height: 20.h),
+
+                        Text("Payments", style: AppStyles.bold20black),
+
+                        Row(
                           children: [
-                            Image.asset(AppAssets.dateIcon),
+                            if (viewModel.cardNumber != null)
+                              Image.asset(AppAssets.mastercardIcon),
                             SizedBox(width: 10.w),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Date", style: AppStyles.regular14gray),
-                                Text(viewModel.getFormattedDate(),
-                                    style: AppStyles.medium16black),
-                              ],
+                            Expanded(
+                              child: Text(
+                                viewModel.cardNumber == null
+                                    ? "No Card Added"
+                                    : "**** **** **** ${viewModel.cardNumber!.substring(viewModel.cardNumber!.length - 4)}",
+                                style: AppStyles.bold20black,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                final result = await Navigator.of(context).pushNamed(
+                                  AppRoutes.addCardRoute,
+                                );
+                                if (result != null && result is Map<String, dynamic>) {
+                                  viewModel.updateCardData(result);
+                                }
+                              },
+                              child: Text(
+                                viewModel.cardNumber == null ? "Add Card" : "Edit",
+                                style: AppStyles.bold20black,
+                              ),
                             ),
                           ],
                         ),
-                      ),
 
-                      SizedBox(height: 10.h),
-                      Divider(color: AppColors.grayColor),
+                        Divider(color: AppColors.grayColor),
 
-                      SizedBox(height: 10.h),
-
-                      Text(
-                        "Make sure to check your date before making any sort of payments",
-                        style: AppStyles.regular14gray,
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      Text("Payments", style: AppStyles.bold20black),
-
-                      Row(
-                        children: [
-                          if (viewModel.cardNumber != null)
-                            Image.asset(AppAssets.mastercardIcon),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Text(
-                              viewModel.cardNumber == null
-                                  ? "No Card Added"
-                                  : "**** **** **** ${viewModel.cardNumber!.substring(viewModel.cardNumber!.length - 4)}",
-                              style: AppStyles.bold20black,
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            "Enter a Voucher",
+                            style: AppStyles.bold20black.copyWith(
+                              decoration: TextDecoration.underline,
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              final result = await Navigator.of(context).pushNamed(
-                                AppRoutes.addCardRoute,
-                              );
-                              if (result != null && result is Map<String, dynamic>) {
-                                viewModel.updateCardData(result);
-                              }
-                            },
-                            child: Text(
-                              viewModel.cardNumber == null ? "Add Card" : "Edit",
-                              style: AppStyles.bold20black,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      Divider(color: AppColors.grayColor),
-
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          "Enter a Voucher",
-                          style: AppStyles.bold20black.copyWith(
-                            decoration: TextDecoration.underline,
                           ),
                         ),
-                      ),
 
-                      SizedBox(height: 20.h),
+                        SizedBox(height: 20.h),
 
-                      Text("Price Details", style: AppStyles.bold20black),
+                        Text("Price Details", style: AppStyles.bold20black),
 
-                      buildRow("Period time",
-                          viewModel.selectedDate == null ? "-" : "${viewModel.selectedDate!.duration.inDays} Days"),
-                      buildRow("Monthly payment", "${apartment.price ?? 0} EG"),
-                      buildRow("Tax", "10 EG"),
-                      buildRow("Total", "${(apartment.price ?? 0) + 10} EG",
-                          isTotal: true),
+                        buildRow("Period time",
+                            viewModel.selectedDate == null ? "-" : "${viewModel.selectedDate!.duration.inDays} Days"),
+                        buildRow("Monthly payment", "${apartment.price ?? 0} EG"),
+                        buildRow("Tax", "10 EG"),
+                        buildRow("Total", "${(apartment.price ?? 0) + 10} EG",
+                            isTotal: true),
 
-                      SizedBox(height: 40.h),
+                        SizedBox(height: 40.h),
 
-                      CustomElevatedButtom(
-                        onPressed: () => viewModel.confirmBooking(apartment),
-                        text: "Confirm and Pay",
-                        customPadding: 20,
-                        borderRadius: 10.r,
-                        backgroundColorElevated: AppColors.darkBlueColor,
-                        textStyle: AppStyles.semiBold20White,
-                      ),
-                    ],
+                        CustomElevatedButtom(
+                          onPressed: () => viewModel.confirmBooking(apartment),
+                          text: "Confirm and Pay",
+                          customPadding: 20,
+                          borderRadius: 10.r,
+                          backgroundColorElevated: AppColors.darkBlueColor,
+                          textStyle: AppStyles.semiBold20White,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

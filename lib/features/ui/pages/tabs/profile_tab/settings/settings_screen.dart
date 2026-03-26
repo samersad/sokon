@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/cubit/settings_states.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/cubit/settings_view_model.dart';
@@ -23,6 +24,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController nameController;
   late TextEditingController emailController;
+  final SettingsViewModel viewModel = getIt<SettingsViewModel>();
 
   @override
   void initState() {
@@ -42,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SettingsViewModel(context.read<UserViewModel>()),
+      create: (context) => viewModel,
       child: BlocConsumer<SettingsViewModel, SettingsState>(
         listener: (context, state) {
           if (state is SettingsSuccess) {
@@ -57,7 +59,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
         },
         builder: (context, state) {
-          final viewModel = context.read<SettingsViewModel>();
           final user = context.read<UserViewModel>().user;
 
           return Scaffold(

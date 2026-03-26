@@ -12,8 +12,24 @@ class ApartmentRemoteDataImpl implements ApartmentRemoteDataSource {
   }
 
   @override
+  Future<void> updateApartment(Apartment apartment, String uId) async {
+    return FireBaseUtils.updateApartmentInFirestore(apartment, uId);
+  }
+
+  @override
+  Future<void> deleteApartment(String apartmentId, String uId) async {
+    return FireBaseUtils.deleteApartmentFromFirestore(apartmentId, uId);
+  }
+
+  @override
   Future<List<Apartment>> getAllApartments() async {
     var querySnapshot = await FireBaseUtils.getAllApartmentsCollections().get();
+    return querySnapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  @override
+  Future<List<Apartment>> getApartmentsByOwner(String uId) async {
+    var querySnapshot = await FireBaseUtils.getApartmentCollections(uId).get();
     return querySnapshot.docs.map((doc) => doc.data()).toList();
   }
 }

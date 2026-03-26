@@ -13,74 +13,91 @@ import '../../../../widgets/back_container.dart';
 import 'cubit/my_bookings_states.dart';
 import 'cubit/my_bookings_view_model.dart';
 
-class MyBookingsScreen extends StatelessWidget {
+class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final user = context.watch<UserViewModel>().user;
+  State<MyBookingsScreen> createState() => _MyBookingsScreenState();
+}
 
-    return BlocProvider(
-      create: (context) {
-        final viewModel = getIt<MyBookingsViewModel>();
-        if (user != null) {
-          viewModel.getMyBookings(user.id);
-        }
-        return viewModel;
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.whiteColor,
-        body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const BackContainer(),
-                SizedBox(height: 20.h),
-                Text("My Bookings", style: AppStyles.bold24Primary),
-                SizedBox(height: 5.h),
-                Text("Track your apartment bookings",
-                    style: AppStyles.medium13GrayWithOpacity),
-                SizedBox(height: 20.h),
-                Expanded(
-                  child: user == null
-                      ? const Center(
-                          child: Text("Please login to see your bookings"))
-                      : BlocBuilder<MyBookingsViewModel, MyBookingsStates>(
-                          builder: (context, state) {
-                            if (state is MyBookingsLoading) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-                            if (state is MyBookingsError) {
-                              return Center(
-                                  child: Text("Error: ${state.message}"));
-                            }
-                            if (state is MyBookingsSuccess) {
-                              if (state.bookings.isEmpty) {
+class _MyBookingsScreenState extends State<MyBookingsScreen> {
+  final MyBookingsViewModel viewModel = getIt<MyBookingsViewModel>();
+  bool isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!isInitialized) {
+      final user = context.read<UserViewModel>().user;
+      if (user != null) {
+        viewModel.getMyBookings(user.id);
+      }
+      isInitialized = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userViewModel = context.read<UserViewModel>();
+    final user = userViewModel.user;
+
+    return BlocBuilder<MyBookingsViewModel, MyBookingsStates>(
+      bloc: viewModel,
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: AppColors.whiteColor,
+          body: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const BackContainer(),
+                  SizedBox(height: 20.h),
+                  Text("My Bookings", style: AppStyles.bold24Primary),
+                  SizedBox(height: 5.h),
+                  Text("Track your apartment bookings",
+                      style: AppStyles.medium13GrayWithOpacity),
+                  SizedBox(height: 20.h),
+                  Expanded(
+                    child: user == null
+                        ? const Center(
+                            child: Text("Please login to see your bookings"))
+                        : Builder(
+                            builder: (context) {
+                              if (state is MyBookingsLoading) {
                                 return const Center(
-                                    child: Text("No bookings found"));
+                                    child: CircularProgressIndicator());
                               }
-                              return ListView.separated(
-                                itemCount: state.bookings.length,
-                                separatorBuilder: (context, index) =>
-                                    SizedBox(height: 15.h),
-                                itemBuilder: (context, index) {
-                                  var booking = state.bookings[index];
-                                  return buildBookingCard(booking);
-                                },
-                              );
+                              if (state is MyBookingsError) {
+                                return Center(
+                                    child: Text("Error: ${state.message}"));
+                              }
+                              if (state is MyBookingsSuccess) {
+                                if (state.bookings.isEmpty) {
+                                  return const Center(
+                                      child: Text("No bookings found"));
+                                }
+                                return ListView.separated(
+                                  itemCount: state.bookings.length,
+                                  separatorBuilder: (context, index) =>
+                                      SizedBox(height: 15.h),
+                                  itemBuilder: (context, index) {
+                                    var booking = state.bookings[index];
+                                    return buildBookingCard(booking);
+                                  },
+                                );
+                              }
+                              return const SizedBox.shrink();
                             }
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                ),
-              ],
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

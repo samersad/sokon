@@ -51,107 +51,109 @@ class _ChatScreenState extends State<ChatScreen> {
     final senderPhotoUrl = userViewModel.user?.photoUrl;
     String chatId = getChatId(senderId, receiverId);
 
-    return BlocProvider(
-      create: (context) => viewModel,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: [
-              CircleAvatar(
-                radius: 18.r,
-                backgroundColor: Colors.grey.shade200,
-                backgroundImage: (receiverPhotoUrl != null && receiverPhotoUrl!.isNotEmpty)
-                    ? NetworkImage(receiverPhotoUrl!)
-                    : AssetImage(AppAssets.avatar) as ImageProvider,
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                  child: Text(receiverName,
-                      style: AppStyles.bold20black,
-                      overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-          backgroundColor: AppColors.white,
-          elevation: 1,
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: BlocBuilder<ChatViewModel, ChatState>(
-                builder: (context, state) {
-                  if (state is ChatLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is ChatError) {
-                    return Center(child: Text("Error: ${state.message}"));
-                  } else if (state is ChatMessagesLoaded) {
-                    var messages = state.messages;
-                    return ListView.builder(
-                      reverse: true,
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        var data = messages[index].data() as Map<String, dynamic>;
-                        bool isMe = data['senderId'] == senderId;
-                        return Align(
-                          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            margin: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
-                            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
-                            decoration: BoxDecoration(
-                              color: isMe ? AppColors.primaryColor : Colors.grey[300],
-                              borderRadius: BorderRadius.circular(15.r),
-                            ),
-                            child: Text(
-                              data['message'] ?? "",
-                              style: TextStyle(color: isMe ? Colors.white : Colors.black),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+    return BlocBuilder<ChatViewModel, ChatState>(
+      bloc: viewModel,
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18.r,
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage: (receiverPhotoUrl != null && receiverPhotoUrl!.isNotEmpty)
+                      ? NetworkImage(receiverPhotoUrl!)
+                      : AssetImage(AppAssets.avatar) as ImageProvider,
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                    child: Text(receiverName,
+                        style: AppStyles.bold20black,
+                        overflow: TextOverflow.ellipsis)),
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.all(8.0.sp),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.r),
+            backgroundColor: AppColors.white,
+            elevation: 1,
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    if (state is ChatLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is ChatError) {
+                      return Center(child: Text("Error: ${state.message}"));
+                    } else if (state is ChatMessagesLoaded) {
+                      var messages = state.messages;
+                      return ListView.builder(
+                        reverse: true,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          var data = messages[index].data() as Map<String, dynamic>;
+                          bool isMe = data['senderId'] == senderId;
+                          return Align(
+                            alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Container(
+                              margin: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
+                              padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
+                              decoration: BoxDecoration(
+                                color: isMe ? AppColors.primaryColor : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(15.r),
+                              ),
+                              child: Text(
+                                data['message'] ?? "",
+                                style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8.0.sp),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: InputDecoration(
+                          hintText: "Type a message...",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.r),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send, color: AppColors.primaryColor),
-                    onPressed: () {
-                      if (_messageController.text.trim().isNotEmpty) {
-                        viewModel.sendMessage(
-                          chatId: chatId,
-                          senderId: senderId,
-                          senderName: senderName,
-                          senderPhotoUrl: senderPhotoUrl,
-                          receiverId: receiverId,
-                          receiverName: receiverName,
-                          receiverPhotoUrl: receiverPhotoUrl,
-                          message: _messageController.text,
-                        );
-                        _messageController.clear();
-                      }
-                    },
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.send, color: AppColors.primaryColor),
+                      onPressed: () {
+                        if (_messageController.text.trim().isNotEmpty) {
+                          viewModel.sendMessage(
+                            chatId: chatId,
+                            senderId: senderId,
+                            senderName: senderName,
+                            senderPhotoUrl: senderPhotoUrl,
+                            receiverId: receiverId,
+                            receiverName: receiverName,
+                            receiverPhotoUrl: receiverPhotoUrl,
+                            message: _messageController.text,
+                          );
+                          _messageController.clear();
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -43,122 +43,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => viewModel,
-      child: BlocConsumer<SettingsViewModel, SettingsState>(
-        listener: (context, state) {
-          if (state is SettingsSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile updated successfully")),
-            );
-            Navigator.pop(context);
-          } else if (state is SettingsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Error: ${state.message}")),
-            );
-          }
-        },
-        builder: (context, state) {
-          final user = context.read<UserViewModel>().user;
+    return BlocConsumer<SettingsViewModel, SettingsState>(
+      bloc: viewModel,
+      listener: (context, state) {
+        if (state is SettingsSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Profile updated successfully")),
+          );
+          Navigator.pop(context);
+        } else if (state is SettingsError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: ${state.message}")),
+          );
+        }
+      },
+      builder: (context, state) {
+        final user = context.read<UserViewModel>().user;
 
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: AppColors.whiteColor,
-              elevation: 0,
-              title: Text("Edit Profile", style: AppStyles.bold20black),
-              centerTitle: true,
-            ),
+        return Scaffold(
+          appBar: AppBar(
             backgroundColor: AppColors.whiteColor,
-            body: SafeArea(
-              child: Stack(
-                children: [
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 100.h),
-                          Center(
-                            child: Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 70.r,
-                                  backgroundColor: Colors.grey.shade200,
-                                  backgroundImage: viewModel.profileImage != null
-                                      ? FileImage(viewModel.profileImage!)
-                                      : (user?.photoUrl != null && user!.photoUrl!.isNotEmpty
-                                          ? NetworkImage(user.photoUrl!)
-                                          : AssetImage(AppAssets.avatar)) as ImageProvider,
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: InkWell(
-                                    onTap: () {
-                                      viewModel.pickImage(ImageSource.gallery);
-                                    },
-                                    child: CircleAvatar(
-                                      radius: 20.r,
-                                      backgroundColor: AppColors.transparentColor,
-                                      child: Image.asset(
-                                        AppAssets.cameraIconProfle,
-                                        scale: 0.8,
-                                      ),
+            elevation: 0,
+            title: Text("Edit Profile", style: AppStyles.bold20black),
+            centerTitle: true,
+          ),
+          backgroundColor: AppColors.whiteColor,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 100.h),
+                        Center(
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 70.r,
+                                backgroundColor: Colors.grey.shade200,
+                                backgroundImage: viewModel.profileImage != null
+                                    ? FileImage(viewModel.profileImage!)
+                                    : (user?.photoUrl != null && user!.photoUrl!.isNotEmpty
+                                        ? NetworkImage(user.photoUrl!)
+                                        : AssetImage(AppAssets.profileImage)) as ImageProvider,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: InkWell(
+                                  onTap: () {
+                                    viewModel.pickImage(ImageSource.gallery);
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 20.r,
+                                    backgroundColor: AppColors.transparentColor,
+                                    child: Image.asset(
+                                      AppAssets.cameraIconProfle,
+                                      scale: 0.8,
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 80.h),
-                          Text("Username", style: AppStyles.semiBold14DarkPrimary),
-                          SizedBox(height: 5.h),
-                          CustomTextFormField(
-                            hintText: "Username",
-                            controller: nameController,
-                            paddingVertical: 15.h,
-                            borderSideColor: AppColors.grayColor,
-                            hintStyle: AppStyles.regular14black,
-                            fillColor: AppColors.transparentColor,
-                          ),
-                          SizedBox(height: 20.h),
-                          Text("Email", style: AppStyles.semiBold14DarkPrimary),
-                          SizedBox(height: 5.h),
-                          CustomTextFormField(
-                            hintText: "Email",
-                            controller: emailController,
-                            paddingVertical: 15.h,
-                            borderSideColor: AppColors.grayColor,
-                            hintStyle: AppStyles.regular14black,
-                            fillColor: AppColors.transparentColor,
-                          ),
-                          SizedBox(height: 70.h),
-                          CustomElevatedButtom(
-                            onPressed: () {
-                              viewModel.saveChanges(nameController.text);
-                            },
-                            text: "Save Change",
-                            width: 500.w,
-                            borderRadius: 10.r,
-                            backgroundColorElevated: AppColors.darkBlueColor,
-                            textStyle: AppStyles.semiBold20White,
-                          )
-                        ],
-                      ),
+                        ),
+                        SizedBox(height: 80.h),
+                        Text("Username", style: AppStyles.semiBold14DarkPrimary),
+                        SizedBox(height: 5.h),
+                        CustomTextFormField(
+                          hintText: "Username",
+                          controller: nameController,
+                          paddingVertical: 15.h,
+                          borderSideColor: AppColors.grayColor,
+                          hintStyle: AppStyles.regular14black,
+                          fillColor: AppColors.transparentColor,
+                        ),
+                        SizedBox(height: 20.h),
+                        Text("Email", style: AppStyles.semiBold14DarkPrimary),
+                        SizedBox(height: 5.h),
+                        CustomTextFormField(
+                          hintText: "Email",
+                          controller: emailController,
+                          paddingVertical: 15.h,
+                          borderSideColor: AppColors.grayColor,
+                          hintStyle: AppStyles.regular14black,
+                          fillColor: AppColors.transparentColor,
+                        ),
+                        SizedBox(height: 70.h),
+                        CustomElevatedButtom(
+                          onPressed: () {
+                            viewModel.saveChanges(nameController.text);
+                          },
+                          text: "Save Change",
+                          width: 500.w,
+                          borderRadius: 10.r,
+                          backgroundColorElevated: AppColors.darkBlueColor,
+                          textStyle: AppStyles.semiBold20White,
+                        )
+                      ],
                     ),
                   ),
-                  if (state is SettingsLoading)
-                    Container(
-                      color: Colors.black26,
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                ],
-              ),
+                ),
+                if (state is SettingsLoading)
+                  Container(
+                    color: Colors.black26,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

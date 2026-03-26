@@ -4,13 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_states.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
-import 'package:sokon/core/di/di.dart';
+import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
+import '../../../../../../core/utils/app_routes.dart';
 import '../../../../widgets/back_container.dart';
-import '../../../../widgets/nearby_estate_card.dart';
-
 
 class MyApartmentsScreen extends StatefulWidget {
   const MyApartmentsScreen({super.key});
@@ -20,103 +19,345 @@ class MyApartmentsScreen extends StatefulWidget {
 }
 
 class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
-  final ApartmentViewModel viewModel = getIt<ApartmentViewModel>();
-
   @override
   void initState() {
     super.initState();
-    final user = context.read<UserViewModel>().user;
-    if (user != null) {
-      viewModel.getAllApartmentForOwner(user.id);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = context.read<UserViewModel>().user;
+      if (user != null) {
+        context.read<ApartmentViewModel>().getAllApartmentForOwner(user.id);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => viewModel,
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+    return BlocBuilder<ApartmentViewModel, ApartmentState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FA),
+          body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const BackContainer(),
-                SizedBox(height: 20.h),
-                Text("My Apartments", style: AppStyles.bold24Primary),
-                SizedBox(height: 5.h),
-                Text("Manage your listed apartments",
-                    style: AppStyles.medium13GrayWithOpacity),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+                  child: Row(
+                    children: [
+                      const BackContainer(),
+                      SizedBox(width: 15.w),
+                      Text("My Apartments", style: AppStyles.bold20black),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Manage your properties",
+                          style: AppStyles.medium13GrayWithOpacity),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 20.h),
                 Expanded(
-                  child: BlocBuilder<ApartmentViewModel, ApartmentState>(
-                    builder: (context, state) {
-                      if (state is ApartmentLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is ApartmentError) {
-                        return Center(child: Text(state.message));
-                      } else if (state is ApartmentLoaded) {
-                        if (state.apartments.isEmpty) {
-                          return const Center(child: Text("No apartments found."));
-                        }
-                        return GridView.builder(
-                          itemCount: state.apartments.length,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 10.w,
-                            mainAxisSpacing: 10.h,
-                            childAspectRatio: 0.65,
-                          ),
-                          itemBuilder: (context, index) {
-                            return Stack(
-                              children: [
-                                NearbyEstateCard(
-                                  apartment: state.apartments[index],
-                                ),
-                                Positioned(
-                                  top: 5,
-                                  right: 5,
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor: Colors.white,
-                                        radius: 15,
-                                        child: IconButton(
-                                          icon: const Icon(Icons.edit, size: 15, color: Colors.blue),
-                                          onPressed: () {
-                                            // TODO: Navigate to Edit Screen
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(width: 5.w),
-                                      CircleAvatar(
-                                        backgroundColor: Colors.white,
-                                        radius: 15,
-                                        child: IconButton(
-                                          icon: const Icon(Icons.delete, size: 15, color: Colors.red),
-                                          onPressed: () {
-                                            // TODO: Implement Delete Logic
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                  child: _buildContent(state),
                 ),
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(ApartmentState state) {
+    if (state is ApartmentLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+    } else if (state is ApartmentError) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(20.r),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              SizedBox(height: 12.h),
+              Text(state.message, textAlign: TextAlign.center, style: AppStyles.medium13Gray),
+            ],
+          ),
         ),
+      );
+    } else if (state is ApartmentLoaded) {
+      if (state.apartments.isEmpty) {
+        return _buildEmptyState();
+      }
+      return ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        itemCount: state.apartments.length,
+        separatorBuilder: (context, index) => SizedBox(height: 18.h),
+        itemBuilder: (context, index) {
+          final apartment = state.apartments[index];
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24.r),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: apartment.images != null && apartment.images!.isNotEmpty
+                            ? Image.network(
+                                apartment.images![0],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Image.asset(AppAssets.imageC, fit: BoxFit.cover),
+                              )
+                            : Image.asset(AppAssets.imageC, fit: BoxFit.cover),
+                      ),
+                      Positioned(
+                        top: 12.h,
+                        right: 12.w,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                              )
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(AppAssets.star, width: 14.w),
+                              SizedBox(width: 4.w),
+                              Text("4.7", style: AppStyles.bold12Primary),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(16.r),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                apartment.name ?? "No Name",
+                                style: AppStyles.bold16PrimaryColor,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "EGP ${apartment.price?.toInt() ?? 0}",
+                                    style: AppStyles.bold18PrimaryColor.copyWith(color: AppColors.blueColor),
+                                  ),
+                                  TextSpan(
+                                    text: " /mo",
+                                    style: AppStyles.medium12gray,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8.h),
+                        Row(
+                          children: [
+                            Image.asset(AppAssets.locationOrange, width: 14.w),
+                            SizedBox(width: 6.w),
+                            Expanded(
+                              child: Text(
+                                apartment.address ?? "No Address",
+                                style: AppStyles.medium10blueDarkColor.copyWith(color: AppColors.grayColor),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12.h),
+                        Row(
+                          children: [
+                            _buildFeature(AppAssets.bedroomsIcon, "${apartment.bedrooms ?? 0} Beds"),
+                            SizedBox(width: 16.w),
+                            _buildFeature(AppAssets.bathroomsIcon, "${apartment.bathrooms ?? 0} Baths"),
+                            SizedBox(width: 16.w),
+                            _buildFeature(AppAssets.livingRoomsIcon, "${apartment.livingRooms ?? 0} Living"),
+                          ],
+                        ),
+                        SizedBox(height: 16.h),
+                        const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                        SizedBox(height: 12.h),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.editApartmentRoute,
+                                    arguments: apartment,
+                                  );
+                                },
+                                icon: Icon(Icons.edit_rounded, size: 18.sp),
+                                label: const Text("Edit Listing"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: IconButton(
+                                onPressed: () => _showDeleteDialog(apartment.id!),
+                                icon: Icon(Icons.delete_outline_rounded, color: Colors.red, size: 22.sp),
+                                tooltip: "Delete",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildFeature(String asset, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(asset, width: 16.w, color: AppColors.primaryColor.withOpacity(0.7)),
+        SizedBox(width: 4.w),
+        Text(text, style: AppStyles.medium10blueDarkColor),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(30.r),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                )
+              ],
+            ),
+            child: Icon(Icons.home_work_outlined, size: 70.sp, color: AppColors.primaryColor.withOpacity(0.2)),
+          ),
+          SizedBox(height: 24.h),
+          Text("No apartments found", style: AppStyles.bold18PrimaryColor),
+          SizedBox(height: 10.h),
+          Text("You haven't listed any apartments yet.\nStart by adding your first property!",
+              textAlign: TextAlign.center,
+              style: AppStyles.medium12gray),
+          SizedBox(height: 30.h),
+          ElevatedButton(
+            onPressed: () {
+               Navigator.pushNamed(context, AppRoutes.addApartmentRoute);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.r)),
+            ),
+            child: const Text("Add New Listing"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteDialog(String apartmentId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 10.w),
+            Text("Delete Listing", style: AppStyles.bold18PrimaryColor),
+          ],
+        ),
+        content: Text("Are you sure you want to delete this property? This action cannot be undone and the listing will be removed immediately.",
+            style: AppStyles.regular14gray),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: AppStyles.medium12gray),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final user = context.read<UserViewModel>().user;
+              if (user != null) {
+                context.read<ApartmentViewModel>().deleteApartment(apartmentId, user.id);
+              }
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+            ),
+            child: const Text("Delete"),
+          ),
+        ],
       ),
     );
   }

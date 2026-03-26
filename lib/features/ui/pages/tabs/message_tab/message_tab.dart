@@ -34,97 +34,100 @@ class _MessageTabState extends State<MessageTab> {
 
   @override
   Widget build(BuildContext context) {
-    final userId = context.read<UserViewModel>().user?.id ?? '';
+    final userViewModel = context.read<UserViewModel>();
+    final userId = userViewModel.user?.id ?? '';
 
-    return BlocProvider(
-      create: (context) => viewModel,
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Messages", style: AppStyles.bold24Primary),
-                SizedBox(height: 20.h),
-                const SearchWidget(hintText: "Search"),
-                SizedBox(height: 10.h),
-                Expanded(
-                  child: BlocBuilder<MessageViewModel, MessageStates>(
-                    builder: (context, state) {
-                      if (state is MessageLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (state is MessageError) {
-                        return Center(
-                            child: Text("Error loading chats: ${state.message}"));
-                      }
-                      if (state is MessageLoaded) {
-                        if (state.chats.isEmpty) {
-                          return const Center(child: Text("No messages yet"));
+    return BlocBuilder<MessageViewModel, MessageStates>(
+      bloc: viewModel,
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: AppColors.white,
+          body: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Messages", style: AppStyles.bold24Primary),
+                  SizedBox(height: 20.h),
+                  const SearchWidget(hintText: "Search"),
+                  SizedBox(height: 10.h),
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        if (state is MessageLoading) {
+                          return const Center(child: CircularProgressIndicator());
                         }
+                        if (state is MessageError) {
+                          return Center(
+                              child: Text("Error loading chats: ${state.message}"));
+                        }
+                        if (state is MessageLoaded) {
+                          if (state.chats.isEmpty) {
+                            return const Center(child: Text("No messages yet"));
+                          }
 
-                        var chats = state.chats;
+                          var chats = state.chats;
 
-                        return ListView.separated(
-                          itemCount: chats.length,
-                          separatorBuilder: (context, index) =>
-                              SizedBox(height: 10.h),
-                          itemBuilder: (context, index) {
-                            var chatData =
-                                chats[index].data() as Map<String, dynamic>;
-                            List users = chatData['users'] ?? [];
-                            String receiverId = users.firstWhere(
-                                (id) => id != userId,
-                                orElse: () => '');
+                          return ListView.separated(
+                            itemCount: chats.length,
+                            separatorBuilder: (context, index) =>
+                                SizedBox(height: 10.h),
+                            itemBuilder: (context, index) {
+                              var chatData =
+                                  chats[index].data() as Map<String, dynamic>;
+                              List users = chatData['users'] ?? [];
+                              String receiverId = users.firstWhere(
+                                  (id) => id != userId,
+                                  orElse: () => '');
 
-                            return FutureBuilder<DocumentSnapshot>(
-                                future: FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(receiverId)
-                                    .get(),
-                                builder: (context, userSnapshot) {
-                                  String displayName = "User";
-                                  String? photoUrl;
+                              return FutureBuilder<DocumentSnapshot>(
+                                  future: FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(receiverId)
+                                      .get(),
+                                  builder: (context, userSnapshot) {
+                                    String displayName = "User";
+                                    String? photoUrl;
 
-                                  if (userSnapshot.hasData &&
-                                      userSnapshot.data!.exists) {
-                                    var data = userSnapshot.data!.data()
-                                        as Map<String, dynamic>?;
-                                    displayName = data?['name'] ?? "User";
-                                    photoUrl = data?['photoUrl'];
-                                  } else {
-                                    Map<String, dynamic>? displayNames =
-                                        chatData['displayNames']
-                                            as Map<String, dynamic>?;
-                                    Map<String, dynamic>? displayPhotos =
-                                        chatData['displayPhotos']
-                                            as Map<String, dynamic>?;
-                                    displayName = displayNames?[receiverId] ??
-                                        (userSnapshot.connectionState ==
-                                                ConnectionState.waiting
-                                            ? "Loading..."
-                                            : "User");
-                                    photoUrl = displayPhotos?[receiverId];
-                                  }
+                                    if (userSnapshot.hasData &&
+                                        userSnapshot.data!.exists) {
+                                      var data = userSnapshot.data!.data()
+                                          as Map<String, dynamic>?;
+                                      displayName = data?['name'] ?? "User";
+                                      photoUrl = data?['photoUrl'];
+                                    } else {
+                                      Map<String, dynamic>? displayNames =
+                                          chatData['displayNames']
+                                              as Map<String, dynamic>?;
+                                      Map<String, dynamic>? displayPhotos =
+                                          chatData['displayPhotos']
+                                              as Map<String, dynamic>?;
+                                      displayName = displayNames?[receiverId] ??
+                                          (userSnapshot.connectionState ==
+                                                  ConnectionState.waiting
+                                              ? "Loading..."
+                                              : "User");
+                                      photoUrl = displayPhotos?[receiverId];
+                                    }
 
-                                  return buildChatItem(context, receiverId,
-                                      displayName, chatData['lastMessage'] ?? "",
-                                      photoUrl);
-                                });
-                          },
-                        );
+                                    return buildChatItem(context, receiverId,
+                                        displayName, chatData['lastMessage'] ?? "",
+                                        photoUrl);
+                                  });
+                            },
+                          );
+                        }
+                        return const SizedBox.shrink();
                       }
-                      return const SizedBox.shrink();
-                    },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

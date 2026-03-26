@@ -5,6 +5,7 @@ class MyUser {
   String email;
   String? role; // 'owner' or 'client'
   String? photoUrl;
+  DateTime? createdAt;
 
   MyUser({
     required this.id,
@@ -12,6 +13,7 @@ class MyUser {
     required this.email,
     this.role,
     this.photoUrl,
+    this.createdAt,
   });
 
   MyUser.fromFireStore(Map<String, dynamic> data)
@@ -21,6 +23,7 @@ class MyUser {
           email: data["email"],
           role: data["role"],
           photoUrl: data["photoUrl"],
+          createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
         );
 
   Map<String, dynamic> toFireStore() {
@@ -30,6 +33,7 @@ class MyUser {
       "email": email,
       "role": role,
       "photoUrl": photoUrl,
+      "createdAt": createdAt?.toIso8601String(),
     };
   }
 }

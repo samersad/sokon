@@ -16,11 +16,11 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
   Future<void> getUserLocationData() async {
     try {
       await locationViewModel.getCurrentLocation();
-
-      final userLocation = locationViewModel.userLocation;
-
       emit(HomeTabUserLocationLoaded(
-        userLocation: userLocation,
+        userLocation: locationViewModel.userLocation,
+      ));
+      emit(HomeTabUserAddressLoaded(
+        address: locationViewModel.userAddress,
       ));
     } catch (e) {
       emit(HomeTabError(e.toString()));
@@ -31,11 +31,8 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     emit(HomeTabLoading());
     try {
       await apartmentViewModel.getAllApartments();
-
-      final allApartments = apartmentViewModel.apartmentList;
-
       emit(HomeTabFeaturedEstateLoaded(
-        allApartments: allApartments,
+        allApartments: apartmentViewModel.apartmentList,
       ));
     } catch (e) {
       emit(HomeTabError(e.toString()));
@@ -46,11 +43,8 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     emit(HomeTabLoading());
     try {
       await apartmentViewModel.getAllApartments();
-
-      final allApartments = apartmentViewModel.apartmentList;
-
       emit(HomeTabNearbyEstateLoaded(
-        allApartments: allApartments,
+        allApartments: apartmentViewModel.apartmentList,
       ));
     } catch (e) {
       emit(HomeTabError(e.toString()));

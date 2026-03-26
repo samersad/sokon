@@ -19,19 +19,21 @@ import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
 import '../../../../core/cache/cubit_manger/location_states.dart';
+import '../../../../core/model/apartment.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_routes.dart';
 import '../../widgets/alert_dialog_utils.dart';
 import '../../widgets/custom_text_form_field.dart';
 
-class AddApartment extends StatefulWidget {
-  const AddApartment({super.key});
+class EditApartment extends StatefulWidget {
+  final Apartment apartment;
+  const EditApartment({super.key, required this.apartment});
 
   @override
-  State<AddApartment> createState() => _AddApartmentState();
+  State<EditApartment> createState() => _EditApartmentState();
 }
 
-class _AddApartmentState extends State<AddApartment> {
+class _EditApartmentState extends State<EditApartment> {
   bool _isLoadingDialogShowing = false;
   final AddApartmentViewModel viewModel = getIt<AddApartmentViewModel>();
 
@@ -39,8 +41,7 @@ class _AddApartmentState extends State<AddApartment> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       context.read<LocationViewModel>().clearApartmentLocation();
-       viewModel.clearData();
+      viewModel.initEdit(widget.apartment, context.read<LocationViewModel>());
     });
   }
 
@@ -53,7 +54,7 @@ class _AddApartmentState extends State<AddApartment> {
       listener: (context, state) {
         if (state is AddApartmentLoading) {
           _isLoadingDialogShowing = true;
-          AlertDialogUtils.showLoading(context: context, msg: "Uploading...");
+          AlertDialogUtils.showLoading(context: context, msg: "Updating...");
         } else if (state is AddApartmentProgress) {
           AlertDialogUtils.hideLoading(context: context);
           AlertDialogUtils.showLoading(context: context, msg: state.message);
@@ -72,7 +73,7 @@ class _AddApartmentState extends State<AddApartment> {
           }
           AlertDialogUtils.showMessage(
             context: context,
-            msg: "Apartment added successfully",
+            msg: "Apartment updated successfully",
             title: "Success",
             pos:Center(
               child: Row(
@@ -98,7 +99,7 @@ class _AddApartmentState extends State<AddApartment> {
           final locationViewModel = context.read<LocationViewModel>();
           return Scaffold(
             appBar: AppBar(
-              title: Text("Add Apartment", style: AppStyles.bold20black),
+              title: Text("Edit Apartment", style: AppStyles.bold20black),
               centerTitle: true,
             ),
             body: Padding(
@@ -252,27 +253,70 @@ class _AddApartmentState extends State<AddApartment> {
                     SizedBox(height: 10.h),
                     Row(
                       children: [
-                        if (viewModel.apartmentImages.isNotEmpty)
+                        if (viewModel.apartmentImages.isNotEmpty || (viewModel.existingImageUrls?.isNotEmpty ?? false))
                           Expanded(
                             child: SizedBox(
                               height: 100.h,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
-                                itemCount: viewModel.apartmentImages.length,
+                                itemCount: (viewModel.existingImageUrls?.length ?? 0) + viewModel.apartmentImages.length,
                                 separatorBuilder: (context, index) => SizedBox(width: 10.w),
                                 itemBuilder: (context, index) {
-                                  return InkWell(
-                                    onTap: () => openFullScreenGallery(context, index, viewModel.apartmentImages),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.file(
-                                        viewModel.apartmentImages[index],
-                                        width: 100.w,
-                                        height: 100.h,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
+                                  int existingCount = viewModel.existingImageUrls?.length ?? 0;
+                                  if (index < existingCount) {
+                                    return Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.network(
+                                            viewModel.existingImageUrls![index],
+                                            width: 100.w,
+                                            height: 100.h,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: InkWell(
+                                            onTap: () => viewModel.removeExistingImage(index),
+                                            child: const CircleAvatar(
+                                              radius: 10,
+                                              backgroundColor: Colors.red,
+                                              child: Icon(Icons.close, size: 12, color: Colors.white),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    );
+                                  } else {
+                                    int fileIndex = index - existingCount;
+                                    return Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.file(
+                                            viewModel.apartmentImages[fileIndex],
+                                            width: 100.w,
+                                            height: 100.h,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: InkWell(
+                                            onTap: () => viewModel.removeNewImage(fileIndex),
+                                            child: const CircleAvatar(
+                                              radius: 10,
+                                              backgroundColor: Colors.red,
+                                              child: Icon(Icons.close, size: 12, color: Colors.white),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    );
+                                  }
                                 },
                               ),
                             ),
@@ -367,9 +411,9 @@ class _AddApartmentState extends State<AddApartment> {
                     Center(
                       child: CustomElevatedButtom(
                         onPressed: () {
-                          viewModel.uploadApartment(userViewModel, locationViewModel);
+                          viewModel.updateApartment(userViewModel, locationViewModel, widget.apartment.id!);
                         },
-                        text: "Add Apartment",
+                        text: "Update Apartment",
                         width: 500.w,
                         backgroundColorElevated: AppColors.primaryColor,
                         textStyle: AppStyles.semiBold20White,
@@ -383,40 +427,6 @@ class _AddApartmentState extends State<AddApartment> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  void openFullScreenGallery(BuildContext context, int initialIndex, List<File> images) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          body: Stack(
-            children: [
-              PhotoViewGallery.builder(
-                itemCount: images.length,
-                builder: (context, index) {
-                  return PhotoViewGalleryPageOptions(
-                    imageProvider: FileImage(images[index]),
-                    initialScale: PhotoViewComputedScale.contained,
-                  );
-                },
-                scrollPhysics: const BouncingScrollPhysics(),
-                backgroundDecoration: const BoxDecoration(color: Colors.black),
-                pageController: PageController(initialPage: initialIndex),
-              ),
-              Positioned(
-                top: 40,
-                right: 20,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

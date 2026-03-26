@@ -14,6 +14,7 @@ class Booking {
   DateTime? endDate;
   double? totalPrice;
   String? status; // 'pending', 'confirmed', 'cancelled'
+  DateTime? createdAt;
 
   Booking({
     this.id,
@@ -29,6 +30,7 @@ class Booking {
     this.endDate,
     this.totalPrice,
     this.status = 'pending',
+    this.createdAt,
   });
 
   factory Booking.fromFireStore(Map<String, dynamic> data) {
@@ -46,6 +48,7 @@ class Booking {
       endDate: data["endDate"] != null ? DateTime.parse(data["endDate"]) : null,
       totalPrice: (data["totalPrice"] as num?)?.toDouble(),
       status: data["status"],
+      createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
     );
   }
 
@@ -64,6 +67,7 @@ class Booking {
       'endDate': endDate?.toIso8601String(),
       'totalPrice': totalPrice,
       'status': status,
+      'createdAt': createdAt?.toIso8601String(),
     };
   }
 }

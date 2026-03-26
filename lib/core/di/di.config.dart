@@ -90,19 +90,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i964.ApartmentDetailsViewModel(),
     );
     gh.factory<_i286.HomeScreenViewModel>(() => _i286.HomeScreenViewModel());
-    gh.lazySingleton<_i284.ApartmentViewModel>(
-      () => _i284.ApartmentViewModel(),
-    );
     gh.lazySingleton<_i71.LocationViewModel>(() => _i71.LocationViewModel());
     gh.lazySingleton<_i910.UserViewModel>(() => _i910.UserViewModel());
     gh.factory<_i309.ApartmentRemoteDataSource>(
       () => _i268.ApartmentRemoteDataImpl(),
-    );
-    gh.factory<_i244.HomeTabViewModel>(
-      () => _i244.HomeTabViewModel(
-        gh<_i284.ApartmentViewModel>(),
-        gh<_i71.LocationViewModel>(),
-      ),
     );
     gh.factory<_i7.BookingRemoteDataSource>(
       () => _i1022.BookingRemoteDataImpl(),
@@ -114,12 +105,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i437.AuthRemoteDataSource>(() => _i691.AuthRemoteDataImpl());
     gh.factory<_i977.AuthRepository>(
       () => _i841.AuthRepositoryImpl(gh<_i437.AuthRemoteDataSource>()),
-    );
-    gh.factory<_i18.FeaturedEstateViewModel>(
-      () => _i18.FeaturedEstateViewModel(gh<_i284.ApartmentViewModel>()),
-    );
-    gh.factory<_i1039.NearbyEstateViewModel>(
-      () => _i1039.NearbyEstateViewModel(gh<_i284.ApartmentViewModel>()),
     );
     gh.factory<_i186.BookingViewModel>(
       () => _i186.BookingViewModel(
@@ -160,12 +145,23 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1041.MessageViewModel>(
       () => _i1041.MessageViewModel(gh<_i12.ChatRepository>()),
     );
+    gh.lazySingleton<_i284.ApartmentViewModel>(
+      () => _i284.ApartmentViewModel(gh<_i139.ApartmentRepository>()),
+    );
     gh.factory<_i549.AddApartmentViewModel>(
-      () => _i549.AddApartmentViewModel(
-        gh<_i910.UserViewModel>(),
+      () => _i549.AddApartmentViewModel(gh<_i139.ApartmentRepository>()),
+    );
+    gh.factory<_i244.HomeTabViewModel>(
+      () => _i244.HomeTabViewModel(
+        gh<_i284.ApartmentViewModel>(),
         gh<_i71.LocationViewModel>(),
-        gh<_i139.ApartmentRepository>(),
       ),
+    );
+    gh.factory<_i18.FeaturedEstateViewModel>(
+      () => _i18.FeaturedEstateViewModel(gh<_i284.ApartmentViewModel>()),
+    );
+    gh.factory<_i1039.NearbyEstateViewModel>(
+      () => _i1039.NearbyEstateViewModel(gh<_i284.ApartmentViewModel>()),
     );
     return this;
   }

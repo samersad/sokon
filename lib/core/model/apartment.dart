@@ -19,6 +19,7 @@ class Apartment {
   String? ownerId;
   String? ownerName;
   String? ownerPhotoUrl;
+  DateTime? createdAt;
 
   Apartment({
     this.id,
@@ -36,6 +37,7 @@ class Apartment {
     this.ownerId,
     this.ownerName,
     this.ownerPhotoUrl,
+    this.createdAt,
   });
 
   /// 🔄 من Firestore
@@ -62,6 +64,7 @@ class Apartment {
       ownerId: data["ownerId"],
       ownerName: data["ownerName"],
       ownerPhotoUrl: data["ownerPhotoUrl"],
+      createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
     );
   }
 
@@ -83,6 +86,7 @@ class Apartment {
       'ownerId': ownerId,
       'ownerName': ownerName,
       'ownerPhotoUrl': ownerPhotoUrl,
+      'createdAt': createdAt?.toIso8601String(),
     };
   }
 }

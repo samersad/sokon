@@ -28,6 +28,7 @@ class FireBaseUtils{
     CollectionReference<Apartment> collectionRef=getApartmentCollections( uId);
     var docRef=  collectionRef.doc();
     apartment.id= docRef.id; 
+    apartment.createdAt = DateTime.now(); // Set creation time
     await docRef.set(apartment);
     
     // Notify Admin
@@ -40,6 +41,14 @@ class FireBaseUtils{
     ));
   }
 
+  static Future<void> deleteApartmentFromFirestore(String apartmentId, String uId) {
+    return getApartmentCollections(uId).doc(apartmentId).delete();
+  }
+
+  static Future<void> updateApartmentInFirestore(Apartment apartment, String uId) {
+    return getApartmentCollections(uId).doc(apartment.id).update(apartment.toFireStore());
+  }
+
   static CollectionReference<MyUser> getUsersCollections() {
     return  FirebaseFirestore.instance.collection(MyUser.collectionName)
         .withConverter<MyUser>(
@@ -48,7 +57,8 @@ class FireBaseUtils{
     );}
 
   static Future<void> addUserToFirestore(MyUser myUser){
-   return getUsersCollections().doc(myUser.id).set(myUser);
+    myUser.createdAt ??= DateTime.now(); // Set creation time if not already set
+    return getUsersCollections().doc(myUser.id).set(myUser);
   }
 
   static Future<MyUser?> readUserFromFireStore(String id) async {
@@ -67,6 +77,7 @@ class FireBaseUtils{
   static Future<void> addBookingToFirestore(Booking booking) async {
     var docRef = getBookingCollections().doc();
     booking.id = docRef.id;
+    booking.createdAt = DateTime.now(); // Set creation time
     await docRef.set(booking);
 
     // Notify Admin

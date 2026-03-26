@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import '../../../firebase_utils.dart';
 import '../../model/booking.dart';
 import 'my_booking_states.dart';
+@injectable
 
 class MyBookingViewModel extends Cubit<MyBookingState> {
   MyBookingViewModel() : super(MyBookingInitial());

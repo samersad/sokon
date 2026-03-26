@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/chat_states.dart';
@@ -36,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final senderId = context.read<UserViewModel>().user?.id ?? '';
       String chatId = getChatId(senderId, receiverId);
 
-      viewModel = ChatViewModel();
+      viewModel = getIt<ChatViewModel>();
       viewModel.getMessages(chatId);
       isInitialized = true;
     }

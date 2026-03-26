@@ -2,20 +2,25 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/cloudinary_service.dart';
-import 'package:sokon/firebase_utils.dart';
+import '../../../../../data/repository/apartment/repository/apartment_repository.dart';
 import 'package:video_player/video_player.dart';
 import 'add_apartment_states.dart';
 import '../../../../../core/cache/cubit_manger/location_view_model.dart';
 
+@injectable
 class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   final UserViewModel userViewModel;
   final LocationViewModel locationViewModel;
+  final ApartmentRepository apartmentRepository;
 
-  AddApartmentViewModel(this.userViewModel, this.locationViewModel) : super(AddApartmentInitial());
+  AddApartmentViewModel(
+      this.userViewModel, this.locationViewModel, this.apartmentRepository)
+      : super(AddApartmentInitial());
 
   final ImagePicker _videoPicker = ImagePicker();
   final ImagePicker _imagePicker = ImagePicker();
@@ -25,7 +30,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   int bedrooms = 1;
   int bathrooms = 1;
   int livingRooms = 1;
-  
+
   final TextEditingController nameCRl = TextEditingController();
   final TextEditingController descriptionCRl = TextEditingController();
   final TextEditingController priceCRl = TextEditingController();
@@ -82,7 +87,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
     final XFile? video = await _videoPicker.pickVideo(
       source: source,
-      maxDuration: source == ImageSource.camera ? const Duration(minutes: 10) : null,
+      maxDuration:
+          source == ImageSource.camera ? const Duration(minutes: 10) : null,
     );
 
     if (video == null) return;
@@ -96,7 +102,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       if (controller.value.duration > const Duration(minutes: 10)) {
         controller.dispose();
         videoFile = null;
-        emit(AddApartmentError("The video duration should not exceed 10 minutes."));
+        emit(AddApartmentError(
+            "The video duration should not exceed 10 minutes."));
         return;
       }
 
@@ -112,7 +119,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
   void toggleVideoPlay() {
     if (controllerVideo != null) {
-      controllerVideo!.value.isPlaying ? controllerVideo!.pause() : controllerVideo!.play();
+      controllerVideo!.value.isPlaying
+          ? controllerVideo!.pause()
+          : controllerVideo!.play();
       emit(AddApartmentUpdateUI());
     }
   }
@@ -159,7 +168,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       String? videoUrl;
 
       for (var image in apartmentImages) {
-        emit(AddApartmentProgress("Uploading image ${imageUrls.length + 1}/${apartmentImages.length}..."));
+        emit(AddApartmentProgress(
+            "Uploading image ${imageUrls.length + 1}/${apartmentImages.length}..."));
         String? url = await CloudinaryService.uploadImage(image);
         if (url != null) {
           imageUrls.add(url);
@@ -196,7 +206,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       );
 
       emit(AddApartmentProgress("Saving apartment data..."));
-      await FireBaseUtils.addApartmentToFirestore(
+      await apartmentRepository.addApartment(
         apartment,
         userViewModel.user!.id!,
       );

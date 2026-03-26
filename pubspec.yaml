@@ -64,6 +64,9 @@ dependencies:
   http: ^1.2.0
   bloc: ^9.2.0
   flutter_bloc: ^9.1.1
+  injectable: ^2.7.1+4
+  injectable_generator: ^2.12.1
+  get_it: ^9.2.1
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +78,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  build_runner: ^2.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

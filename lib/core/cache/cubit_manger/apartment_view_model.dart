@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import 'package:sokon/core/model/apartment.dart';
 import '../../../firebase_utils.dart';
 import 'apartment_states.dart';
 
-
+@lazySingleton
 class ApartmentViewModel extends Cubit<ApartmentState> {
   ApartmentViewModel() : super(ApartmentInitial());
 

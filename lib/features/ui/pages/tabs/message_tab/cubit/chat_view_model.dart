@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+import '../../../../../../data/repository/chat/repository/chat_repository.dart';
 import 'chat_states.dart';
 
+@injectable
 class ChatViewModel extends Cubit<ChatState> {
-  ChatViewModel() : super(ChatInitial());
+  final ChatRepository chatRepository;
+  ChatViewModel(this.chatRepository) : super(ChatInitial());
 
   StreamSubscription? _messagesSubscription;
 
@@ -12,13 +16,7 @@ class ChatViewModel extends Cubit<ChatState> {
     emit(ChatLoading());
     try {
       _messagesSubscription?.cancel();
-      _messagesSubscription = FirebaseFirestore.instance
-          .collection('chats')
-          .doc(chatId)
-          .collection('messages')
-          .orderBy('timestamp', descending: true)
-          .snapshots()
-          .listen((snapshot) {
+      _messagesSubscription = chatRepository.getMessages(chatId).listen((snapshot) {
         if (!isClosed) {
           emit(ChatMessagesLoaded(snapshot.docs));
         }
@@ -49,35 +47,28 @@ class ChatViewModel extends Cubit<ChatState> {
     final msg = message.trim();
 
     try {
-      await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(chatId)
-          .collection('messages')
-          .add({
-        'senderId': senderId,
-        'message': msg,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      // Update chat metadata
-      Map<String, dynamic> updateData = {
-        'lastMessage': msg,
-        'timestamp': FieldValue.serverTimestamp(),
-        'users': [senderId, receiverId],
-        'displayNames': {
-          senderId: senderName,
-          receiverId: receiverName,
+      Map<String, dynamic> messageData = {
+        'messageData': {
+          'senderId': senderId,
+          'message': msg,
+          'timestamp': FieldValue.serverTimestamp(),
         },
-        'displayPhotos': {
-          senderId: senderPhotoUrl,
-          receiverId: receiverPhotoUrl,
+        'chatMetadata': {
+          'lastMessage': msg,
+          'timestamp': FieldValue.serverTimestamp(),
+          'users': [senderId, receiverId],
+          'displayNames': {
+            senderId: senderName,
+            receiverId: receiverName,
+          },
+          'displayPhotos': {
+            senderId: senderPhotoUrl,
+            receiverId: receiverPhotoUrl,
+          }
         }
       };
 
-      await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(chatId)
-          .set(updateData, SetOptions(merge: true));
+      await chatRepository.sendMessage(chatId, messageData);
     } catch (e) {
       if (!isClosed) {
         emit(ChatError(e.toString()));

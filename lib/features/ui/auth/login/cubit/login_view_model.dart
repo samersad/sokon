@@ -1,16 +1,15 @@
 import 'package:bloc/bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-
+import 'package:injectable/injectable.dart';
 import '../../../../../core/cache/cubit_manger/user_view_model.dart';
 import '../../../../../core/model/my_user.dart';
-import '../../../../../firebase_utils.dart';
+import '../../../../../data/repository/auth/repository/auth_repository.dart';
 import 'login_states.dart';
 
+@injectable
 class LoginViewModel extends Cubit<LoginStates> {
-  LoginViewModel() : super(LoginInitialStates());
+  final AuthRepository authRepository;
+  LoginViewModel(this.authRepository) : super(LoginInitialStates());
 
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
@@ -27,24 +26,14 @@ class LoginViewModel extends Cubit<LoginStates> {
     if (formKey.currentState?.validate() ?? false) {
       emit(LoginLoadingStates());
       try {
-        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailCtrl.text,
-          password: passwordCtrl.text,
+        final user = await authRepository.login(
+          emailCtrl.text,
+          passwordCtrl.text,
         );
-
-        if (credential.user != null) {
-          var user = await FireBaseUtils.readUserFromFireStore(credential.user!.uid);
-          if (user != null) {
-            userCubit.updateUser(user);
-            emit(LoginSuccessStates(user));
-          } else {
-            emit(LoginErrorStates("User data not found in database."));
-          }
-        }
-      } on FirebaseAuthException catch (e) {
-        emit(LoginErrorStates(e.message ?? "Authentication failed"));
+        userCubit.updateUser(user);
+        emit(LoginSuccessStates(user));
       } catch (e) {
-        emit(LoginErrorStates("An unexpected error occurred: ${e.toString()}"));
+        emit(LoginErrorStates(e.toString()));
       }
     }
   }
@@ -52,64 +41,30 @@ class LoginViewModel extends Cubit<LoginStates> {
   Future<void> signInWithGoogle(UserViewModel userCubit) async {
     try {
       emit(LoginLoadingStates());
-      final GoogleSignIn signIn = GoogleSignIn.instance;
-      await signIn.initialize(
-        clientId: dotenv.env['server_client_id'],
-      );
+      final user = await authRepository.signInWithGoogle();
 
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
-      if (googleUser == null) {
-        emit(LoginInitialStates());
-        return;
-      }
-
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      var firebaseUser = userCredential.user;
-
-      if (firebaseUser != null) {
-        var user = await FireBaseUtils.readUserFromFireStore(firebaseUser.uid);
-        if (user == null || user.role == null) {
-          MyUser newUser = MyUser(
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName ?? "",
-            email: firebaseUser.email ?? "",
-            role: null,
-            photoUrl: firebaseUser.photoURL,
-          );
-          emit(LoginNeedsRoleStates(newUser));
-        } else {
-          // Existing user - Update photoUrl if changed
-          if (user.photoUrl != firebaseUser.photoURL) {
-            user.photoUrl = firebaseUser.photoURL;
-            await FireBaseUtils.addUserToFirestore(user);
-          }
-          userCubit.updateUser(user);
-          emit(LoginSuccessStates(user));
-        }
+      if (user.role == null) {
+        emit(LoginNeedsRoleStates(user));
+      } else {
+        userCubit.updateUser(user);
+        emit(LoginSuccessStates(user));
       }
     } catch (e) {
       emit(LoginErrorStates("Google Sign-In failed: ${e.toString()}"));
     }
   }
 
-  Future<void> updateUserRole(MyUser user, String role,UserViewModel userCubit) async {
+  Future<void> updateUserRole(MyUser user, String role, UserViewModel userCubit) async {
     try {
       emit(LoginLoadingStates());
-      user.role = role;
-      await FireBaseUtils.addUserToFirestore(user);
+      await authRepository.updateUserRole(user, role);
       userCubit.updateUser(user);
       emit(LoginSuccessStates(user));
     } catch (e) {
       emit(LoginErrorStates("Failed to save user role: ${e.toString()}"));
     }
   }
+
   void showRoleSelectionDialog(
       BuildContext context, MyUser user, UserViewModel userCubit) {
     String? selectedRole;

@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import '../../../../../core/model/apartment.dart';
 import 'apartment_details_states.dart';
 
+@injectable
 class ApartmentDetailsViewModel extends Cubit<ApartmentDetailsStates> {
   ApartmentDetailsViewModel() : super(ApartmentDetailsInitial());
 

@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../../../../core/model/booking.dart';
-import '../../../../../../firebase_utils.dart';
+import '../../../../../../supabase_utils.dart';
 
 import '../booking_remote_data_source.dart';
 
@@ -8,14 +8,15 @@ import '../booking_remote_data_source.dart';
 class BookingRemoteDataImpl implements BookingRemoteDataSource {
   @override
   Future<void> addBooking(Booking booking) async {
-    return FireBaseUtils.addBookingToFirestore(booking);
+    return SupabaseUtils.addBookingToSupabase(booking);
   }
 
   @override
   Future<List<Booking>> getBookings(String userId) async {
-    var querySnapshot = await FireBaseUtils.getBookingCollections()
-        .where('clientId', isEqualTo: userId)
-        .get();
-    return querySnapshot.docs.map((doc) => doc.data()).toList();
+    final List<dynamic> response = await SupabaseUtils.client
+        .from('bookings')
+        .select()
+        .eq('clientId', userId);
+    return response.map((e) => Booking.fromSupaBase(e as Map<String, dynamic>)).toList();
   }
 }

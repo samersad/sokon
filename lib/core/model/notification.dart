@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class AppNotification {
   static const String collectionName = "notifications";
   String? id;
@@ -18,24 +16,28 @@ class AppNotification {
     this.type,
   });
 
-  AppNotification.fromFireStore(Map<String, dynamic> data)
-      : this(
-          id: data['id'],
-          title: data['title'],
-          body: data['body'],
-          createdAt: (data['createdAt'] as Timestamp).toDate(),
-          isRead: data['isRead'],
-          type: data['type'],
-        );
+  factory AppNotification.fromSupaBase(Map<String, dynamic> data) {
+    return AppNotification(
+      id: data['id']?.toString(),
+      title: data['title'],
+      body: data['body'],
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : null,
+      isRead: data['isRead'],
+      type: data['type'],
+    );
+  }
 
-  Map<String, dynamic> toFireStore() {
-    return {
-      'id': id,
+  Map<String, dynamic> toSupaBase() {
+    final Map<String, dynamic> data = {
       'title': title,
       'body': body,
-      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'createdAt': createdAt?.toIso8601String(),
       'isRead': isRead,
       'type': type,
     };
+    if (id != null) {
+      data['id'] = id;
+    }
+    return data;
   }
 }

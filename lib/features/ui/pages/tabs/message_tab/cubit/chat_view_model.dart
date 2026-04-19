@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../../../data/repository/chat/repository/chat_repository.dart';
@@ -16,9 +15,9 @@ class ChatViewModel extends Cubit<ChatState> {
     emit(ChatLoading());
     try {
       _messagesSubscription?.cancel();
-      _messagesSubscription = chatRepository.getMessages(chatId).listen((snapshot) {
+      _messagesSubscription = chatRepository.getMessages(chatId).listen((messages) {
         if (!isClosed) {
-          emit(ChatMessagesLoaded(snapshot.docs));
+          emit(ChatMessagesLoaded(messages));
         }
       }, onError: (error) {
         if (!isClosed) {
@@ -51,11 +50,9 @@ class ChatViewModel extends Cubit<ChatState> {
         'messageData': {
           'senderId': senderId,
           'message': msg,
-          'timestamp': FieldValue.serverTimestamp(),
         },
         'chatMetadata': {
           'lastMessage': msg,
-          'timestamp': FieldValue.serverTimestamp(),
           'users': [senderId, receiverId],
           'displayNames': {
             senderId: senderName,

@@ -11,8 +11,8 @@ class MessageViewModel extends Cubit<MessageStates> {
   void getChats(String userId) {
     emit(MessageLoading());
     try {
-      chatRepository.getChats(userId).listen((snapshot) {
-        emit(MessageLoaded(snapshot.docs));
+      chatRepository.getChats(userId).listen((chats) {
+        emit(MessageLoaded(chats));
       }, onError: (error) {
         emit(MessageError(error.toString()));
       });

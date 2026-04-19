@@ -33,9 +33,9 @@ class Booking {
     this.createdAt,
   });
 
-  factory Booking.fromFireStore(Map<String, dynamic> data) {
+  factory Booking.fromSupaBase(Map<String, dynamic> data) {
     return Booking(
-      id: data["id"],
+      id: data["id"]?.toString(),
       apartmentId: data["apartmentId"],
       apartmentName: data["apartmentName"],
       apartmentAddress: data["apartmentAddress"],
@@ -52,9 +52,8 @@ class Booking {
     );
   }
 
-  Map<String, dynamic> toFireStore() {
-    return {
-      'id': id,
+  Map<String, dynamic> toSupaBase() {
+    final Map<String, dynamic> data = {
       'apartmentId': apartmentId,
       'apartmentName': apartmentName,
       'apartmentAddress': apartmentAddress,
@@ -69,5 +68,9 @@ class Booking {
       'status': status,
       'createdAt': createdAt?.toIso8601String(),
     };
+    if (id != null) {
+      data['id'] = id;
+    }
+    return data;
   }
 }

@@ -1,23 +1,25 @@
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../../../cloudinary_service.dart';
 import '../../../../../../core/model/my_user.dart';
-import '../../../../../../firebase_utils.dart';
+import '../../../../../../supabase_utils.dart';
 import '../auth_remote_data_source.dart';
 
 @Injectable(as: AuthRemoteDataSource)
 class AuthRemoteDataImpl implements AuthRemoteDataSource {
+  SupabaseClient get _client => Supabase.instance.client;
+
   @override
   Future<MyUser> login(String email, String password) async {
-    final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+    final AuthResponse res = await _client.auth.signInWithPassword(
       email: email,
       password: password,
     );
-    if (credential.user != null) {
-      var user = await FireBaseUtils.readUserFromFireStore(credential.user!.uid);
+    
+    if (res.user != null) {
+      var user = await SupabaseUtils.readUserFromSupabase(res.user!.id);
       if (user != null) {
         return user;
       } else {
@@ -29,76 +31,97 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
   @override
   Future<MyUser> register(String email, String password, String name) async {
-    final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    final AuthResponse res = await _client.auth.signUp(
       email: email,
       password: password,
+      data: {'full_name': name},
     );
-    MyUser newUser = MyUser(
-      id: credential.user!.uid,
+    
+    if (res.user == null) throw Exception("Registration failed");
+
+    return MyUser(
+      id: res.user!.id,
       name: name,
       email: email,
     );
-    await FireBaseUtils.addUserToFirestore(newUser);
-    return newUser;
   }
 
   @override
   Future<MyUser> signInWithGoogle() async {
-    final GoogleSignIn signIn = GoogleSignIn.instance;
-    await signIn.initialize(
-      clientId: dotenv.env['server_client_id'],
-    );
-    final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
-    if (googleUser == null) {
-      throw Exception("Google Sign-In cancelled");
-    }
-
-    final googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      idToken: googleAuth.idToken,
-    );
-
-    UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-    var firebaseUser = userCredential.user;
-
-    if (firebaseUser != null) {
-      var user = await FireBaseUtils.readUserFromFireStore(firebaseUser.uid);
-      if (user == null) {
-        return MyUser(
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName ?? "",
-          email: firebaseUser.email ?? "",
-          photoUrl: firebaseUser.photoURL,
-        );
+    try {
+      final GoogleSignIn signIn = GoogleSignIn.instance;
+      await signIn.initialize(
+        clientId: dotenv.env['server_client_id'],
+      );
+      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
+      if (googleUser == null) {
+        throw Exception("Google Sign-In cancelled");
       }
-      return user;
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) throw Exception('No ID Token found.');
+
+      final AuthResponse res = await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      );
+
+      if (res.user != null) {
+        var user = await SupabaseUtils.readUserFromSupabase(res.user!.id);
+        
+        // Always extract current Google photo
+        String? googlePhoto = res.user!.userMetadata?['avatar_url'] ?? googleUser.photoUrl;
+
+        if (user == null) {
+          user = MyUser(
+            id: res.user!.id,
+            name: res.user!.userMetadata?['full_name'] ?? googleUser.displayName ?? "",
+            email: res.user!.email ?? googleUser.email,
+            photoUrl: googlePhoto,
+          );
+          await SupabaseUtils.addUserToSupabase(user);
+        } else {
+          // If user exists, update their photo if it's different from what we have
+          if (googlePhoto != null && user.photoUrl != googlePhoto) {
+            user.photoUrl = googlePhoto;
+            await SupabaseUtils.addUserToSupabase(user);
+          }
+        }
+        return user;
+      }
+      throw Exception("Supabase Google Sign-In failed");
+    } catch (e) {
+      rethrow;
     }
-    throw Exception("Google Sign-In failed");
   }
 
   @override
   Future<void> updateUserRole(MyUser user, String role) async {
     user.role = role;
-    await FireBaseUtils.addUserToFirestore(user);
+    await SupabaseUtils.addUserToSupabase(user);
   }
 
   @override
   Future<MyUser> updateProfile(MyUser user, String name, File? profileImage) async {
     String? photoUrl = user.photoUrl;
     if (profileImage != null) {
-      photoUrl = await CloudinaryService.uploadImage(profileImage);
+      photoUrl = await SupabaseUtils.uploadFile(
+        file: profileImage,
+        bucket: 'profiles',
+        folder: user.id,
+      );
     }
 
     user.name = name;
     user.photoUrl = photoUrl;
 
-    await FireBaseUtils.addUserToFirestore(user);
+    await SupabaseUtils.addUserToSupabase(user);
     return user;
   }
 
   @override
   Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
-    await GoogleSignIn.instance.signOut();
+    await _client.auth.signOut();
   }
 }

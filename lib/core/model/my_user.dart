@@ -16,17 +16,18 @@ class MyUser {
     this.createdAt,
   });
 
-  MyUser.fromFireStore(Map<String, dynamic> data)
-      : this(
-          id: data["id"],
-          name: data["name"],
-          email: data["email"],
-          role: data["role"],
-          photoUrl: data["photoUrl"],
-          createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
-        );
+  factory MyUser.fromSupaBase(Map<String, dynamic> data) {
+    return MyUser(
+      id: data["id"],
+      name: data["name"],
+      email: data["email"],
+      role: data["role"],
+      photoUrl: data["photoUrl"],
+      createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
+    );
+  }
 
-  Map<String, dynamic> toFireStore() {
+  Map<String, dynamic> toSupaBase() {
     return {
       "id": id,
       "name": name,

@@ -90,7 +90,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         reverse: true,
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
-                          var data = messages[index].data() as Map<String, dynamic>;
+                          var data = messages[index];
                           bool isMe = data['senderId'] == senderId;
                           return Align(
                             alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,

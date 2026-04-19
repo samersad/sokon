@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 import '../../data_sources/remote/chat_remote_data_source.dart';
 import '../chat_repository.dart';
@@ -9,11 +8,11 @@ class ChatRepositoryImpl implements ChatRepository {
   ChatRepositoryImpl(this.remoteDataSource);
 
   @override
-  Stream<QuerySnapshot<Map<String, dynamic>>> getChats(String userId) =>
+  Stream<List<Map<String, dynamic>>> getChats(String userId) =>
       remoteDataSource.getChats(userId);
 
   @override
-  Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(String chatId) =>
+  Stream<List<Map<String, dynamic>>> getMessages(String chatId) =>
       remoteDataSource.getMessages(chatId);
 
   @override

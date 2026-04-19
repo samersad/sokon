@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +7,7 @@ import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/message_states.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/message_view_model.dart';
 import 'package:sokon/features/ui/widgets/search_widget.dart';
+import 'package:sokon/supabase_utils.dart';
 
 import '../../../../../core/utils/app_assets.dart';
 import '../../../../../core/utils/app_colors.dart';
@@ -74,35 +74,29 @@ class _MessageTabState extends State<MessageTab> {
                             separatorBuilder: (context, index) =>
                                 SizedBox(height: 10.h),
                             itemBuilder: (context, index) {
-                              var chatData =
-                                  chats[index].data() as Map<String, dynamic>;
+                              var chatData = chats[index];
                               List users = chatData['users'] ?? [];
                               String receiverId = users.firstWhere(
                                   (id) => id != userId,
                                   orElse: () => '');
 
-                              return FutureBuilder<DocumentSnapshot>(
-                                  future: FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(receiverId)
-                                      .get(),
+                              return FutureBuilder(
+                                  future: SupabaseUtils.readUserFromSupabase(receiverId),
                                   builder: (context, userSnapshot) {
                                     String displayName = "User";
                                     String? photoUrl;
 
-                                    if (userSnapshot.hasData &&
-                                        userSnapshot.data!.exists) {
-                                      var data = userSnapshot.data!.data()
-                                          as Map<String, dynamic>?;
-                                      displayName = data?['name'] ?? "User";
-                                      photoUrl = data?['photoUrl'];
+                                    if (userSnapshot.hasData && userSnapshot.data != null) {
+                                      var data = userSnapshot.data!;
+                                      displayName = data.name ?? "User";
+                                      photoUrl = data.photoUrl;
                                     } else {
-                                      Map<String, dynamic>? displayNames =
+                                      Map? displayNames =
                                           chatData['displayNames']
-                                              as Map<String, dynamic>?;
-                                      Map<String, dynamic>? displayPhotos =
+                                              as Map?;
+                                      Map? displayPhotos =
                                           chatData['displayPhotos']
-                                              as Map<String, dynamic>?;
+                                              as Map?;
                                       displayName = displayNames?[receiverId] ??
                                           (userSnapshot.connectionState ==
                                                   ConnectionState.waiting

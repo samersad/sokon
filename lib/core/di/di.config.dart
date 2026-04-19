@@ -77,6 +77,8 @@ import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/cubit/my_bo
     as _i442;
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/cubit/settings_view_model.dart'
     as _i954;
+import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_view_model.dart'
+    as _i721;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -150,6 +152,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i549.AddApartmentViewModel>(
       () => _i549.AddApartmentViewModel(gh<_i139.ApartmentRepository>()),
+    );
+    gh.factory<_i721.SearchViewModel>(
+      () => _i721.SearchViewModel(gh<_i139.ApartmentRepository>()),
     );
     gh.factory<_i244.HomeTabViewModel>(
       () => _i244.HomeTabViewModel(

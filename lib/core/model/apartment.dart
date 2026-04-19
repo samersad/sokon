@@ -2,7 +2,7 @@ class Apartment {
   static const String collectionName = "apartments";
 
   String? id;
-  String? name; // Added name field
+  String? name; 
   String? description;
   double? price;
 
@@ -23,7 +23,7 @@ class Apartment {
 
   Apartment({
     this.id,
-    this.name, // Added name parameter
+    this.name,
     required this.description,
     required this.price,
     required this.images,
@@ -40,24 +40,17 @@ class Apartment {
     this.createdAt,
   });
 
-  /// 🔄 من Firestore
-  factory Apartment.fromFireStore(Map<String, dynamic> data) {
+  factory Apartment.fromSupaBase(Map<String, dynamic> data) {
     return Apartment(
-      id: data["id"],
-      name: data["name"], // Mapping name from Firestore
+      id: data["id"]?.toString(),
+      name: data["name"],
       description: data["description"],
       price: (data["price"] as num?)?.toDouble(),
-
-      images: data["images"] != null
-          ? List<String>.from(data["images"])
-          : [],
-
+      images: data["images"] != null ? List<String>.from(data["images"]) : [],
       videoUrl: data["video_url"],
-
       bedrooms: data["bedrooms"],
       bathrooms: data["bathrooms"],
       livingRooms: data["living_rooms"],
-
       address: data["address"],
       lat: (data["lat"] as num?)?.toDouble(),
       lng: (data["lng"] as num?)?.toDouble(),
@@ -68,11 +61,9 @@ class Apartment {
     );
   }
 
-  /// 🔄 إلى Firestore
-  Map<String, dynamic> toFireStore() {
-    return {
-      'id': id,
-      'name': name, // Saving name to Firestore
+  Map<String, dynamic> toSupaBase() {
+    final Map<String, dynamic> data = {
+      'name': name,
       'description': description,
       'price': price,
       'images': images,
@@ -88,5 +79,9 @@ class Apartment {
       'ownerPhotoUrl': ownerPhotoUrl,
       'createdAt': createdAt?.toIso8601String(),
     };
+    if (id != null) {
+      data['id'] = id;
+    }
+    return data;
   }
 }

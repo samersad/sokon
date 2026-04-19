@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 abstract class MessageStates {}
 
 class MessageInitial extends MessageStates {}
@@ -7,7 +5,7 @@ class MessageInitial extends MessageStates {}
 class MessageLoading extends MessageStates {}
 
 class MessageLoaded extends MessageStates {
-  final List<QueryDocumentSnapshot> chats;
+  final List<Map<String, dynamic>> chats;
   MessageLoaded(this.chats);
 }
 

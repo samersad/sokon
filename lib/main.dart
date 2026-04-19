@@ -1,8 +1,8 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
@@ -29,15 +29,17 @@ import 'features/ui/pages/nearby_estate_screen/nearby_estate_screen.dart';
 import 'features/ui/pages/notifaction_screen/notifaction_screen.dart';
 import 'features/ui/pages/tabs/profile_tab/add_card_screen/add_card_screen.dart';
 import 'features/ui/pages/tabs/profile_tab/my_apartments/my_apartments_screen.dart';
-import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await configureDependencies();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   await dotenv.load(fileName: ".env");
+  
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? '',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+  );
+
+  await configureDependencies();
 
   runApp(
     MultiBlocProvider(

@@ -124,4 +124,25 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   Future<void> signOut() async {
     await _client.auth.signOut();
   }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
+  @override
+  Future<void> verifyOTP(String email, String token) async {
+    await _client.auth.verifyOTP(
+      email: email,
+      token: token,
+      type: OtpType.recovery,
+    );
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    await _client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+  }
 }

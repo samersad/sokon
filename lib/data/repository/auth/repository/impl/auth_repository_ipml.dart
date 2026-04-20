@@ -30,4 +30,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signOut() => remoteDataSource.signOut();
+
+  @override
+  Future<void> resetPassword(String email) => remoteDataSource.resetPassword(email);
+
+  @override
+  Future<void> verifyOTP(String email, String token) => remoteDataSource.verifyOTP(email, token);
+
+  @override
+  Future<void> updatePassword(String newPassword) => remoteDataSource.updatePassword(newPassword);
 }

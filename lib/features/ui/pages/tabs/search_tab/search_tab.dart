@@ -8,7 +8,6 @@ import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_states.dart';
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_view_model.dart';
 import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
-import 'package:sokon/features/ui/widgets/nearby_estate_card.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -21,7 +20,7 @@ class _SearchTabState extends State<SearchTab> {
   final SearchViewModel viewModel = getIt<SearchViewModel>();
   final TextEditingController _searchController = TextEditingController();
 
-  // Filter state variables
+  // Filter state
   bool _isForRent = true;
   bool _isForSale = false;
   String _selectedPropertyType = "Apartment";
@@ -93,29 +92,48 @@ class _SearchTabState extends State<SearchTab> {
                   builder: (context, state) {
                     if (state is SearchLoading) {
                       return const Center(child: CircularProgressIndicator());
-                    } else if (state is SearchError) {
+                    }
+                    if (state is SearchError) {
                       return Center(child: Text("Error: ${state.message}"));
-                    } else if (state is SearchLoaded) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                    }
+
+                    return ListView(
+                      children: [
+                        if (state is SearchInitial && state.recentSearches.isNotEmpty) ...[
+                          Text("Recent", style: AppStyles.bold18PrimaryColor),
+                          SizedBox(height: 10.h),
+                          ...state.recentSearches.map((s) => _buildListItem(
+                                icon: Icons.access_time,
+                                title: s,
+                                subtitle: "Recent Search",
+                                onTap: () {
+                                  _searchController.text = s;
+                                  viewModel.search(s);
+                                },
+                              )),
+                          SizedBox(height: 20.h),
+                        ],
+                        if (state is SearchLoaded) ...[
                           Text("Result", style: AppStyles.bold18PrimaryColor),
                           SizedBox(height: 10.h),
-                          Expanded(
-                            child: state.results.isEmpty
-                                ? const Center(child: Text("No estates found."))
-                                : ListView.separated(
-                                    itemCount: state.results.length,
-                                    separatorBuilder: (context, index) => SizedBox(height: 15.h),
-                                    itemBuilder: (context, index) {
-                                      return NearbyEstateCard(apartment: state.results[index]);
-                                    },
-                                  ),
-                          ),
-                        ],
-                      );
-                    }
-                    return const SizedBox.shrink();
+                          if (state.results.isEmpty)
+                            const Center(child: Text("No estates found."))
+                          else
+                            ...state.results.map((apartment) => _buildListItem(
+                                  icon: Icons.location_on_outlined,
+                                  title: apartment.name ?? "Estate",
+                                  subtitle: apartment.address ?? "No address provided",
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      'apartmentDetails', // Replace with AppRoutes.apartmentDetailsRoute
+                                      arguments: apartment,
+                                    );
+                                  },
+                                )),
+                        ]
+                      ],
+                    );
                   },
                 ),
               ),
@@ -123,6 +141,28 @@ class _SearchTabState extends State<SearchTab> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildListItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: EdgeInsets.all(8.sp),
+        decoration: BoxDecoration(
+          color: AppColors.offWhiteColor,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: AppColors.grayColor, size: 20.sp),
+      ),
+      title: Text(title, style: AppStyles.semiBold15black),
+      subtitle: Text(subtitle, style: AppStyles.medium10blueDarkColor),
     );
   }
 
@@ -137,9 +177,9 @@ class _SearchTabState extends State<SearchTab> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setSheetState) {
             return DraggableScrollableSheet(
-              initialChildSize: 0.7,
+              initialChildSize: 0.8,
               minChildSize: 0.5,
-              maxChildSize: 0.9,
+              maxChildSize: 0.95,
               expand: false,
               builder: (context, scrollController) {
                 return Padding(
@@ -163,46 +203,15 @@ class _SearchTabState extends State<SearchTab> {
                         Center(child: Text("Filter", style: AppStyles.bold20black)),
                         SizedBox(height: 30.h),
                         Text("Looking for", style: AppStyles.bold16PrimaryColor),
-                        CheckboxListTile(
-                          title: Text("For Rent", style: AppStyles.medium13Gray),
-                          value: _isForRent,
-                          activeColor: AppColors.primaryColor,
-                          onChanged: (val) {
-                            setSheetState(() {
-                              _isForRent = val ?? false;
-                            });
-                          },
-                          controlAffinity: ListTileControlAffinity.trailing,
-                        ),
-                        CheckboxListTile(
-                          title: Text("For Sale", style: AppStyles.medium13Gray),
-                          value: _isForSale,
-                          activeColor: AppColors.primaryColor,
-                          onChanged: (val) {
-                            setSheetState(() {
-                              _isForSale = val ?? false;
-                            });
-                          },
-                          controlAffinity: ListTileControlAffinity.trailing,
-                        ),
+                        _buildFilterCheckbox("For Rent", _isForRent, (v) => setSheetState(() => _isForRent = v!)),
+                        _buildFilterCheckbox("For Sale", _isForSale, (v) => setSheetState(() => _isForSale = v!)),
                         SizedBox(height: 20.h),
                         Text("Property Type", style: AppStyles.bold16PrimaryColor),
-                        SizedBox(height: 10.h),
-                        Wrap(
-                          spacing: 10,
-                          children: ["Apartment", "Penthouse", "Hotel", "Villa"].map((type) {
-                            return ChoiceChip(
-                              label: Text(type),
-                              selected: _selectedPropertyType == type,
-                              selectedColor: AppColors.primaryColor.withOpacity(0.2),
-                              onSelected: (val) {
-                                setSheetState(() {
-                                  _selectedPropertyType = type;
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ),
+                        ...["Apartment", "Penthouse", "Hotel", "Villa"].map((type) => _buildFilterCheckbox(
+                              type,
+                              _selectedPropertyType == type,
+                              (v) => setSheetState(() => _selectedPropertyType = type),
+                            )),
                         SizedBox(height: 20.h),
                         Text("Price Range", style: AppStyles.bold16PrimaryColor),
                         RangeSlider(
@@ -215,11 +224,14 @@ class _SearchTabState extends State<SearchTab> {
                             "\$${_currentRangeValues.start.round()}",
                             "\$${_currentRangeValues.end.round()}",
                           ),
-                          onChanged: (val) {
-                            setSheetState(() {
-                              _currentRangeValues = val;
-                            });
-                          },
+                          onChanged: (val) => setSheetState(() => _currentRangeValues = val),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("\$${_currentRangeValues.start.round()}", style: AppStyles.medium12gray),
+                            Text("\$${_currentRangeValues.end.round()}", style: AppStyles.medium12gray),
+                          ],
                         ),
                         SizedBox(height: 20.h),
                         Text("Facilities", style: AppStyles.bold16PrimaryColor),
@@ -250,7 +262,9 @@ class _SearchTabState extends State<SearchTab> {
                                 child: Text("Reset", style: AppStyles.medium16RedColor),
                               ),
                             ),
+                            SizedBox(width: 15.w),
                             Expanded(
+                              flex: 2,
                               child: ElevatedButton(
                                 onPressed: () {
                                   viewModel.filter(
@@ -262,7 +276,7 @@ class _SearchTabState extends State<SearchTab> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryColor,
                                   padding: EdgeInsets.symmetric(vertical: 15.h),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                                 ),
                                 child: Text("Apply", style: AppStyles.semiBold14White),
                               ),
@@ -278,6 +292,17 @@ class _SearchTabState extends State<SearchTab> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildFilterCheckbox(String title, bool value, ValueChanged<bool?> onChanged) {
+    return CheckboxListTile(
+      title: Text(title, style: AppStyles.medium13Gray),
+      value: value,
+      activeColor: AppColors.primaryColor,
+      contentPadding: EdgeInsets.zero,
+      onChanged: onChanged,
+      controlAffinity: ListTileControlAffinity.trailing,
     );
   }
 
@@ -300,7 +325,7 @@ class _SearchTabState extends State<SearchTab> {
             decoration: BoxDecoration(
               color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : Colors.transparent,
               border: Border.all(color: isSelected ? AppColors.primaryColor : AppColors.grayColor.withOpacity(0.3)),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(icon, color: isSelected ? AppColors.primaryColor : AppColors.grayColor),
           ),

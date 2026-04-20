@@ -49,6 +49,8 @@ import 'package:sokon/data/repository/chat/repository/chat_repository.dart'
     as _i12;
 import 'package:sokon/data/repository/chat/repository/impl/chat_repository_impl.dart'
     as _i543;
+import 'package:sokon/features/ui/auth/forget_password/cubit/forget_password_view_model.dart'
+    as _i948;
 import 'package:sokon/features/ui/auth/login/cubit/login_view_model.dart'
     as _i682;
 import 'package:sokon/features/ui/auth/register/cubit/register_view_model.dart'
@@ -134,6 +136,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i977.AuthRepository>(),
         gh<_i910.UserViewModel>(),
       ),
+    );
+    gh.factory<_i948.ForgetPasswordViewModel>(
+      () => _i948.ForgetPasswordViewModel(gh<_i977.AuthRepository>()),
     );
     gh.factory<_i682.LoginViewModel>(
       () => _i682.LoginViewModel(gh<_i977.AuthRepository>()),

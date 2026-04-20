@@ -8,4 +8,7 @@ abstract class AuthRepository {
   Future<void> updateUserRole(MyUser user, String role);
   Future<MyUser> updateProfile(MyUser user, String name, File? profileImage);
   Future<void> signOut();
+  Future<void> resetPassword(String email);
+  Future<void> verifyOTP(String email, String token);
+  Future<void> updatePassword(String newPassword);
 }

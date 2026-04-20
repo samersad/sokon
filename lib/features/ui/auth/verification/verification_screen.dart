@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pinput/pinput.dart';
+import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/features/ui/auth/forget_password/cubit/forget_password_states.dart';
+import 'package:sokon/features/ui/auth/forget_password/cubit/forget_password_view_model.dart';
+import 'package:sokon/features/ui/widgets/alert_dialog_utils.dart';
 
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -19,6 +24,7 @@ class VerificationScreen extends StatefulWidget {
 class _VerificationScreenState extends State<VerificationScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _pinController = TextEditingController();
+  final ForgetPasswordViewModel viewModel = getIt<ForgetPasswordViewModel>();
 
   late final PinTheme defaultPinTheme;
   late final PinTheme focusedPinTheme;
@@ -28,24 +34,33 @@ class _VerificationScreenState extends State<VerificationScreen>
   int _secondsLeft = _startSeconds;
   Timer? _timer;
 
-
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
+  String? email;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    email = ModalRoute.of(context)!.settings.arguments as String?;
+    if (email != null) {
+      viewModel.userEmail = email;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
     defaultPinTheme = PinTheme(
-      width: 52.w,
-      height: 52.w,
+      width: 38.w, // Reduced width to accommodate 8 digits
+      height: 45.w,
       textStyle: const TextStyle(
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         color: Color(0xFF0A3D62),
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: const Color(0xFFB9C7D9),
           width: 1.2,
@@ -68,7 +83,6 @@ class _VerificationScreenState extends State<VerificationScreen>
 
     _startTimer();
 
-    // ---------- SHAKE ----------
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -79,7 +93,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ================= TIMER LOGIC =================
   void _startTimer() {
     _timer?.cancel();
     _secondsLeft = _startSeconds;
@@ -95,17 +108,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     });
   }
 
-  // ================= VALIDATION =================
-  void _validatePin(String pin) {
-    if (pin == '2222') {
-      debugPrint('OTP صحيح ✅');
-      // Navigate to next screen
-    } else {
-      _shakeController.forward(from: 0);
-      _pinController.clear();
-    }
-  }
-
   @override
   void dispose() {
     _timer?.cancel();
@@ -116,113 +118,119 @@ class _VerificationScreenState extends State<VerificationScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.whiteColor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Stack(
+    return BlocProvider.value(
+      value: viewModel,
+      child: BlocListener<ForgetPasswordViewModel, ForgetPasswordState>(
+        listener: (context, state) {
+          if (state is ForgetPasswordLoading) {
+            AlertDialogUtils.showLoading(context: context, msg: "Verifying OTP...");
+          } else if (state is ForgetPasswordError) {
+            AlertDialogUtils.hideLoading(context: context);
+            AlertDialogUtils.showMessage(context: context, msg: state.message, title: "Error");
+            _shakeController.forward(from: 0);
+          } else if (state is OTPSuccess) {
+            AlertDialogUtils.hideLoading(context: context);
+            Navigator.of(context).pushNamed(AppRoutes.forgetPassword2Route);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.whiteColor,
+          body: SingleChildScrollView(
+            child: Column(
               children: [
-                Image.asset(AppAssets.verificationBg),
+                Stack(
+                  children: [
+                    Image.asset(AppAssets.verificationBg),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 50.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Verification",
+                            style: AppStyles.regular30primary,
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            "* We will send you a message to reset your password",
+                            style: AppStyles.medium12gray,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 50.h),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w), // Reduced padding for 8 digits
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Verification",
-                        style: AppStyles.regular30primary,
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        "* We will send you a message to set or reset your new password",
+                        "Enter the 8-digit code sent to:",
                         style: AppStyles.medium12gray,
                       ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        email ?? "",
+                        style: AppStyles.semiBold15black,
+                      ),
+                      SizedBox(height: 24.h),
+                      AnimatedBuilder(
+                        animation: _shakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(_shakeAnimation.value, 0),
+                            child: child,
+                          );
+                        },
+                        child: Pinput(
+                          length: 8, // Set to 8 digits
+                          controller: _pinController,
+                          defaultPinTheme: defaultPinTheme,
+                          focusedPinTheme: focusedPinTheme,
+                          submittedPinTheme: submittedPinTheme,
+                          separatorBuilder: (index) => SizedBox(width: 5.w), // Smaller separator
+                          onCompleted: (pin) => viewModel.verifyOTP(pin),
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      _secondsLeft > 0
+                          ? Text(
+                              "Resend code in $_secondsLeft s",
+                              style: AppStyles.medium12gray,
+                            )
+                          : GestureDetector(
+                              onTap: () {
+                                if (email != null) viewModel.sendOTP(email!);
+                                _startTimer();
+                              },
+                              child: Text(
+                                "Resend Code",
+                                style: AppStyles.semiBold14Primary,
+                              ),
+                            ),
+                      SizedBox(height: 40.h),
+                      CustomElevatedButtom(
+                        onPressed: () {
+                          if (_pinController.text.length == 8) {
+                            viewModel.verifyOTP(_pinController.text);
+                          }
+                        },
+                        text: "Submit",
+                        width: 336.w,
+                        borderRadius: 30.r,
+                        backgroundColorElevated: AppColors.primaryColor,
+                        textStyle: AppStyles.semiBold20White,
+                        borderColor: AppColors.blackColor,
+                        customPadding: 16.h,
+                      ),
+                      SizedBox(height: 30.h),
                     ],
                   ),
                 ),
               ],
             ),
-
-            SizedBox(height: 12.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30.w),
-              child: Column(
-                children: [
-                  Text(
-                    "We will send you one time password this email address.",
-                    style: AppStyles.medium12gray,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    "(example123@gmail.com)",
-                    style: AppStyles.semiBold15black,
-                  ),
-                  SizedBox(height: 24.h),
-
-                  AnimatedBuilder(
-                    animation: _shakeAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(_shakeAnimation.value, 0),
-                        child: child,
-                      );
-                    },
-                    child: Pinput(
-                      length: 4,
-                      controller: _pinController,
-                      defaultPinTheme: defaultPinTheme,
-                      focusedPinTheme: focusedPinTheme,
-                      submittedPinTheme: submittedPinTheme,
-                      separatorBuilder: (index) =>
-                          SizedBox(width: 12.w),
-
-                      // 🔥 AUTO SUBMIT
-                      onCompleted: _validatePin,
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  _secondsLeft > 0
-                      ? Text(
-                    "Resend code in $_secondsLeft s",
-                    style: AppStyles.medium12gray,
-                  )
-                      : GestureDetector(
-                    onTap: () {
-                      debugPrint('Resend OTP');
-                      _startTimer();
-                    },
-                    child: Text(
-                      "Resend Code",
-                      style: AppStyles.semiBold14Primary,
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  // ================= SUBMIT =================
-                  CustomElevatedButtom(
-                    onPressed: () {
-                      _validatePin(_pinController.text);
-                      Navigator.of(context).pushNamed(AppRoutes.forgetPassword2Route);
-                    },
-                    text: "Submit",
-                    width: 336.w,
-                    borderRadius: 30.r,
-                    backgroundColorElevated:
-                    AppColors.primaryColor,
-                    textStyle: AppStyles.semiBold20White,
-                    borderColor: AppColors.blackColor,
-                    customPadding: 16.h,
-                  ),
-
-                  SizedBox(height: 30.h),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -152,7 +152,12 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
     if (existingUser != null) {
       final latestPhoto = fallbackPhotoUrl ?? metadataPhoto;
-      if (latestPhoto != null && latestPhoto != existingUser.photoUrl) {
+      final hasSavedCustomPhoto =
+          existingUser.photoUrl != null && existingUser.photoUrl!.isNotEmpty;
+
+      if (!hasSavedCustomPhoto &&
+          latestPhoto != null &&
+          latestPhoto != existingUser.photoUrl) {
         existingUser.photoUrl = latestPhoto;
         await SupabaseUtils.addUserToSupabase(existingUser);
       }

@@ -52,7 +52,37 @@ class _HomeTabState extends State<HomeTab> {
                     children: [
                       Expanded(
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (_) => SafeArea(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.my_location),
+                                      title: const Text("Use Current Location"),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        viewModel.getUserLocationData();
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.map),
+                                      title: const Text("Pick on Map"),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.userLocationPickerRoute,
+                                        ).then((_) => viewModel.refreshUserLocation());
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                           child: Container(
                             height: 50.h,
                             padding: EdgeInsets.symmetric(horizontal: 10.w),

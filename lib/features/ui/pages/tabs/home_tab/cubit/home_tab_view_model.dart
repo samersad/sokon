@@ -27,6 +27,15 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     }
   }
 
+  void refreshUserLocation() {
+    emit(HomeTabUserLocationLoaded(
+      userLocation: locationViewModel.userLocation,
+    ));
+    emit(HomeTabUserAddressLoaded(
+      address: locationViewModel.userAddress,
+    ));
+  }
+
   Future<void> getFeaturedEstateData() async {
     emit(HomeTabLoading());
     try {

@@ -42,12 +42,21 @@ dependencies:
   injectable_generator: ^2.12.1
   get_it: ^9.2.1
   path: ^1.9.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.11.0
+  equatable: ^2.0.8
+  dartz: ^0.10.1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  logger: ^2.7.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.13.1
+  freezed: ^3.2.5
+  json_serializable: ^6.13.1
 
 flutter:
   uses-material-design: true

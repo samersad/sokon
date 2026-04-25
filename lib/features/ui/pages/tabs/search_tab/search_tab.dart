@@ -8,6 +8,7 @@ import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_states.dart';
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_view_model.dart';
 import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
+import 'package:sokon/features/ui/widgets/featured_estates_card.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -51,17 +52,6 @@ class _SearchTabState extends State<SearchTab> {
             children: [
               Row(
                 children: [
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: EdgeInsets.all(10.sp),
-                      decoration: BoxDecoration(
-                        color: AppColors.offWhiteColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.arrow_back_ios_new, size: 18.sp, color: AppColors.blackColor),
-                    ),
-                  ),
                   SizedBox(width: 15.w),
                   Text("Search", style: AppStyles.bold24Primary),
                 ],
@@ -119,17 +109,9 @@ class _SearchTabState extends State<SearchTab> {
                           if (state.results.isEmpty)
                             const Center(child: Text("No estates found."))
                           else
-                            ...state.results.map((apartment) => _buildListItem(
-                                  icon: Icons.location_on_outlined,
-                                  title: apartment.name ?? "Estate",
-                                  subtitle: apartment.address ?? "No address provided",
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      'apartmentDetails', // Replace with AppRoutes.apartmentDetailsRoute
-                                      arguments: apartment,
-                                    );
-                                  },
+                            ...state.results.map((apartment) => Padding(
+                                  padding: EdgeInsets.only(bottom: 10.h),
+                                  child: FeaturedEstatesCard(apartment: apartment),
                                 )),
                         ]
                       ],

@@ -12,6 +12,7 @@ import 'package:sokon/features/ui/auth/forget_password/forget_password_screen2.d
 import 'package:sokon/features/ui/auth/register/register_screen.dart';
 import 'package:sokon/features/ui/auth/verification/verification_screen.dart';
 import 'package:sokon/features/ui/location_picker/location_picker.dart';
+import 'package:sokon/features/ui/location_picker/user_location_picker.dart';
 import 'package:sokon/features/ui/pages/add_apartment/edit_apartment.dart';
 import 'package:sokon/features/ui/pages/booking_screen/booking_screen.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
@@ -90,6 +91,7 @@ class MyApp extends StatelessWidget {
             AppRoutes.myApartmentsRoute: (context) => const MyApartmentsScreen(),
             AppRoutes.chatRoute: (context) => const ChatScreen(),
             AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
+            AppRoutes.userLocationPickerRoute: (context) => const UserLocationPicker(),
           },
           theme: ThemeData.light(),
         );

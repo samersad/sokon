@@ -66,6 +66,18 @@ class LocationViewModel extends Cubit<LocationState> {
     return "Unknown Address";
   }
 
+  Future<void> changeUserLocation(LatLng latLng) async {
+    emit(LocationLoading());
+    userLocation = latLng;
+    userAddress = await getAddressFromLatLng(latLng);
+    emit(LocationUpdated(
+      userLocation: userLocation,
+      userAddress: userAddress,
+      apartmentLocation: apartmentLocation,
+      apartmentAddress: apartmentAddress,
+    ));
+  }
+
   void clearApartmentLocation() {
     apartmentLocation = null;
     apartmentAddress = null;

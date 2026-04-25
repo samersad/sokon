@@ -23,14 +23,33 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  static const LatLng _defaultLocation = LatLng(30.0444, 31.2357);
+
   final HomeTabViewModel viewModel = getIt<HomeTabViewModel>();
+  GoogleMapController? _mapController;
 
   @override
   void initState() {
     super.initState();
-    viewModel.getUserLocationData();
-    viewModel.getFeaturedEstateData();
-    viewModel.getNearbyEstateData();
+    viewModel.loadHomeData();
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    viewModel.close();
+    super.dispose();
+  }
+
+  Future<void> _moveCameraToLocation(LatLng location) async {
+    final controller = _mapController;
+    if (controller == null) return;
+
+    await controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: location, zoom: 15),
+      ),
+    );
   }
 
   @override
@@ -38,9 +57,32 @@ class _HomeTabState extends State<HomeTab> {
     final userViewModel = context.read<UserViewModel>();
     final user = userViewModel.user;
 
-    return BlocBuilder<HomeTabViewModel, HomeTabStates>(
+    return BlocConsumer<HomeTabViewModel, HomeTabStates>(
       bloc: viewModel,
+      listenWhen: (previous, current) {
+        return previous.userLocation != current.userLocation ||
+            previous.errorMessage != current.errorMessage;
+      },
+      listener: (context, state) {
+        final location = state.userLocation;
+        if (location != null) {
+          _moveCameraToLocation(location);
+        }
+
+        final errorMessage = state.errorMessage;
+        if (errorMessage != null && errorMessage.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+          viewModel.clearErrorMessage();
+        }
+      },
       builder: (context, state) {
+        final address = state.userAddress ?? "Select Location";
+        final location = state.userLocation ?? _defaultLocation;
+        final featuredApartments = state.featuredApartments;
+        final nearbyApartments = state.nearbyApartments;
+
         return Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
@@ -96,19 +138,21 @@ class _HomeTabState extends State<HomeTab> {
                                 Image.asset(AppAssets.locationIcon, width: 16.w),
                                 SizedBox(width: 6.w),
                                 Expanded(
-                                  child: Builder(
-                                    builder: (context) {
-                                      String address = viewModel.locationViewModel.userAddress ?? "Select Location";
-                                      return Text(
-                                        address,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppStyles.medium10blueDarkColor,
-                                      );
-                                    }
+                                  child: Text(
+                                    address,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppStyles.medium10blueDarkColor,
                                   ),
                                 ),
-                                Image.asset(AppAssets.downIcon, width: 14.w),
+                                if (state.isLoadingLocation)
+                                  SizedBox(
+                                    width: 16.w,
+                                    height: 16.w,
+                                    child: const CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                else
+                                  Image.asset(AppAssets.downIcon, width: 14.w),
                               ],
                             ),
                           ),
@@ -139,43 +183,39 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                     ],
                   ),
-
                   SizedBox(height: 20.h),
-
                   const SearchWidget(
                     hintText: "Search House, Apartment, etc",
                   ),
-
                   SizedBox(height: 20.h),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: SizedBox(
                       height: 170.h,
-                      child: Builder(
-                        builder: (context) {
-                          LatLng? location = viewModel.locationViewModel.userLocation;
-                          return GoogleMap(
-                            initialCameraPosition: CameraPosition(
-                                target: location ?? const LatLng(30.0444, 31.2357),
-                                zoom: 15),
-                            zoomControlsEnabled: true,
-                            myLocationEnabled: true,
-                            myLocationButtonEnabled: true,
-                            scrollGesturesEnabled: true,
-                            markers: location != null
-                                ? {
-                                    Marker(
-                                      markerId: const MarkerId("Current Location"),
-                                      position: location,
-                                    )
-                                  }
-                                : {},
-                          );
-                        }
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: location,
+                          zoom: 15,
+                        ),
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+                          _moveCameraToLocation(location);
+                        },
+                        zoomControlsEnabled: true,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                        scrollGesturesEnabled: true,
+                        markers: state.userLocation != null
+                            ? {
+                                Marker(
+                                  markerId: const MarkerId("Current Location"),
+                                  position: state.userLocation!,
+                                ),
+                              }
+                            : {},
                       ),
                     ),
                   ),
-
                   SizedBox(height: 20.h),
                   Row(
                     children: [
@@ -186,35 +226,17 @@ class _HomeTabState extends State<HomeTab> {
                           Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
                         },
                         child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
-                      )
+                      ),
                     ],
                   ),
-
                   SizedBox(height: 10.h),
-
                   SizedBox(
                     height: 185.h,
-                    child: Builder(
-                      builder: (context) {
-                        final apartments = viewModel.apartmentViewModel.apartmentList;
-                        if (state is HomeTabLoading && apartments.isEmpty) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (apartments.isNotEmpty) {
-                          return ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: apartments.length,
-                            separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                            itemBuilder: (_, index) {
-                              return FeaturedEstatesCard(apartment: apartments[index]);
-                            },
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }
+                    child: _buildFeaturedSection(
+                      isLoading: state.isLoadingEstates,
+                      apartments: featuredApartments,
                     ),
                   ),
-
                   SizedBox(height: 20.h),
                   Row(
                     children: [
@@ -225,12 +247,10 @@ class _HomeTabState extends State<HomeTab> {
                           Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
                         },
                         child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
-                      )
+                      ),
                     ],
                   ),
-
                   SizedBox(height: 10.h),
-
                   SizedBox(
                     height: 60.h,
                     child: ListView.separated(
@@ -273,31 +293,15 @@ class _HomeTabState extends State<HomeTab> {
                           Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
                         },
                         child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
-                      )
+                      ),
                     ],
                   ),
-
                   SizedBox(height: 10.h),
                   SizedBox(
                     height: 285.h,
-                    child: Builder(
-                      builder: (context) {
-                        final apartments = viewModel.apartmentViewModel.apartmentList;
-                         if (state is HomeTabLoading && apartments.isEmpty) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (apartments.isNotEmpty) {
-                          return ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: apartments.length,
-                            separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                            itemBuilder: (_, index) {
-                              return NearbyEstateCard(apartment: apartments[index]);
-                            },
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }
+                    child: _buildNearbySection(
+                      isLoading: state.isLoadingEstates,
+                      apartments: nearbyApartments,
                     ),
                   ),
                   SizedBox(height: 60.h),
@@ -306,6 +310,50 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildFeaturedSection({
+    required bool isLoading,
+    required List apartments,
+  }) {
+    if (isLoading && apartments.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (apartments.isEmpty) {
+      return const Center(child: Text("No featured estates available"));
+    }
+
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: apartments.length,
+      separatorBuilder: (_, __) => SizedBox(width: 10.w),
+      itemBuilder: (_, index) {
+        return FeaturedEstatesCard(apartment: apartments[index]);
+      },
+    );
+  }
+
+  Widget _buildNearbySection({
+    required bool isLoading,
+    required List apartments,
+  }) {
+    if (isLoading && apartments.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (apartments.isEmpty) {
+      return const Center(child: Text("No nearby estates available"));
+    }
+
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: apartments.length,
+      separatorBuilder: (_, __) => SizedBox(width: 10.w),
+      itemBuilder: (_, index) {
+        return NearbyEstateCard(apartment: apartments[index]);
       },
     );
   }

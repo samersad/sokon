@@ -7,6 +7,7 @@ import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/data/repository/auth/repository/auth_repository.dart';
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen.dart';
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen2.dart';
 import 'package:sokon/features/ui/auth/register/register_screen.dart';
@@ -34,20 +35,27 @@ import 'features/ui/pages/tabs/profile_tab/my_apartments/my_apartments_screen.da
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  
+
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
 
   await configureDependencies();
+  final userViewModel = getIt<UserViewModel>();
+  final locationViewModel = getIt<LocationViewModel>();
+  final apartmentViewModel = getIt<ApartmentViewModel>();
+  final authRepository = getIt<AuthRepository>();
+
+  final restoredUser = await authRepository.restoreSession();
+  userViewModel.updateUser(restoredUser);
 
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => getIt<UserViewModel>()),
-        BlocProvider(create: (context) => getIt<LocationViewModel>()),
-        BlocProvider(create: (context) => getIt<ApartmentViewModel>()),
+        BlocProvider.value(value: userViewModel),
+        BlocProvider.value(value: locationViewModel),
+        BlocProvider.value(value: apartmentViewModel),
       ],
       child: const MyApp(),
     ),
@@ -64,9 +72,13 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
+        final initialRoute = context.read<UserViewModel>().user == null
+            ? AppRoutes.loginRoute
+            : AppRoutes.homeScreenRoute;
+
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          initialRoute: AppRoutes.loginRoute,
+          initialRoute: initialRoute,
           routes: {
             AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
             AppRoutes.loginRoute: (context) => const LoginScreen(),

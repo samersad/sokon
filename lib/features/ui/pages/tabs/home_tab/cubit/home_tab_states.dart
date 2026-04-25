@@ -2,44 +2,47 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../../../core/model/apartment.dart';
 
-abstract class HomeTabStates {}
-
-class HomeTabInitial extends HomeTabStates {}
-
-class HomeTabLoading extends HomeTabStates {}
-
-class HomeTabError extends HomeTabStates {
-  final String message;
-  HomeTabError(this.message);
-}
-
-class HomeTabUserLocationLoaded extends HomeTabStates {
+class HomeTabStates {
+  final bool isLoadingLocation;
+  final bool isLoadingEstates;
   final LatLng? userLocation;
+  final String? userAddress;
+  final List<Apartment> featuredApartments;
+  final List<Apartment> nearbyApartments;
+  final String? errorMessage;
 
-  HomeTabUserLocationLoaded({
+  const HomeTabStates({
+    this.isLoadingLocation = false,
+    this.isLoadingEstates = false,
     this.userLocation,
+    this.userAddress,
+    this.featuredApartments = const [],
+    this.nearbyApartments = const [],
+    this.errorMessage,
   });
-}
-class HomeTabUserAddressLoaded extends HomeTabStates {
 
-  final String? address;
+  factory HomeTabStates.initial() => const HomeTabStates();
 
-  HomeTabUserAddressLoaded({
-
-    this.address,
-  });
-}
-class HomeTabNearbyEstateLoaded extends HomeTabStates {
-  final List<Apartment> allApartments;
-
-  HomeTabNearbyEstateLoaded({
-    required this.allApartments,
-  });
-}
-class HomeTabFeaturedEstateLoaded extends HomeTabStates {
-  final List<Apartment> allApartments;
-
-  HomeTabFeaturedEstateLoaded({
-    required this.allApartments,
-  });
+  HomeTabStates copyWith({
+    bool? isLoadingLocation,
+    bool? isLoadingEstates,
+    LatLng? userLocation,
+    bool clearUserLocation = false,
+    String? userAddress,
+    bool clearUserAddress = false,
+    List<Apartment>? featuredApartments,
+    List<Apartment>? nearbyApartments,
+    String? errorMessage,
+    bool clearErrorMessage = false,
+  }) {
+    return HomeTabStates(
+      isLoadingLocation: isLoadingLocation ?? this.isLoadingLocation,
+      isLoadingEstates: isLoadingEstates ?? this.isLoadingEstates,
+      userLocation: clearUserLocation ? null : (userLocation ?? this.userLocation),
+      userAddress: clearUserAddress ? null : (userAddress ?? this.userAddress),
+      featuredApartments: featuredApartments ?? this.featuredApartments,
+      nearbyApartments: nearbyApartments ?? this.nearbyApartments,
+      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
 }

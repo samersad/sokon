@@ -18,14 +18,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       password: password,
     );
     
-    if (res.user != null) {
-      var user = await SupabaseUtils.readUserFromSupabase(res.user!.id);
-      if (user != null) {
-        return user;
-      } else {
-        throw Exception("User data not found in database.");
-      }
-    }
+    if (res.user != null) return _resolveUserProfile(res.user!);
     throw Exception("Authentication failed");
   }
 
@@ -39,11 +32,14 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     
     if (res.user == null) throw Exception("Registration failed");
 
-    return MyUser(
+    final user = MyUser(
       id: res.user!.id,
       name: name,
       email: email,
     );
+
+    await SupabaseUtils.addUserToSupabase(user);
+    return user;
   }
 
   @override
@@ -53,7 +49,10 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       await signIn.initialize(
         clientId: dotenv.env['server_client_id'],
       );
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
+      await signIn.signOut();
+      await signIn.disconnect().catchError((_) {});
+
+      final GoogleSignInAccount? googleUser = await signIn.authenticate();
       if (googleUser == null) {
         throw Exception("Google Sign-In cancelled");
       }
@@ -68,32 +67,24 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       );
 
       if (res.user != null) {
-        var user = await SupabaseUtils.readUserFromSupabase(res.user!.id);
-        
-        // Always extract current Google photo
-        String? googlePhoto = res.user!.userMetadata?['avatar_url'] ?? googleUser.photoUrl;
-
-        if (user == null) {
-          user = MyUser(
-            id: res.user!.id,
-            name: res.user!.userMetadata?['full_name'] ?? googleUser.displayName ?? "",
-            email: res.user!.email ?? googleUser.email,
-            photoUrl: googlePhoto,
-          );
-          await SupabaseUtils.addUserToSupabase(user);
-        } else {
-          // If user exists, update their photo if it's different from what we have
-          if (googlePhoto != null && user.photoUrl != googlePhoto) {
-            user.photoUrl = googlePhoto;
-            await SupabaseUtils.addUserToSupabase(user);
-          }
-        }
-        return user;
+        return _resolveUserProfile(
+          res.user!,
+          fallbackName: googleUser.displayName,
+          fallbackEmail: googleUser.email,
+          fallbackPhotoUrl: googleUser.photoUrl,
+        );
       }
       throw Exception("Supabase Google Sign-In failed");
     } catch (e) {
       rethrow;
     }
+  }
+
+  @override
+  Future<MyUser?> restoreSession() async {
+    final currentUser = _client.auth.currentUser;
+    if (currentUser == null) return null;
+    return _resolveUserProfile(currentUser);
   }
 
   @override
@@ -122,6 +113,9 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> signOut() async {
+    final GoogleSignIn signIn = GoogleSignIn.instance;
+    await signIn.signOut().catchError((_) {});
+    await signIn.disconnect().catchError((_) {});
     await _client.auth.signOut();
   }
 
@@ -144,5 +138,49 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     await _client.auth.updateUser(
       UserAttributes(password: newPassword),
     );
+  }
+
+  Future<MyUser> _resolveUserProfile(
+    User authUser, {
+    String? fallbackName,
+    String? fallbackEmail,
+    String? fallbackPhotoUrl,
+  }) async {
+    final existingUser = await SupabaseUtils.readUserFromSupabase(authUser.id);
+    final metadataPhoto =
+        _readMetadataString(authUser.userMetadata, 'avatar_url');
+
+    if (existingUser != null) {
+      final latestPhoto = fallbackPhotoUrl ?? metadataPhoto;
+      if (latestPhoto != null && latestPhoto != existingUser.photoUrl) {
+        existingUser.photoUrl = latestPhoto;
+        await SupabaseUtils.addUserToSupabase(existingUser);
+      }
+      return existingUser;
+    }
+
+    final user = MyUser(
+      id: authUser.id,
+      name:
+          fallbackName ??
+          _readMetadataString(authUser.userMetadata, 'full_name') ??
+          _readMetadataString(authUser.userMetadata, 'name') ??
+          _deriveNameFromEmail(authUser.email),
+      email: fallbackEmail ?? authUser.email ?? '',
+      photoUrl: fallbackPhotoUrl ?? metadataPhoto,
+    );
+
+    await SupabaseUtils.addUserToSupabase(user);
+    return user;
+  }
+
+  String? _readMetadataString(Map<String, dynamic>? metadata, String key) {
+    final value = metadata?[key];
+    return value is String && value.isNotEmpty ? value : null;
+  }
+
+  String _deriveNameFromEmail(String? email) {
+    if (email == null || email.isEmpty) return 'User';
+    return email.split('@').first;
   }
 }

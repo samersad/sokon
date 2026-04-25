@@ -21,9 +21,6 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<MyUser> signInWithGoogle() => remoteDataSource.signInWithGoogle();
 
   @override
-  Future<MyUser?> restoreSession() => remoteDataSource.restoreSession();
-
-  @override
   Future<void> updateUserRole(MyUser user, String role) =>
       remoteDataSource.updateUserRole(user, role);
 

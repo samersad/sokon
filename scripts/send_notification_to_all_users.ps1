@@ -1,3 +1,4 @@
+#powershell -ExecutionPolicy Bypass -File .\scripts\send_notification_to_all_users.ps1 -Title "Hello" -Body "This message is for all users"
 param(
     [Parameter(Mandatory = $true)]
     [string]$Title,

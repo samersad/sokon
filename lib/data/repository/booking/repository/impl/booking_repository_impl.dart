@@ -15,4 +15,15 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   Future<List<Booking>> getBookings(String userId) =>
       remoteDataSource.getBookings(userId);
+
+  @override
+  Future<bool> hasActiveBookingForApartment({
+    required String userId,
+    required String apartmentId,
+  }) {
+    return remoteDataSource.hasActiveBookingForApartment(
+      userId: userId,
+      apartmentId: apartmentId,
+    );
+  }
 }

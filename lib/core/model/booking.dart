@@ -13,7 +13,7 @@ class Booking {
   DateTime? startDate;
   DateTime? endDate;
   double? totalPrice;
-  String? status; // 'pending', 'confirmed', 'cancelled'
+  String? status; // 'pending', 'accepted', 'cancelled'
   DateTime? createdAt;
 
   Booking({

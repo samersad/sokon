@@ -1,25 +1,37 @@
 import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../../../../core/model/booking.dart';
-import '../../../../../../../data/repository/booking/repository/booking_repository.dart';
+
+import '../../../../../../../supabase_utils.dart';
 import 'my_bookings_states.dart';
 
 @injectable
 class MyBookingsViewModel extends Cubit<MyBookingsStates> {
-  final BookingRepository bookingRepository;
-  MyBookingsViewModel(this.bookingRepository) : super(MyBookingsInitial());
+  MyBookingsViewModel() : super(MyBookingsInitial());
 
-  List<Booking> bookingsList = [];
+  StreamSubscription? _bookingsSubscription;
 
   Future<void> getMyBookings(String userId) async {
     emit(MyBookingsLoading());
+    await _bookingsSubscription?.cancel();
     try {
-      final list = await bookingRepository.getBookings(userId);
-      bookingsList = list;
-      emit(MyBookingsSuccess(bookingsList));
+      _bookingsSubscription = SupabaseUtils.getBookingsStream(userId).listen(
+        (bookings) {
+          emit(MyBookingsSuccess(bookings));
+        },
+        onError: (error) {
+          emit(MyBookingsError(error.toString()));
+        },
+      );
     } catch (e) {
       emit(MyBookingsError(e.toString()));
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _bookingsSubscription?.cancel();
+    return super.close();
   }
 }

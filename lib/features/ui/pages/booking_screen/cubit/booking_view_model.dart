@@ -14,47 +14,80 @@ class BookingViewModel extends Cubit<BookingStates> {
   final BookingRepository bookingRepository;
 
   BookingViewModel(this.userViewModel, this.bookingRepository)
-      : super(BookingInitial());
-
-  DateTimeRange? selectedDate;
-  String? cardNumber;
-  String? cardHolder;
-  String? expiryDate;
+      : super(const BookingStates());
 
   void selectDateRange(DateTimeRange? picked) {
-    selectedDate = picked;
-    emit(BookingDateSelected(selectedDate));
+    emit(
+      state.copyWith(
+        selectedDate: picked,
+        showDateError: false,
+        status: BookingStatus.initial,
+        clearErrorMessage: true,
+      ),
+    );
   }
 
   void updateCardData(Map<String, dynamic> data) {
-    cardNumber = data["cardNumber"];
-    cardHolder = data["cardHolder"];
-    expiryDate = data["expiryDate"];
-    emit(BookingCardUpdated(
-      cardNumber: cardNumber,
-      cardHolder: cardHolder,
-      expiryDate: expiryDate,
-    ));
+    emit(
+      state.copyWith(
+        cardNumber: data["cardNumber"],
+        cardHolder: data["cardHolder"],
+        expiryDate: data["expiryDate"],
+        status: BookingStatus.initial,
+        clearErrorMessage: true,
+      ),
+    );
   }
 
   String getFormattedDate() {
-    if (selectedDate == null) return "Select Date";
+    if (state.selectedDate == null) return "Select Date";
     final format = DateFormat('dd MMM');
-    return "${format.format(selectedDate!.start)} - ${format.format(selectedDate!.end)}";
+    return "${format.format(state.selectedDate!.start)} - ${format.format(state.selectedDate!.end)}";
   }
 
   Future<void> confirmBooking(Apartment apartment) async {
-    if (selectedDate == null) {
-      emit(BookingError("Please select a date range"));
+    if (state.selectedDate == null) {
+      emit(
+        state.copyWith(
+          showDateError: true,
+          status: BookingStatus.error,
+          errorMessage: "Please select a date range",
+        ),
+      );
       return;
     }
 
     if (userViewModel.user == null) {
-      emit(BookingError("Please login to book"));
+      emit(
+        state.copyWith(
+          status: BookingStatus.error,
+          errorMessage: "Please login to book",
+        ),
+      );
       return;
     }
 
-    emit(BookingLoading());
+    final hasActiveBooking = await bookingRepository.hasActiveBookingForApartment(
+      userId: userViewModel.user!.id!,
+      apartmentId: apartment.id!,
+    );
+    if (hasActiveBooking) {
+      emit(
+        state.copyWith(
+          status: BookingStatus.error,
+          errorMessage: "You already rented this apartment. You can book it again after your current period ends.",
+        ),
+      );
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        showDateError: false,
+        status: BookingStatus.loading,
+        clearErrorMessage: true,
+      ),
+    );
 
     Booking booking = Booking(
       apartmentId: apartment.id,
@@ -67,17 +100,27 @@ class BookingViewModel extends Cubit<BookingStates> {
       clientName: userViewModel.user!.name,
       ownerId: apartment.ownerId,
       ownerName: apartment.ownerName,
-      startDate: selectedDate!.start,
-      endDate: selectedDate!.end,
+      startDate: state.selectedDate!.start,
+      endDate: state.selectedDate!.end,
       totalPrice: apartment.price,
       status: 'pending',
     );
 
     try {
       await bookingRepository.addBooking(booking);
-      emit(BookingSuccess());
+      emit(
+        state.copyWith(
+          status: BookingStatus.success,
+          clearErrorMessage: true,
+        ),
+      );
     } catch (e) {
-      emit(BookingError(e.toString()));
+      emit(
+        state.copyWith(
+          status: BookingStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 }

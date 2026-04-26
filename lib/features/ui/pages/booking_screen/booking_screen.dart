@@ -25,6 +25,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final BookingViewModel viewModel = getIt<BookingViewModel>();
   late Apartment apartment;
   bool isInitialized = false;
+  bool isLoadingShown = false;
 
   @override
   void didChangeDependencies() {
@@ -40,15 +41,27 @@ class _BookingScreenState extends State<BookingScreen> {
     return BlocListener<BookingViewModel, BookingStates>(
       bloc: viewModel,
       listener: (context, state) {
-        if (state is BookingLoading) {
+        if (state.status == BookingStatus.loading) {
+          isLoadingShown = true;
           AlertDialogUtils.showLoading(context: context, msg: "Processing...");
-        } else if (state is BookingError) {
-          AlertDialogUtils.hideLoading(context: context);
+        } else if (state.status == BookingStatus.error) {
+          if (isLoadingShown) {
+            AlertDialogUtils.hideLoading(context: context);
+            isLoadingShown = false;
+          }
+
+          if (state.errorMessage == "Please select a date range") {
+            return;
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(content: Text(state.errorMessage ?? "Something went wrong")),
           );
-        } else if (state is BookingSuccess) {
-          AlertDialogUtils.hideLoading(context: context);
+        } else if (state.status == BookingStatus.success) {
+          if (isLoadingShown) {
+            AlertDialogUtils.hideLoading(context: context);
+            isLoadingShown = false;
+          }
           showSuccessDialog(context);
         }
       },
@@ -167,6 +180,16 @@ class _BookingScreenState extends State<BookingScreen> {
                         ),
                       ),
 
+                      if (state.showDateError) ...[
+                        SizedBox(height: 8.h),
+                        Text(
+                          "Select date",
+                          style: AppStyles.regular14gray.copyWith(
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+
                       SizedBox(height: 10.h),
                       Divider(color: AppColors.grayColor),
 
@@ -183,14 +206,14 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       Row(
                         children: [
-                          if (viewModel.cardNumber != null)
+                          if (state.cardNumber != null)
                             Image.asset(AppAssets.mastercardIcon),
                           SizedBox(width: 10.w),
                           Expanded(
                             child: Text(
-                              viewModel.cardNumber == null
+                              state.cardNumber == null
                                   ? "No Card Added"
-                                  : "**** **** **** ${viewModel.cardNumber!.substring(viewModel.cardNumber!.length - 4)}",
+                                  : "**** **** **** ${state.cardNumber!.substring(state.cardNumber!.length - 4)}",
                               style: AppStyles.bold20black,
                             ),
                           ),
@@ -204,7 +227,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               }
                             },
                             child: Text(
-                              viewModel.cardNumber == null ? "Add Card" : "Edit",
+                              state.cardNumber == null ? "Add Card" : "Edit",
                               style: AppStyles.bold20black,
                             ),
                           ),
@@ -228,7 +251,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       Text("Price Details", style: AppStyles.bold20black),
 
                       buildRow("Period time",
-                          viewModel.selectedDate == null ? "-" : "${viewModel.selectedDate!.duration.inDays} Days"),
+                          state.selectedDate == null ? "-" : "${state.selectedDate!.duration.inDays} Days"),
                       buildRow("Monthly payment", "${apartment.price ?? 0} EG"),
                       buildRow("Tax", "10 EG"),
                       buildRow("Total", "${(apartment.price ?? 0) + 10} EG",
@@ -276,11 +299,11 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void showSuccessDialog(BuildContext context) {
+  void showSuccessDialog(BuildContext parentContext) {
     showDialog(
-      context: context,
+      context: parentContext,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -306,8 +329,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 25),
                   CustomElevatedButtom(
                     onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
+                      Navigator.of(parentContext).pushNamedAndRemoveUntil(
+                        AppRoutes.homeScreenRoute,
+                        (route) => false,
+                      );
                     },
                     text: "successfully",
                     customPadding: 15,

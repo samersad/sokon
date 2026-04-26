@@ -19,4 +19,23 @@ class BookingRemoteDataImpl implements BookingRemoteDataSource {
         .eq('clientId', userId);
     return response.map((e) => Booking.fromSupaBase(e as Map<String, dynamic>)).toList();
   }
+
+  @override
+  Future<bool> hasActiveBookingForApartment({
+    required String userId,
+    required String apartmentId,
+  }) async {
+    final List<dynamic> response = await SupabaseUtils.client
+        .from('bookings')
+        .select('id,status')
+        .eq('clientId', userId)
+        .eq('apartmentId', apartmentId)
+        .gte('endDate', DateTime.now().toIso8601String())
+        .limit(20);
+
+    return response.any((item) {
+      final status = (item['status'] as String?)?.toLowerCase().trim();
+      return status != 'cancelled' && status != 'rejected';
+    });
+  }
 }

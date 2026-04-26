@@ -174,7 +174,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  booking.status?.toUpperCase() ?? "PENDING",
+                  getStatusLabel(booking.status),
                   style: TextStyle(
                     color: getStatusColor(booking.status),
                     fontSize: 10.sp,
@@ -221,14 +221,40 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   }
 
   Color getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
+    switch (normalizeStatus(status)) {
+      case 'accepted':
+        return Colors.green;
       case 'confirmed':
         return Colors.green;
       case 'cancelled':
+        return Colors.red;
+      case 'rejected':
         return Colors.red;
       case 'pending':
       default:
         return Colors.orange;
     }
+  }
+
+  String getStatusLabel(String? status) {
+    switch (normalizeStatus(status)) {
+      case 'accepted':
+      case 'confirmed':
+        return 'ACCEPTED';
+      case 'cancelled':
+      case 'rejected':
+        return 'CANCELLED';
+      case 'pending':
+      default:
+        return 'PENDING';
+    }
+  }
+
+  String normalizeStatus(String? status) {
+    final normalized = status?.toLowerCase().trim();
+    if (normalized == null || normalized.isEmpty) {
+      return 'pending';
+    }
+    return normalized;
   }
 }

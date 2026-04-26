@@ -129,7 +129,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i57.ApartmentRepositoryImpl(gh<_i309.ApartmentRemoteDataSource>()),
     );
     gh.factory<_i442.MyBookingsViewModel>(
-      () => _i442.MyBookingsViewModel(gh<_i881.BookingRepository>()),
+      () => _i442.MyBookingsViewModel(),
     );
     gh.factory<_i951.ProfileViewModel>(
       () => _i951.ProfileViewModel(

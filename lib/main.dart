@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,6 +26,7 @@ import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_scree
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
 import 'core/cache/shared_prefs_helper.dart';
 import 'core/di/di.dart';
+import 'core/services/firebase_cloud_messaging.dart';
 import 'supabase_utils.dart';
 import 'core/utils/app_routes.dart';
 import 'features/ui/auth/login/login_screen.dart';
@@ -39,11 +41,14 @@ import 'features/ui/pages/tabs/profile_tab/my_apartments/my_apartments_screen.da
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp();
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
+  await FirebaseCloudMessaging.init();
+
 
   await configureDependencies();
   final userViewModel = getIt<UserViewModel>();

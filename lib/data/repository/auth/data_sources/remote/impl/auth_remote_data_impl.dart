@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:injectable/injectable.dart';
+import 'package:sokon/core/cache/shared_prefs_helper.dart';
 import '../../../../../../core/model/my_user.dart';
 import '../../../../../../supabase_utils.dart';
 import '../auth_remote_data_source.dart';
@@ -21,6 +23,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     if (res.user != null) {
       final user = await SupabaseUtils.readUserFromSupabase(res.user!.id);
       if (user != null) {
+        await _saveSessionData(user: user, token: res.session?.accessToken);
         return user;
       } else {
         throw Exception("User data not found in database.");
@@ -46,6 +49,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     );
 
     await SupabaseUtils.addUserToSupabase(user);
+    await _saveSessionData(user: user, token: res.session?.accessToken);
     return user;
   }
 
@@ -59,11 +63,8 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       await signIn.signOut();
       await signIn.disconnect().catchError((_) {});
 
-      final GoogleSignInAccount? googleUser = await signIn.authenticate();
-      if (googleUser == null) {
-        throw Exception("Google Sign-In cancelled");
-      }
-      final googleAuth = await googleUser.authentication;
+      final GoogleSignInAccount googleUser = await signIn.authenticate();
+      final googleAuth = googleUser.authentication;
       final idToken = googleAuth.idToken;
 
       if (idToken == null) throw Exception('No ID Token found.');
@@ -100,6 +101,8 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
             await SupabaseUtils.addUserToSupabase(user);
           }
         }
+        await _saveSessionData(user: user, token: res.session?.accessToken);
+        print("token is  ${res.session?.accessToken}");
         return user;
       }
       throw Exception("Supabase Google Sign-In failed");
@@ -112,6 +115,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   Future<void> updateUserRole(MyUser user, String role) async {
     user.role = role;
     await SupabaseUtils.addUserToSupabase(user);
+    await _cacheUser(user);
   }
 
   @override
@@ -129,6 +133,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     user.photoUrl = photoUrl;
 
     await SupabaseUtils.addUserToSupabase(user);
+    await _cacheUser(user);
     return user;
   }
 
@@ -138,6 +143,8 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     await signIn.signOut().catchError((_) {});
     await signIn.disconnect().catchError((_) {});
     await _client.auth.signOut();
+    await SharedPrefsHelper.removeData(key: "token");
+    await SharedPrefsHelper.removeData(key: "cached_user");
   }
 
   @override
@@ -158,6 +165,24 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   Future<void> updatePassword(String newPassword) async {
     await _client.auth.updateUser(
       UserAttributes(password: newPassword),
+    );
+  }
+
+  Future<void> _saveSessionData({
+    required MyUser user,
+    String? token,
+  }) async {
+    if (token != null && token.isNotEmpty) {
+      await SharedPrefsHelper.saveData(key: "token", value: token);
+    }
+
+    await _cacheUser(user);
+  }
+
+  Future<void> _cacheUser(MyUser user) async {
+    await SharedPrefsHelper.saveData(
+      key: "cached_user",
+      value: jsonEncode(user.toSupaBase()),
     );
   }
 }

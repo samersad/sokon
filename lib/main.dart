@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,6 +9,7 @@ import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/my_user.dart';
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen.dart';
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen2.dart';
 import 'package:sokon/features/ui/auth/register/register_screen.dart';
@@ -20,7 +23,9 @@ import 'package:sokon/features/ui/pages/tabs/message_tab/chat_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/my_bookings_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
+import 'core/cache/shared_prefs_helper.dart';
 import 'core/di/di.dart';
+import 'supabase_utils.dart';
 import 'core/utils/app_routes.dart';
 import 'features/ui/auth/login/login_screen.dart';
 import 'features/ui/pages/add_apartment/add_apartment.dart';
@@ -40,26 +45,63 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
 
-  if (Supabase.instance.client.auth.currentSession != null) {
-    await Supabase.instance.client.auth.signOut();
+  await configureDependencies();
+  final userViewModel = getIt<UserViewModel>();
+  final locationViewModel = getIt<LocationViewModel>();
+  final apartmentViewModel = getIt<ApartmentViewModel>();
+
+  await SharedPrefsHelper.init();
+  String routeName;
+  final token = SharedPrefsHelper.getData(key: "token");
+  MyUser? restoredUser;
+  final cachedUser = SharedPrefsHelper.getData(key: "cached_user");
+
+  if (cachedUser is String && cachedUser.isNotEmpty) {
+    final decodedUser = jsonDecode(cachedUser);
+    if (decodedUser is Map<String, dynamic>) {
+      restoredUser = MyUser.fromSupaBase(decodedUser);
+    }
+  } else if (token is String && token.isNotEmpty) {
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId != null) {
+      restoredUser = await SupabaseUtils.readUserFromSupabase(currentUserId);
+      if (restoredUser != null) {
+        await SharedPrefsHelper.saveData(
+          key: "cached_user",
+          value: jsonEncode(restoredUser.toSupaBase()),
+        );
+      }
+    }
   }
 
-  await configureDependencies();
+  userViewModel.updateUser(restoredUser);
+
+  if (token == null || restoredUser == null) {
+    if (token != null && restoredUser == null) {
+      await SharedPrefsHelper.removeData(key: "token");
+      await SharedPrefsHelper.removeData(key: "cached_user");
+    }
+    routeName = AppRoutes.loginRoute;
+  } else {
+    routeName = AppRoutes.homeScreenRoute;
+  }
 
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => getIt<UserViewModel>()),
-        BlocProvider(create: (context) => getIt<LocationViewModel>()),
-        BlocProvider(create: (context) => getIt<ApartmentViewModel>()),
+        BlocProvider.value(value: userViewModel),
+        BlocProvider.value(value: locationViewModel),
+        BlocProvider.value(value: apartmentViewModel),
       ],
-      child: const MyApp(),
+      child: MyApp(routeName: routeName),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.routeName});
+  final String routeName;
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +112,7 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          initialRoute: AppRoutes.loginRoute,
+          initialRoute: routeName,
           routes: {
             AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
             AppRoutes.loginRoute: (context) => const LoginScreen(),

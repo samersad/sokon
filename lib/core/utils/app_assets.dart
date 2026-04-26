@@ -1,6 +1,8 @@
 class AppAssets{
   static const String route = 'assets/images/Route.png';
   static const String SOKON = 'assets/images/SOKON.png';
+  static const String brandLogo = 'assets/images/Logo.png';
+  static const String appLogo = 'assets/images/appLogo.png';
   static const String googleIcon = 'assets/images/google.png';
   static const String appleIcon = 'assets/images/apple.png';
   static const String facebookIcon = 'assets/images/facebook.png';

@@ -203,6 +203,8 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
 
   String _getNotificationTitle(String? type) {
     switch (type) {
+      case 'broadcast':
+        return 'Announcement';
       case 'booking_accepted':
         return 'Booking Accepted';
       case 'booking_cancelled':
@@ -216,6 +218,8 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
 
   String _getNotificationAsset(String? type) {
     switch (type) {
+      case 'broadcast':
+        return AppAssets.appLogo;
       case 'new_message':
         return AppAssets.avatar;
       default:

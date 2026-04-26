@@ -43,7 +43,7 @@ class AppNotification {
     final Map<String, dynamic> data = {
       'title': title,
       'body': body,
-      'createdAt': createdAt?.toIso8601String(),
+      'createdAt': createdAt?.toUtc().toIso8601String(),
       'isRead': isRead,
       'type': type,
       'receiverId': receiverId,

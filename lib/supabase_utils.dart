@@ -126,7 +126,19 @@ class SupabaseUtils {
         .stream(primaryKey: ['id'])
         .eq('receiverId', userId)
         .order('createdAt', ascending: false)
-        .map((data) => data.map((e) => AppNotification.fromSupaBase(e)).toList());
+        .map((data) {
+          final notifications =
+              data.map((e) => AppNotification.fromSupaBase(e)).toList();
+          notifications.sort((a, b) {
+            final aTime = a.createdAt;
+            final bTime = b.createdAt;
+            if (aTime == null && bTime == null) return 0;
+            if (aTime == null) return 1;
+            if (bTime == null) return -1;
+            return bTime.compareTo(aTime);
+          });
+          return notifications;
+        });
   }
 
   static Future<void> markNotificationAsRead(String notificationId) async {

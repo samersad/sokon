@@ -180,8 +180,10 @@ class _HomeTabState extends State<HomeTab> {
                         child: BlocBuilder<NotificationViewModel, NotificationStates>(
                           bloc: notificationViewModel,
                           builder: (context, notificationState) {
-                            final hasNewNotification = notificationState is NotificationLoaded &&
-                                notificationState.unreadCount > 0;
+                            final unreadCount = notificationState is NotificationLoaded
+                                ? notificationState.unreadCount
+                                : 0;
+                            final hasNewNotification = unreadCount > 0;
                             return Stack(
                               clipBehavior: Clip.none,
                               children: [
@@ -202,7 +204,7 @@ class _HomeTabState extends State<HomeTab> {
                                       ),
                                       alignment: Alignment.center,
                                       child: Text(
-                                        '1',
+                                        unreadCount > 99 ? '99+' : '$unreadCount',
                                         style: AppStyles.medium12White.copyWith(
                                           fontSize: 9.sp,
                                         ),

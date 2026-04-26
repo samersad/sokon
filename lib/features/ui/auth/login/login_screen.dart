@@ -59,7 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 50.h),
-                    Image.asset(AppAssets.SOKON),
+                    Center(
+                      child: Image.asset(
+                        AppAssets.brandLogo,
+                        width: 220.w,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                     SizedBox(height: 50.h),
                     Container(
                       decoration: const BoxDecoration(

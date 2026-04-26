@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:injectable/injectable.dart';
+import 'package:sokon/supabase_utils.dart';
 import '../chat_remote_data_source.dart';
 
 @Injectable(as: ChatRemoteDataSource)
@@ -45,5 +46,16 @@ class ChatRemoteDataImpl implements ChatRemoteDataSource {
       ...messageData['messageData'],
       'timestamp': now,
     });
+
+    final notificationData = messageData['notificationData'] as Map<String, dynamic>?;
+    if (notificationData != null) {
+      await SupabaseUtils.addChatNotificationToSupabase(
+        receiverId: notificationData['receiverId'],
+        senderId: notificationData['senderId'],
+        senderName: notificationData['senderName'],
+        chatId: notificationData['chatId'],
+        message: notificationData['message'],
+      );
+    }
   }
 }

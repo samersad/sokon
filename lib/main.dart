@@ -51,19 +51,24 @@ Future<void> main() async {
   final apartmentViewModel = getIt<ApartmentViewModel>();
 
   await SharedPrefsHelper.init();
+  final supabaseClient = Supabase.instance.client;
+  await _refreshSupabaseSessionIfNeeded(supabaseClient);
+  await _syncRealtimeAuth(supabaseClient);
+  final session = supabaseClient.auth.currentSession;
+  final currentUserId = supabaseClient.auth.currentUser?.id;
   String routeName;
-  final token = SharedPrefsHelper.getData(key: "token");
   MyUser? restoredUser;
   final cachedUser = SharedPrefsHelper.getData(key: "cached_user");
 
-  if (cachedUser is String && cachedUser.isNotEmpty) {
-    final decodedUser = jsonDecode(cachedUser);
-    if (decodedUser is Map<String, dynamic>) {
-      restoredUser = MyUser.fromSupaBase(decodedUser);
+  if (session != null && currentUserId != null) {
+    if (cachedUser is String && cachedUser.isNotEmpty) {
+      final decodedUser = jsonDecode(cachedUser);
+      if (decodedUser is Map<String, dynamic>) {
+        restoredUser = MyUser.fromSupaBase(decodedUser);
+      }
     }
-  } else if (token is String && token.isNotEmpty) {
-    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    if (currentUserId != null) {
+
+    if (restoredUser == null) {
       restoredUser = await SupabaseUtils.readUserFromSupabase(currentUserId);
       if (restoredUser != null) {
         await SharedPrefsHelper.saveData(
@@ -76,15 +81,23 @@ Future<void> main() async {
 
   userViewModel.updateUser(restoredUser);
 
-  if (token == null || restoredUser == null) {
-    if (token != null && restoredUser == null) {
-      await SharedPrefsHelper.removeData(key: "token");
-      await SharedPrefsHelper.removeData(key: "cached_user");
-    }
+  if (session == null || restoredUser == null) {
+    await SharedPrefsHelper.removeData(key: "token");
+    await SharedPrefsHelper.removeData(key: "cached_user");
     routeName = AppRoutes.loginRoute;
   } else {
     routeName = AppRoutes.homeScreenRoute;
   }
+
+  supabaseClient.auth.onAuthStateChange.listen((data) async {
+    await supabaseClient.realtime.setAuth(data.session?.accessToken);
+
+    if (data.event == AuthChangeEvent.signedOut) {
+      await SharedPrefsHelper.removeData(key: "token");
+      await SharedPrefsHelper.removeData(key: "cached_user");
+      userViewModel.updateUser(null);
+    }
+  });
 
   runApp(
     MultiBlocProvider(
@@ -98,10 +111,37 @@ Future<void> main() async {
   );
 }
 
+Future<void> _refreshSupabaseSessionIfNeeded(SupabaseClient client) async {
+  final session = client.auth.currentSession;
+  if (session == null) {
+    return;
+  }
+
+  final expiresAt = session.expiresAt;
+  final isExpired =
+      expiresAt != null &&
+      DateTime.fromMillisecondsSinceEpoch(
+        expiresAt * 1000,
+      ).isBefore(DateTime.now().add(const Duration(minutes: 1)));
+
+  if (!isExpired || (session.refreshToken ?? '').isEmpty) {
+    return;
+  }
+
+  try {
+    await client.auth.refreshSession();
+  } catch (_) {
+    await client.auth.signOut();
+  }
+}
+
+Future<void> _syncRealtimeAuth(SupabaseClient client) async {
+  await client.realtime.setAuth(client.auth.currentSession?.accessToken);
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.routeName});
   final String routeName;
-
 
   @override
   Widget build(BuildContext context) {
@@ -117,27 +157,36 @@ class MyApp extends StatelessWidget {
             AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
             AppRoutes.loginRoute: (context) => const LoginScreen(),
             AppRoutes.registerRoute: (context) => const RegisterScreen(),
-            AppRoutes.forgetPasswordRoute: (context) => const ForgetPasswordScreen(),
-            AppRoutes.verificationRoute: (context) => const VerificationScreen(),
-            AppRoutes.forgetPassword2Route: (context) => const ForgetPasswordScreen2(),
+            AppRoutes.forgetPasswordRoute: (context) =>
+                const ForgetPasswordScreen(),
+            AppRoutes.verificationRoute: (context) =>
+                const VerificationScreen(),
+            AppRoutes.forgetPassword2Route: (context) =>
+                const ForgetPasswordScreen2(),
             AppRoutes.addApartmentRoute: (context) => const AddApartment(),
             AppRoutes.editApartmentRoute: (context) {
-              final apartment = ModalRoute.of(context)!.settings.arguments as Apartment;
+              final apartment =
+                  ModalRoute.of(context)!.settings.arguments as Apartment;
               return EditApartment(apartment: apartment);
             },
-            AppRoutes.apartmentDetailsRoute: (context) => const ApartmentDetails(),
+            AppRoutes.apartmentDetailsRoute: (context) =>
+                const ApartmentDetails(),
             AppRoutes.locationPickerRoute: (context) => const LocationPicker(),
             AppRoutes.topLocationRoute: (context) => const TopLocationScreen(),
-            AppRoutes.nearbyEstateRoute: (context) => const NearbyEstateScreen(),
-            AppRoutes.featuredEstateRoute: (context) => const FeaturedEstateScreen(),
+            AppRoutes.nearbyEstateRoute: (context) =>
+                const NearbyEstateScreen(),
+            AppRoutes.featuredEstateRoute: (context) =>
+                const FeaturedEstateScreen(),
             AppRoutes.settingsScreenRoute: (context) => const SettingsScreen(),
             AppRoutes.notificationRoute: (context) => const NotifactionScreen(),
             AppRoutes.addCardRoute: (context) => const AddCardScreen(),
             AppRoutes.bookingRoute: (context) => const BookingScreen(),
-            AppRoutes.myApartmentsRoute: (context) => const MyApartmentsScreen(),
+            AppRoutes.myApartmentsRoute: (context) =>
+                const MyApartmentsScreen(),
             AppRoutes.chatRoute: (context) => const ChatScreen(),
             AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
-            AppRoutes.userLocationPickerRoute: (context) => const UserLocationPicker(),
+            AppRoutes.userLocationPickerRoute: (context) =>
+                const UserLocationPicker(),
           },
           theme: ThemeData.light(),
         );

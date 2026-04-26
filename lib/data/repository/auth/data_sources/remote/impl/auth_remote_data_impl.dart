@@ -23,7 +23,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     if (res.user != null) {
       final user = await SupabaseUtils.readUserFromSupabase(res.user!.id);
       if (user != null) {
-        await _saveSessionData(user: user, token: res.session?.accessToken);
+        await _saveSessionData(user: user);
         return user;
       } else {
         throw Exception("User data not found in database.");
@@ -49,7 +49,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     );
 
     await SupabaseUtils.addUserToSupabase(user);
-    await _saveSessionData(user: user, token: res.session?.accessToken);
+    await _saveSessionData(user: user);
     return user;
   }
 
@@ -101,8 +101,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
             await SupabaseUtils.addUserToSupabase(user);
           }
         }
-        await _saveSessionData(user: user, token: res.session?.accessToken);
-        print("token is  ${res.session?.accessToken}");
+        await _saveSessionData(user: user);
         return user;
       }
       throw Exception("Supabase Google Sign-In failed");
@@ -170,12 +169,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
   Future<void> _saveSessionData({
     required MyUser user,
-    String? token,
   }) async {
-    if (token != null && token.isNotEmpty) {
-      await SharedPrefsHelper.saveData(key: "token", value: token);
-    }
-
     await _cacheUser(user);
   }
 

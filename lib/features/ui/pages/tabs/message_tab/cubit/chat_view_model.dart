@@ -51,6 +51,13 @@ class ChatViewModel extends Cubit<ChatState> {
           'senderId': senderId,
           'message': msg,
         },
+        'notificationData': {
+          'receiverId': receiverId,
+          'senderId': senderId,
+          'senderName': senderName,
+          'chatId': chatId,
+          'message': msg,
+        },
         'chatMetadata': {
           'lastMessage': msg,
           'users': [senderId, receiverId],

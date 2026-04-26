@@ -52,7 +52,7 @@ class SupabaseUtils {
     final response = await client.from('apartments').insert(apartment.toSupaBase()).select().single();
     apartment.id = response['id'].toString();
 
-    await addNotificationToSupabase(AppNotification(
+    await tryAddNotificationToSupabase(AppNotification(
       title: "New Apartment Added",
       body: "Owner ${apartment.ownerName} added a new apartment: ${apartment.name}",
       createdAt: DateTime.now(),
@@ -87,12 +87,14 @@ class SupabaseUtils {
     final response = await client.from('bookings').insert(booking.toSupaBase()).select().single();
     booking.id = response['id'].toString();
 
-    await addNotificationToSupabase(AppNotification(
+    await tryAddNotificationToSupabase(AppNotification(
       title: "New Booking Request",
       body: "Client ${booking.clientName} booked ${booking.apartmentName} from ${booking.ownerName}",
       createdAt: DateTime.now(),
       type: 'new_booking',
       isRead: false,
+      receiverId: booking.ownerId,
+      bookingId: booking.id,
     ));
   }
 
@@ -110,11 +112,58 @@ class SupabaseUtils {
     notification.id = response['id'].toString();
   }
 
-  static Stream<List<AppNotification>> getNotificationsStream() {
+  static Future<void> tryAddNotificationToSupabase(AppNotification notification) async {
+    try {
+      await addNotificationToSupabase(notification);
+    } catch (_) {
+      // Keep core flows working even if the notification schema is not migrated yet.
+    }
+  }
+
+  static Stream<List<AppNotification>> getNotificationsStream(String userId) {
     return client
         .from('notifications')
         .stream(primaryKey: ['id'])
+        .eq('receiverId', userId)
         .order('createdAt', ascending: false)
         .map((data) => data.map((e) => AppNotification.fromSupaBase(e)).toList());
+  }
+
+  static Future<void> markNotificationAsRead(String notificationId) async {
+    await client
+        .from('notifications')
+        .update({'isRead': true})
+        .eq('id', notificationId);
+  }
+
+  static Future<void> markAllNotificationsAsRead(String userId) async {
+    await client
+        .from('notifications')
+        .update({'isRead': true})
+        .eq('receiverId', userId)
+        .eq('isRead', false);
+  }
+
+  static Future<void> addChatNotificationToSupabase({
+    required String receiverId,
+    required String senderId,
+    required String senderName,
+    required String chatId,
+    required String message,
+  }) async {
+    final preview = message.length > 60 ? "${message.substring(0, 60)}..." : message;
+
+    await tryAddNotificationToSupabase(
+      AppNotification(
+        title: senderName,
+        body: preview,
+        createdAt: DateTime.now(),
+        type: 'new_message',
+        isRead: false,
+        receiverId: receiverId,
+        chatId: chatId,
+        senderId: senderId,
+      ),
+    );
   }
 }

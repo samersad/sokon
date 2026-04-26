@@ -67,6 +67,8 @@ import 'package:sokon/features/ui/pages/home_screen/cubit/home_screen_view_model
     as _i286;
 import 'package:sokon/features/ui/pages/nearby_estate_screen/cubit/nearby_estate_view_model.dart'
     as _i1039;
+import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_view_model.dart'
+    as _i730;
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart'
     as _i244;
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/chat_view_model.dart'
@@ -95,6 +97,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i286.HomeScreenViewModel>(() => _i286.HomeScreenViewModel());
     gh.lazySingleton<_i71.LocationViewModel>(() => _i71.LocationViewModel());
+    gh.lazySingleton<_i730.NotificationViewModel>(
+      () => _i730.NotificationViewModel(),
+    );
     gh.lazySingleton<_i910.UserViewModel>(() => _i910.UserViewModel());
     gh.factory<_i309.ApartmentRemoteDataSource>(
       () => _i268.ApartmentRemoteDataImpl(),

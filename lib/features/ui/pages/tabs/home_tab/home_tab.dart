@@ -7,6 +7,8 @@ import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_states.dart';
+import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_view_model.dart';
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_states.dart';
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart';
 
@@ -26,12 +28,19 @@ class _HomeTabState extends State<HomeTab> {
   static const LatLng _defaultLocation = LatLng(30.0444, 31.2357);
 
   final HomeTabViewModel viewModel = getIt<HomeTabViewModel>();
+  final NotificationViewModel notificationViewModel = getIt<NotificationViewModel>();
   GoogleMapController? _mapController;
 
   @override
   void initState() {
     super.initState();
     viewModel.loadHomeData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<UserViewModel>().user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        notificationViewModel.listenToNotifications(userId);
+      }
+    });
   }
 
   @override
@@ -168,7 +177,42 @@ class _HomeTabState extends State<HomeTab> {
                         onTap: () {
                           Navigator.of(context).pushNamed(AppRoutes.notificationRoute);
                         },
-                        child: Image.asset(AppAssets.notification, width: 24.w),
+                        child: BlocBuilder<NotificationViewModel, NotificationStates>(
+                          bloc: notificationViewModel,
+                          builder: (context, notificationState) {
+                            final hasNewNotification = notificationState is NotificationLoaded &&
+                                notificationState.unreadCount > 0;
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Image.asset(AppAssets.notification, width: 24.w),
+                                if (hasNewNotification)
+                                  Positioned(
+                                    right: -8.w,
+                                    top: -8.h,
+                                    child: Container(
+                                      constraints: BoxConstraints(
+                                        minWidth: 18.w,
+                                        minHeight: 18.h,
+                                      ),
+                                      padding: EdgeInsets.symmetric(horizontal: 4.w),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.redColor,
+                                        borderRadius: BorderRadius.circular(20.r),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '1',
+                                        style: AppStyles.medium12White.copyWith(
+                                          fontSize: 9.sp,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                       SizedBox(width: 10.w),
                       InkWell(

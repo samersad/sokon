@@ -5,7 +5,11 @@ class AppNotification {
   String? body;
   DateTime? createdAt;
   bool? isRead;
-  String? type; // 'new_apartment', 'new_booking'
+  String? type; // 'new_apartment', 'new_booking', 'booking_accepted', 'booking_cancelled', 'new_message'
+  String? receiverId;
+  String? bookingId;
+  String? chatId;
+  String? senderId;
 
   AppNotification({
     this.id,
@@ -14,6 +18,10 @@ class AppNotification {
     this.createdAt,
     this.isRead = false,
     this.type,
+    this.receiverId,
+    this.bookingId,
+    this.chatId,
+    this.senderId,
   });
 
   factory AppNotification.fromSupaBase(Map<String, dynamic> data) {
@@ -24,6 +32,10 @@ class AppNotification {
       createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : null,
       isRead: data['isRead'],
       type: data['type'],
+      receiverId: data['receiverId'],
+      bookingId: data['bookingId']?.toString(),
+      chatId: data['chatId'],
+      senderId: data['senderId'],
     );
   }
 
@@ -34,6 +46,10 @@ class AppNotification {
       'createdAt': createdAt?.toIso8601String(),
       'isRead': isRead,
       'type': type,
+      'receiverId': receiverId,
+      'bookingId': bookingId,
+      'chatId': chatId,
+      'senderId': senderId,
     };
     if (id != null) {
       data['id'] = id;

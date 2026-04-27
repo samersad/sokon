@@ -1,3 +1,33 @@
+import java.io.File
+
+fun loadDotEnv(file: File): Map<String, String> {
+    if (!file.exists()) return emptyMap()
+
+    return file.readLines()
+        .mapNotNull { rawLine ->
+            val line = rawLine.trim()
+            if (line.isEmpty() || line.startsWith("#")) return@mapNotNull null
+
+            val separatorIndex = line.indexOf('=')
+            if (separatorIndex == -1) return@mapNotNull null
+
+            val key = line.substring(0, separatorIndex).trim()
+            val value =
+                line.substring(separatorIndex + 1)
+                    .trim()
+                    .removeSurrounding("\"")
+                    .removeSurrounding("'")
+
+            key to value
+        }
+        .toMap()
+}
+
+val dotEnv = loadDotEnv(rootProject.projectDir.resolve("../.env"))
+val googleMapsApiKey =
+    dotEnv["GOOGLE_MAPS_API_KEY"]
+        ?: error("GOOGLE_MAPS_API_KEY is missing from .env")
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -11,7 +41,7 @@ plugins {
 android {
     namespace = "com.example.sokon"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "29.0.13846066"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -26,6 +56,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.sokon"
+        manifestPlaceholders["googleMapsApiKey"] = googleMapsApiKey
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

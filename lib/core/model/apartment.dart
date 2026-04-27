@@ -14,6 +14,7 @@ class Apartment {
   int? livingRooms;
 
   String? address;
+  String? locationAddress;
   double? lat;
   double? lng;
   String? ownerId;
@@ -32,6 +33,7 @@ class Apartment {
     required this.bathrooms,
     required this.livingRooms,
     this.address,
+    this.locationAddress,
     this.lat,
     this.lng,
     this.ownerId,
@@ -52,6 +54,7 @@ class Apartment {
       bathrooms: data["bathrooms"],
       livingRooms: data["living_rooms"],
       address: data["address"],
+      locationAddress: data["locationAddress"] ?? data["address"],
       lat: (data["lat"] as num?)?.toDouble(),
       lng: (data["lng"] as num?)?.toDouble(),
       ownerId: data["ownerId"],
@@ -72,6 +75,7 @@ class Apartment {
       'bathrooms': bathrooms,
       'living_rooms': livingRooms,
       'address': address,
+      'locationAddress': locationAddress,
       'lat': lat,
       'lng': lng,
       'ownerId': ownerId,

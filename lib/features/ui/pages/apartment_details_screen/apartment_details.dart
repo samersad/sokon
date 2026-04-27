@@ -2,9 +2,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:readmore/readmore.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/model/apartment.dart';
@@ -68,35 +70,16 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                         buildVideoPlayer(apartment),
                         SizedBox(height: 20.h),
                         Text(
+                          "$Apartment Name",
+                          style: AppStyles.bold18PrimaryColor,
+                        ),
+                        SizedBox(height: 10.h),
+                        Text(
                           "${apartment.name ?? "Apartment"}:",
                           style: AppStyles.bold18PrimaryColor,
                         ),
                         SizedBox(height: 10.h),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: AutoSizeText(
-                                apartment.address ?? "No Address Provided",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppStyles.medium16black,
-                              ),
-                            ),
-                            SizedBox(width: 10.w),
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: "EG ${apartment.price ?? 0}/",
-                                    style: AppStyles.medium16black,
-                                  ),
-                                  TextSpan(text: "month", style: AppStyles.bold10black),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                        _buildLocationSection(apartment),
                         SizedBox(height: 20.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -370,5 +353,143 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       height: 220.h,
       borderRadius: BorderRadius.circular(24.r),
     );
+  }
+
+  Widget _buildLocationSection(Apartment apartment) {
+    final hasManualAddress =
+        apartment.address != null && apartment.address!.trim().isNotEmpty;
+    final hasMapAddress = apartment.locationAddress != null &&
+        apartment.locationAddress!.trim().isNotEmpty;
+    final hasCoordinates = apartment.lat != null && apartment.lng != null;
+    final displayedAddress = hasManualAddress
+        ? apartment.address!
+        : hasMapAddress
+            ? apartment.locationAddress!
+            : 'Address picker';
+    final canOpenMap = hasMapAddress;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasCoordinates) ...[
+          SizedBox(
+            height: 220.h,
+            width: double.infinity,
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: AppColors.grayColor.withOpacity(0.2),
+                ),
+              ),
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(apartment.lat!, apartment.lng!),
+                  zoom: 15,
+                ),
+                markers: {
+                  Marker(
+                    markerId: const MarkerId('apartment_location'),
+                    position: LatLng(apartment.lat!, apartment.lng!),
+                  ),
+                },
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+                scrollGesturesEnabled: false,
+                zoomGesturesEnabled: false,
+                rotateGesturesEnabled: false,
+                tiltGesturesEnabled: false,
+                compassEnabled: false,
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+        ],
+        Text("Address:", style: AppStyles.bold18PrimaryColor),
+        SizedBox(height: 6.h),
+        Text(
+          displayedAddress,
+          style: AppStyles.medium16black,
+        ),
+        if (displayedAddress == 'Address picker') ...[
+          SizedBox(height: 4.h),
+          Text(
+            "Owner did not add an address yet.",
+            style: AppStyles.medium12gray,
+          ),
+        ],
+        if (canOpenMap) ...[
+          SizedBox(height: 12.h),
+          SizedBox(
+            height: 42.h,
+            child: OutlinedButton.icon(
+              onPressed: () => _openInGoogleMaps(
+                lat: apartment.lat ?? 0,
+                lng: apartment.lng ?? 0,
+                address: apartment.locationAddress!,
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryColor,
+                side: BorderSide(
+                  color: AppColors.primaryColor.withOpacity(0.25),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+              ),
+              icon: Icon(Icons.map_outlined, size: 18.sp),
+              label: Text(
+                "Open in Map",
+                style: AppStyles.bold12Primary,
+              ),
+            ),
+          ),
+        ],
+        SizedBox(height: 10.h),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _buildPriceText(apartment),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceText(Apartment apartment) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: "EG ${apartment.price ?? 0}/",
+            style: AppStyles.medium16black,
+          ),
+          TextSpan(text: "month", style: AppStyles.bold10black),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openInGoogleMaps({
+    required double lat,
+    required double lng,
+    required String address,
+  }) async {
+    final hasAddress = address.trim().isNotEmpty && address != 'Address picker';
+    final target = hasAddress
+        ? Uri.parse(
+            'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address.trim())}',
+          )
+        : Uri.parse(
+            'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+          );
+
+    if (!await launchUrl(target, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open Google Maps')),
+      );
+    }
   }
 }

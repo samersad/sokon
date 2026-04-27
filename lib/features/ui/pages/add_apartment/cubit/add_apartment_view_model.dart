@@ -33,6 +33,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   final TextEditingController nameCRl = TextEditingController();
   final TextEditingController descriptionCRl = TextEditingController();
   final TextEditingController priceCRl = TextEditingController();
+  final TextEditingController addressCRl = TextEditingController();
 
   File? videoFile;
 
@@ -40,6 +41,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     nameCRl.clear();
     descriptionCRl.clear();
     priceCRl.clear();
+    addressCRl.clear();
     apartmentImages.clear();
     existingImageUrls = null;
     existingVideoUrl = null;
@@ -54,6 +56,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     nameCRl.text = apartment.name ?? "";
     descriptionCRl.text = apartment.description ?? "";
     priceCRl.text = apartment.price?.toString() ?? "";
+    addressCRl.text = apartment.address ?? "";
     bedrooms = apartment.bedrooms ?? 1;
     bathrooms = apartment.bathrooms ?? 1;
     livingRooms = apartment.livingRooms ?? 1;
@@ -62,7 +65,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     
     if (apartment.lat != null && apartment.lng != null) {
       locationViewModel.apartmentLocation = LatLng(apartment.lat!, apartment.lng!);
-      locationViewModel.apartmentAddress = apartment.address;
+      locationViewModel.apartmentAddress = apartment.locationAddress ?? apartment.address;
     }
     
     emit(AddApartmentUpdateUI());
@@ -180,11 +183,6 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       return;
     }
 
-    if (locationViewModel.apartmentLocation == null) {
-      emit(AddApartmentError("Please select location"));
-      return;
-    }
-
     emit(AddApartmentLoading());
 
     try {
@@ -212,6 +210,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         }
       }
 
+      final manualAddress = addressCRl.text.trim();
+      final mapAddress = locationViewModel.apartmentAddress?.trim();
+
       Apartment apartment = Apartment(
         name: name,
         description: description,
@@ -221,7 +222,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         bedrooms: bedrooms,
         bathrooms: bathrooms,
         livingRooms: livingRooms,
-        address: locationViewModel.apartmentAddress,
+        address: manualAddress.isNotEmpty ? manualAddress : mapAddress,
+        locationAddress: mapAddress,
         lat: locationViewModel.apartmentLocation?.latitude,
         lng: locationViewModel.apartmentLocation?.longitude,
         ownerId: userViewModel.user?.id,
@@ -294,7 +296,10 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         bedrooms: bedrooms,
         bathrooms: bathrooms,
         livingRooms: livingRooms,
-        address: locationViewModel.apartmentAddress,
+        address: addressCRl.text.trim().isNotEmpty
+            ? addressCRl.text.trim()
+            : locationViewModel.apartmentAddress,
+        locationAddress: locationViewModel.apartmentAddress,
         lat: locationViewModel.apartmentLocation?.latitude,
         lng: locationViewModel.apartmentLocation?.longitude,
         ownerId: userViewModel.user?.id,
@@ -320,6 +325,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     nameCRl.dispose();
     descriptionCRl.dispose();
     priceCRl.dispose();
+    addressCRl.dispose();
     return super.close();
   }
 }

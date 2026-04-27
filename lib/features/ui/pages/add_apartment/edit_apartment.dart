@@ -121,53 +121,79 @@ class _EditApartmentState extends State<EditApartment> {
                     ),
                     SizedBox(height: 20.h),
 
-                    /// Location and Price
+                    Text("Address (optional)", style: AppStyles.medium16black),
+                    SizedBox(height: 5.h),
                     BlocBuilder<LocationViewModel, LocationState>(
                       builder: (context, state) {
-                        return Row(
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              flex: 3,
-                              child: InkWell(
-                                onTap: () => Navigator.pushNamed(context, AppRoutes.locationPickerRoute),
-                                child: Row(
-                                  children: [
-                                    Image.asset(AppAssets.locationIcon, width: 14.w),
-                                    SizedBox(width: 4.w),
-                                    Expanded(
-                                      child: AutoSizeText(
-                                        locationViewModel.apartmentAddress ?? "Select Location",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppStyles.medium10blueDarkColor,
-                                      ),
-                                    ),
-                                  ],
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: CustomTextFormField(
+                                    controller: viewModel.addressCRl,
+                                    hintText: "Type an address",
+                                    borderSideColor: AppColors.grayColor.withOpacity(0.3),
+                                  ),
                                 ),
-                              ),
+                                SizedBox(width: 10.w),
+                                InkWell(
+                                  onTap: () => Navigator.pushNamed(context, AppRoutes.locationPickerRoute),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.map_outlined, color: AppColors.primaryColor, size: 22.sp),
+                                        SizedBox(height: 4.h),
+                                        Text("Map", style: AppStyles.bold12Primary),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              flex: 2,
-                              child: CustomTextFormField(
-                                controller: viewModel.priceCRl,
-                                maxLines: 1,
-                                borderRadius: 50,
-                                suffixIconName: Icon(Icons.attach_money_outlined,
-                                    color: AppColors.primaryColor, size: 20.sp),
-                                paddingHorizontal: 10.w,
-                                paddingVertical: 0,
-                                hintText: "Price",
-                                borderSideColor: AppColors.grayColor.withOpacity(0.3),
-                                keyboardType: TextInputType.number,
-                                hintStyle: AppStyles.medium12gray,
+                            if ((locationViewModel.apartmentAddress ?? '').isNotEmpty) ...[
+                              SizedBox(height: 8.h),
+                              Text(
+                                "Selected on map: ${locationViewModel.apartmentAddress}",
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppStyles.medium12gray,
                               ),
-                            ),
-                            SizedBox(width: 5.w),
-                            Text("EG/mo", style: AppStyles.bold10Primary),
+                            ],
                           ],
                         );
                       },
+                    ),
+                    SizedBox(height: 15.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: CustomTextFormField(
+                            controller: viewModel.priceCRl,
+                            maxLines: 1,
+                            borderRadius: 50,
+                            suffixIconName: Icon(Icons.attach_money_outlined,
+                                color: AppColors.primaryColor, size: 20.sp),
+                            paddingHorizontal: 10.w,
+                            paddingVertical: 0,
+                            hintText: "Price",
+                            borderSideColor: AppColors.grayColor.withOpacity(0.3),
+                            keyboardType: TextInputType.number,
+                            hintStyle: AppStyles.medium12gray,
+                          ),
+                        ),
+                        SizedBox(width: 5.w),
+                        Text("EG/mo", style: AppStyles.bold10Primary),
+                      ],
                     ),
                     SizedBox(height: 20.h),
 

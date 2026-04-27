@@ -12,8 +12,8 @@ import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/features/ui/pages/add_apartment/cubit/add_apartment_states.dart';
 import 'package:sokon/features/ui/pages/add_apartment/cubit/add_apartment_view_model.dart';
+import 'package:sokon/features/ui/widgets/app_video_player.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
-import 'package:video_player/video_player.dart';
 
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
@@ -109,74 +109,7 @@ class _EditApartmentState extends State<EditApartment> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     /// Video Section
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          clipBehavior: Clip.antiAlias,
-                          height: 220.h,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.sp),
-                          ),
-                          child: viewModel.controllerVideo != null && viewModel.controllerVideo!.value.isInitialized
-                              ? Center(
-                            child: AspectRatio(
-                              aspectRatio: viewModel.controllerVideo!.value.aspectRatio,
-                              child: VideoPlayer(viewModel.controllerVideo!),
-                            ),
-                          )
-                              : Container(
-                            color: Colors.grey.shade300,
-                            child: Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: () => viewModel.pickVideo(ImageSource.camera),
-                                    icon: const Icon(Icons.videocam),
-                                    label: const Text("Camera"),
-                                  ),
-                                  ElevatedButton.icon(
-                                    onPressed: () => viewModel.pickVideo(ImageSource.gallery),
-                                    icon: const Icon(Icons.video_library),
-                                    label: const Text("Gallery"),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (viewModel.controllerVideo != null)
-                          FloatingActionButton(
-                            mini: true,
-                            shape: const CircleBorder(),
-                            backgroundColor: Colors.white.withOpacity(0.5),
-                            elevation: 0,
-                            onPressed: () => viewModel.toggleVideoPlay(),
-                            child: Icon(
-                              viewModel.controllerVideo!.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                              color: AppColors.blackColor,
-                              size: 30.r,
-                            ),
-                          ),
-                        if (viewModel.controllerVideo != null && viewModel.controllerVideo!.value.isInitialized)
-                          Positioned(
-                            bottom: 12.h,
-                            right: 12.w,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(8.r)),
-                              child: Text(
-                                viewModel.formatDuration(viewModel.controllerVideo!.value.duration),
-                                style: AppStyles.medium12White,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                    _buildVideoPickerSection(),
                     SizedBox(height: 20.h),
 
                     Text("Apartment Name:", style: AppStyles.medium16black),
@@ -428,6 +361,84 @@ class _EditApartmentState extends State<EditApartment> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildVideoPickerSection() {
+    final localVideoPath = viewModel.videoFile?.path;
+    final remoteVideoUrl =
+        localVideoPath == null ? viewModel.existingVideoUrl : null;
+
+    Widget content;
+    if (localVideoPath != null) {
+      content = AppVideoPlayer.file(
+        localVideoPath,
+        height: 220.h,
+        borderRadius: BorderRadius.circular(24.r),
+      );
+    } else if (remoteVideoUrl != null && remoteVideoUrl.isNotEmpty) {
+      content = AppVideoPlayer.network(
+        remoteVideoUrl,
+        height: 220.h,
+        borderRadius: BorderRadius.circular(24.r),
+      );
+    } else {
+      content = Container(
+        height: 220.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(24.r),
+        ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.ondemand_video_outlined,
+                  size: 40.sp,
+                  color: AppColors.darkGrayColor,
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  "Add or replace the apartment video",
+                  style: AppStyles.medium16black,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        content,
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => viewModel.pickVideo(ImageSource.camera),
+                icon: const Icon(Icons.videocam),
+                label: const Text("Camera"),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => viewModel.pickVideo(ImageSource.gallery),
+                icon: const Icon(Icons.video_library),
+                label: const Text("Gallery"),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

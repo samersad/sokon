@@ -11,8 +11,8 @@ import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/pages/apartment_details_screen/cubit/apartment_details_states.dart';
 import 'package:sokon/features/ui/pages/apartment_details_screen/cubit/apartment_details_view_model.dart';
+import 'package:sokon/features/ui/widgets/app_video_player.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
-import 'package:video_player/video_player.dart';
 
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
@@ -28,7 +28,6 @@ class ApartmentDetails extends StatefulWidget {
 
 class _ApartmentDetailsState extends State<ApartmentDetails> {
   final ApartmentDetailsViewModel viewModel = getIt<ApartmentDetailsViewModel>();
-  VideoPlayerController? _controllerVideo;
   bool isInitialized = false;
 
   @override
@@ -37,14 +36,6 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     if (!isInitialized) {
       final apartment = ModalRoute.of(context)!.settings.arguments as Apartment;
       viewModel.initApartment(apartment);
-      
-      if (apartment.videoUrl != null && apartment.videoUrl!.isNotEmpty) {
-        _controllerVideo = VideoPlayerController.networkUrl(
-          Uri.parse(apartment.videoUrl!),
-        )..initialize().then((_) {
-            if (mounted) setState(() {});
-          });
-      }
       isInitialized = true;
     }
   }
@@ -306,12 +297,6 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  @override
-  void dispose() {
-    _controllerVideo?.dispose();
-    super.dispose();
-  }
-
   Widget propertyDetailsColumn({
     required String imageName,
     required String name,
@@ -380,45 +365,10 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       );
     }
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          clipBehavior: Clip.antiAlias,
-          height: 220.h,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24.r),
-          ),
-          child: _controllerVideo != null && _controllerVideo!.value.isInitialized
-              ? Center(
-                  child: AspectRatio(
-                    aspectRatio: _controllerVideo!.value.aspectRatio,
-                    child: VideoPlayer(_controllerVideo!),
-                  ),
-                )
-              : const Center(child: CircularProgressIndicator()),
-        ),
-        if (_controllerVideo != null && _controllerVideo!.value.isInitialized)
-          FloatingActionButton(
-            mini: true,
-            shape: const CircleBorder(),
-            backgroundColor: Colors.white.withOpacity(0.5),
-            elevation: 0,
-            onPressed: () {
-              setState(() {
-                _controllerVideo!.value.isPlaying
-                    ? _controllerVideo!.pause()
-                    : _controllerVideo!.play();
-              });
-            },
-            child: Icon(
-              _controllerVideo!.value.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: AppColors.blackColor,
-              size: 30.r,
-            ),
-          ),
-      ],
+    return AppVideoPlayer.network(
+      apartment.videoUrl!,
+      height: 220.h,
+      borderRadius: BorderRadius.circular(24.r),
     );
   }
 }

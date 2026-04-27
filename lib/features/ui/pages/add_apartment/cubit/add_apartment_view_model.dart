@@ -22,7 +22,6 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   final ImagePicker _videoPicker = ImagePicker();
   final ImagePicker _imagePicker = ImagePicker();
 
-  VideoPlayerController? controllerVideo;
   List<File> apartmentImages = [];
   List<String>? existingImageUrls;
   String? existingVideoUrl;
@@ -45,8 +44,6 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     existingImageUrls = null;
     existingVideoUrl = null;
     videoFile = null;
-    controllerVideo?.dispose();
-    controllerVideo = null;
     bedrooms = 1;
     bathrooms = 1;
     livingRooms = 1;
@@ -66,13 +63,6 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     if (apartment.lat != null && apartment.lng != null) {
       locationViewModel.apartmentLocation = LatLng(apartment.lat!, apartment.lng!);
       locationViewModel.apartmentAddress = apartment.address;
-    }
-
-    if (existingVideoUrl != null && existingVideoUrl!.isNotEmpty) {
-      controllerVideo = VideoPlayerController.networkUrl(Uri.parse(existingVideoUrl!))
-        ..initialize().then((_) {
-          emit(AddApartmentUpdateUI());
-        });
     }
     
     emit(AddApartmentUpdateUI());
@@ -144,37 +134,26 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
     if (video == null) return;
 
-    videoFile = File(video.path);
-    final controller = VideoPlayerController.file(videoFile!);
+    final pickedVideoFile = File(video.path);
+    final controller = VideoPlayerController.file(pickedVideoFile);
 
     try {
       await controller.initialize();
 
       if (controller.value.duration > const Duration(minutes: 10)) {
-        controller.dispose();
-        videoFile = null;
         emit(AddApartmentError(
             "The video duration should not exceed 10 minutes."));
         return;
       }
 
-      controllerVideo?.dispose();
-      controllerVideo = controller;
+      videoFile = pickedVideoFile;
       existingVideoUrl = null; // Clear existing video if new one is picked
       emit(AddApartmentUpdateUI());
     } catch (e) {
-      controller.dispose();
       videoFile = null;
       emit(AddApartmentError("Video playback failed"));
-    }
-  }
-
-  void toggleVideoPlay() {
-    if (controllerVideo != null) {
-      controllerVideo!.value.isPlaying
-          ? controllerVideo!.pause()
-          : controllerVideo!.play();
-      emit(AddApartmentUpdateUI());
+    } finally {
+      await controller.dispose();
     }
   }
 
@@ -184,13 +163,6 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     } else {
       await Permission.photos.request();
     }
-  }
-
-  String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    return "${twoDigits(minutes)}:${twoDigits(seconds)}";
   }
 
   Future<void> uploadApartment(UserViewModel userViewModel, LocationViewModel locationViewModel) async {
@@ -345,7 +317,6 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
   @override
   Future<void> close() {
-    controllerVideo?.dispose();
     nameCRl.dispose();
     descriptionCRl.dispose();
     priceCRl.dispose();

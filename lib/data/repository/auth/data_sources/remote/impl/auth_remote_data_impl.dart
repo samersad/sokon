@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sokon/core/cache/shared_prefs_helper.dart';
+import 'package:sokon/core/services/firebase_cloud_messaging.dart';
 import '../../../../../../core/model/my_user.dart';
 import '../../../../../../supabase_utils.dart';
 import '../auth_remote_data_source.dart';
@@ -138,6 +139,10 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> signOut() async {
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId != null) {
+      await FirebaseCloudMessaging.clearTokenForUser(currentUserId);
+    }
     final GoogleSignIn signIn = GoogleSignIn.instance;
     await signIn.signOut().catchError((_) {});
     await signIn.disconnect().catchError((_) {});

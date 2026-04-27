@@ -5,6 +5,7 @@ class MyUser {
   String email;
   String? role; // 'owner' or 'client'
   String? photoUrl;
+  String? fcmToken;
   DateTime? createdAt;
 
   MyUser({
@@ -13,6 +14,7 @@ class MyUser {
     required this.email,
     this.role,
     this.photoUrl,
+    this.fcmToken,
     this.createdAt,
   });
 
@@ -23,6 +25,7 @@ class MyUser {
       email: data["email"],
       role: data["role"],
       photoUrl: data["photoUrl"],
+      fcmToken: data["fcmToken"],
       createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
     );
   }
@@ -34,6 +37,7 @@ class MyUser {
       "email": email,
       "role": role,
       "photoUrl": photoUrl,
+      "fcmToken": fcmToken,
       "createdAt": createdAt?.toIso8601String(),
     };
   }

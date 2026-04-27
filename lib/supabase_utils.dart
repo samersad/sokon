@@ -9,6 +9,13 @@ import 'package:path/path.dart' as p;
 class SupabaseUtils {
   static SupabaseClient get client => Supabase.instance.client;
 
+  static const String notificationTypeNewApartment = 'new_apartment';
+  static const String notificationTypeNewBooking = 'new_booking';
+  static const String notificationTypeBookingAccepted = 'booking_accepted';
+  static const String notificationTypeBookingCancelled = 'booking_cancelled';
+  static const String notificationTypeBookingRejected = 'booking_rejected';
+  static const String notificationTypeNewMessage = 'new_message';
+
   // --- STORAGE TOOLS ---
 
   static Future<String?> uploadFile({
@@ -46,6 +53,22 @@ class SupabaseUtils {
     return MyUser.fromSupaBase(response);
   }
 
+  static Future<void> updateUserFcmToken(String userId, String token) async {
+    try {
+      await client.from('users').update({'fcmToken': token}).eq('id', userId);
+    } catch (_) {
+      // Keep auth and startup working if the users table has not been migrated yet.
+    }
+  }
+
+  static Future<void> clearUserFcmToken(String userId) async {
+    try {
+      await client.from('users').update({'fcmToken': null}).eq('id', userId);
+    } catch (_) {
+      // Keep sign-out working if the users table has not been migrated yet.
+    }
+  }
+
   // Apartments
   static Future<void> addApartmentToSupabase(Apartment apartment) async {
     apartment.createdAt = DateTime.now();
@@ -53,10 +76,10 @@ class SupabaseUtils {
     apartment.id = response['id'].toString();
 
     await tryAddNotificationToSupabase(AppNotification(
-      title: "New Apartment Added",
-      body: "Owner ${apartment.ownerName} added a new apartment: ${apartment.name}",
+      title: "New apartment listed",
+      body: _buildNewApartmentBody(apartment),
       createdAt: DateTime.now(),
-      type: 'new_apartment',
+      type: notificationTypeNewApartment,
       isRead: false,
     ));
   }
@@ -88,14 +111,32 @@ class SupabaseUtils {
     booking.id = response['id'].toString();
 
     await tryAddNotificationToSupabase(AppNotification(
-      title: "New Booking Request",
-      body: "Client ${booking.clientName} booked ${booking.apartmentName} from ${booking.ownerName}",
+      title: "Booking request received",
+      body: _buildBookingRequestBody(booking),
       createdAt: DateTime.now(),
-      type: 'new_booking',
+      type: notificationTypeNewBooking,
       isRead: false,
       receiverId: booking.ownerId,
       bookingId: booking.id,
     ));
+
+    await sendBookingPushToOwner(booking);
+  }
+
+  static Future<void> updateBookingStatus({
+    required Booking booking,
+    required String status,
+    String? changedByName,
+  }) async {
+    final normalizedStatus = status.toLowerCase().trim();
+    await client.from('bookings').update({'status': normalizedStatus}).eq('id', booking.id!);
+    booking.status = normalizedStatus;
+
+    await notifyBookingStatusChange(
+      booking: booking,
+      status: normalizedStatus,
+      changedByName: changedByName,
+    );
   }
 
   static Stream<List<Booking>> getBookingsStream(String userId) {
@@ -104,6 +145,26 @@ class SupabaseUtils {
         .stream(primaryKey: ['id'])
         .eq('clientId', userId)
         .map((data) => data.map((e) => Booking.fromSupaBase(e)).toList());
+  }
+
+  static Stream<List<Booking>> getOwnerBookingsStream(String ownerId) {
+    return client
+        .from('bookings')
+        .stream(primaryKey: ['id'])
+        .eq('ownerId', ownerId)
+        .order('createdAt', ascending: false)
+        .map((data) {
+          final bookings = data.map((e) => Booking.fromSupaBase(e)).toList();
+          bookings.sort((a, b) {
+            final aTime = a.createdAt;
+            final bTime = b.createdAt;
+            if (aTime == null && bTime == null) return 0;
+            if (aTime == null) return 1;
+            if (bTime == null) return -1;
+            return bTime.compareTo(aTime);
+          });
+          return bookings;
+        });
   }
 
   // Notifications
@@ -163,19 +224,247 @@ class SupabaseUtils {
     required String chatId,
     required String message,
   }) async {
-    final preview = message.length > 60 ? "${message.substring(0, 60)}..." : message;
+    final preview = _buildChatPreview(message);
 
     await tryAddNotificationToSupabase(
       AppNotification(
-        title: senderName,
+        title: "New message from $senderName",
         body: preview,
         createdAt: DateTime.now(),
-        type: 'new_message',
+        type: notificationTypeNewMessage,
         isRead: false,
         receiverId: receiverId,
         chatId: chatId,
         senderId: senderId,
       ),
     );
+
+    await sendChatPushToUser(
+      receiverId: receiverId,
+      senderId: senderId,
+      senderName: senderName,
+      chatId: chatId,
+      message: message,
+    );
+  }
+
+  static Future<void> addBookingStatusNotificationToSupabase({
+    required Booking booking,
+    required String status,
+    String? changedByName,
+  }) async {
+    final normalizedStatus = status.toLowerCase().trim();
+    final isAccepted = normalizedStatus == 'accepted' || normalizedStatus == 'confirmed';
+    final isCancelled = normalizedStatus == 'cancelled' || normalizedStatus == 'canceled';
+    final isRejected = normalizedStatus == 'rejected';
+
+    if (!isAccepted && !isCancelled && !isRejected) {
+      return;
+    }
+
+    final receiverId = booking.clientId;
+    if (receiverId == null || receiverId.isEmpty) {
+      return;
+    }
+
+    final title = isAccepted
+        ? "Booking approved"
+        : isCancelled
+            ? "Booking cancelled"
+            : "Booking rejected";
+    final body = isAccepted
+        ? _buildBookingAcceptedBody(booking, changedByName)
+        : isCancelled
+            ? _buildBookingCancelledBody(booking, changedByName)
+            : _buildBookingRejectedBody(booking, changedByName);
+    final type = isAccepted
+        ? notificationTypeBookingAccepted
+        : isCancelled
+            ? notificationTypeBookingCancelled
+            : notificationTypeBookingRejected;
+
+    await tryAddNotificationToSupabase(
+      AppNotification(
+        title: title,
+        body: body,
+        createdAt: DateTime.now(),
+        type: type,
+        isRead: false,
+        receiverId: receiverId,
+        bookingId: booking.id,
+      ),
+    );
+
+    await sendBookingStatusPushToUser(
+      receiverId: receiverId,
+      bookingId: booking.id,
+      title: title,
+      body: body,
+      type: type,
+    );
+  }
+
+  static String _buildNewApartmentBody(Apartment apartment) {
+    final ownerName = apartment.ownerName?.trim();
+    final apartmentName = apartment.name?.trim();
+    if (ownerName != null && ownerName.isNotEmpty && apartmentName != null && apartmentName.isNotEmpty) {
+      return "$ownerName listed $apartmentName for rent.";
+    }
+    if (apartmentName != null && apartmentName.isNotEmpty) {
+      return "A new apartment, $apartmentName, is now available.";
+    }
+    return "A new apartment is now available.";
+  }
+
+  static String _buildBookingRequestBody(Booking booking) {
+    final clientName = booking.clientName?.trim();
+    final apartmentName = booking.apartmentName?.trim();
+    final ownerName = booking.ownerName?.trim();
+
+    if (clientName != null &&
+        clientName.isNotEmpty &&
+        apartmentName != null &&
+        apartmentName.isNotEmpty &&
+        ownerName != null &&
+        ownerName.isNotEmpty) {
+      return "$clientName submitted a booking request for $apartmentName managed by $ownerName.";
+    }
+
+    if (clientName != null && clientName.isNotEmpty && apartmentName != null && apartmentName.isNotEmpty) {
+      return "$clientName submitted a booking request for $apartmentName.";
+    }
+
+    return "A new booking request has been submitted.";
+  }
+
+  static String _buildBookingAcceptedBody(Booking booking, String? changedByName) {
+    final apartmentName = booking.apartmentName?.trim();
+    final managerName = changedByName?.trim() ?? booking.ownerName?.trim();
+    if (apartmentName != null &&
+        apartmentName.isNotEmpty &&
+        managerName != null &&
+        managerName.isNotEmpty) {
+      return "$managerName approved your booking for $apartmentName.";
+    }
+    if (apartmentName != null && apartmentName.isNotEmpty) {
+      return "Your booking for $apartmentName has been approved.";
+    }
+    return "Your booking request has been approved.";
+  }
+
+  static String _buildBookingCancelledBody(Booking booking, String? changedByName) {
+    final apartmentName = booking.apartmentName?.trim();
+    final managerName = changedByName?.trim() ?? booking.ownerName?.trim();
+    if (apartmentName != null &&
+        apartmentName.isNotEmpty &&
+        managerName != null &&
+        managerName.isNotEmpty) {
+      return "$managerName cancelled the booking for $apartmentName.";
+    }
+    if (apartmentName != null && apartmentName.isNotEmpty) {
+      return "Your booking for $apartmentName has been cancelled.";
+    }
+    return "Your booking has been cancelled.";
+  }
+
+  static String _buildBookingRejectedBody(Booking booking, String? changedByName) {
+    final apartmentName = booking.apartmentName?.trim();
+    final managerName = changedByName?.trim() ?? booking.ownerName?.trim();
+    if (apartmentName != null &&
+        apartmentName.isNotEmpty &&
+        managerName != null &&
+        managerName.isNotEmpty) {
+      return "$managerName rejected the booking request for $apartmentName.";
+    }
+    if (apartmentName != null && apartmentName.isNotEmpty) {
+      return "Your booking request for $apartmentName was rejected.";
+    }
+    return "Your booking request was rejected.";
+  }
+
+  static String _buildChatPreview(String message) {
+    final normalized = message.trim();
+    if (normalized.isEmpty) {
+      return "You have a new message.";
+    }
+
+    return normalized.length > 80 ? "${normalized.substring(0, 80)}..." : normalized;
+  }
+
+  static Future<void> notifyBookingStatusChange({
+    required Booking booking,
+    required String status,
+    String? changedByName,
+  }) {
+    return addBookingStatusNotificationToSupabase(
+      booking: booking,
+      status: status,
+      changedByName: changedByName,
+    );
+  }
+
+  static Future<void> sendBookingPushToOwner(Booking booking) async {
+    try {
+      await client.functions.invoke(
+        'send-booking-notification',
+        body: {
+          'ownerId': booking.ownerId,
+          'bookingId': booking.id,
+          'title': 'New Booking Request',
+          'body':
+              'Client ${booking.clientName} booked ${booking.apartmentName} from ${booking.ownerName}',
+          'type': 'new_booking',
+        },
+      );
+    } catch (_) {
+      // Keep booking flow working even if push delivery is unavailable.
+    }
+  }
+
+  static Future<void> sendChatPushToUser({
+    required String receiverId,
+    required String senderId,
+    required String senderName,
+    required String chatId,
+    required String message,
+  }) async {
+    try {
+      await client.functions.invoke(
+        'send-chat-notification',
+        body: {
+          'receiverId': receiverId,
+          'senderId': senderId,
+          'chatId': chatId,
+          'title': 'New message from $senderName',
+          'body': _buildChatPreview(message),
+          'type': notificationTypeNewMessage,
+        },
+      );
+    } catch (_) {
+      // Keep chat flow working even if push delivery is unavailable.
+    }
+  }
+
+  static Future<void> sendBookingStatusPushToUser({
+    required String receiverId,
+    required String? bookingId,
+    required String title,
+    required String body,
+    required String type,
+  }) async {
+    try {
+      await client.functions.invoke(
+        'send-booking-status-notification',
+        body: {
+          'receiverId': receiverId,
+          'bookingId': bookingId,
+          'title': title,
+          'body': body,
+          'type': type,
+        },
+      );
+    } catch (_) {
+      // Keep booking status flow working even if push delivery is unavailable.
+    }
   }
 }

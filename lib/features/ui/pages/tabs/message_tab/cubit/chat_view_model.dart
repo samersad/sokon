@@ -40,26 +40,35 @@ class ChatViewModel extends Cubit<ChatState> {
     required String receiverName,
     required String? receiverPhotoUrl,
     required String message,
+    String? imageUrl,
   }) async {
-    if (message.trim().isEmpty) return;
-
     final msg = message.trim();
+    final uploadedImageUrl = imageUrl?.trim();
+    final hasImage = uploadedImageUrl != null && uploadedImageUrl.isNotEmpty;
+    if (msg.isEmpty && !hasImage) return;
+
+    final previewText = msg.isNotEmpty ? msg : 'Photo';
+    final notificationMessage = msg.isNotEmpty ? msg : 'Sent a photo';
+    final storedMessage = _buildStoredMessage(
+      text: msg,
+      imageUrl: uploadedImageUrl,
+    );
 
     try {
       Map<String, dynamic> messageData = {
         'messageData': {
           'senderId': senderId,
-          'message': msg,
+          'message': storedMessage,
         },
         'notificationData': {
           'receiverId': receiverId,
           'senderId': senderId,
           'senderName': senderName,
           'chatId': chatId,
-          'message': msg,
+          'message': notificationMessage,
         },
         'chatMetadata': {
-          'lastMessage': msg,
+          'lastMessage': previewText,
           'users': [senderId, receiverId],
           'displayNames': {
             senderId: senderName,
@@ -78,6 +87,22 @@ class ChatViewModel extends Cubit<ChatState> {
         emit(ChatError(e.toString()));
       }
     }
+  }
+
+  String _buildStoredMessage({
+    required String text,
+    required String? imageUrl,
+  }) {
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+    if (!hasImage) {
+      return text;
+    }
+
+    if (text.isEmpty) {
+      return '__image__:$imageUrl';
+    }
+
+    return '__image__:$imageUrl\n__caption__:$text';
   }
 
   @override

@@ -105,8 +105,19 @@ class _MessageTabState extends State<MessageTab> {
                                       photoUrl = displayPhotos?[receiverId];
                                     }
 
+                                    final lastMessage =
+                                        (chatData['lastMessage'] as String? ?? "").trim();
+                                    final lastMessageType =
+                                        chatData['lastMessageType'] as String?;
+                                    final previewText = lastMessage.isNotEmpty
+                                        ? lastMessage
+                                        : (lastMessageType == 'image' ||
+                                                lastMessageType == 'mixed'
+                                            ? "Photo"
+                                            : "");
+
                                     return buildChatItem(context, receiverId,
-                                        displayName, chatData['lastMessage'] ?? "",
+                                        displayName, previewText,
                                         photoUrl);
                                   });
                             },

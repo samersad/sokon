@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:sokon/core/model/my_user.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/model/notification.dart';
@@ -25,6 +26,7 @@ class NotifactionScreen extends StatefulWidget {
 
 class _NotifactionScreenState extends State<NotifactionScreen> {
   final NotificationViewModel viewModel = getIt<NotificationViewModel>();
+  final Map<String, Future<MyUser?>> _senderFutures = {};
   bool isInitialized = false;
 
   @override
@@ -120,16 +122,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 28.r,
-              backgroundColor: AppColors.transparentColor,
-              child: Image.asset(
-                _getNotificationAsset(notification.type),
-                width: 52.w,
-                height: 52.h,
-                fit: BoxFit.cover,
-              ),
-            ),
+            _buildNotificationAvatar(notification),
             SizedBox(width: 10.w),
             Expanded(
               child: Column(
@@ -183,10 +176,10 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
       await viewModel.markAsRead(notification.id!);
     }
 
-    if (notification.type == 'new_message' && notification.senderId != null) {
-      final sender = await SupabaseUtils.readUserFromSupabase(
-        notification.senderId!,
-      );
+    if (notification.type == 'new_message' &&
+        notification.senderId != null &&
+        notification.senderId!.isNotEmpty) {
+      final sender = await _getSenderFuture(notification.senderId!);
       if (!context.mounted) return;
 
       Navigator.pushNamed(
@@ -205,15 +198,81 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
     switch (type) {
       case 'broadcast':
         return 'Announcement';
+      case 'new_apartment':
+        return 'New Apartment';
+      case 'new_booking':
+        return 'Booking Request Received';
       case 'booking_accepted':
-        return 'Booking Accepted';
+        return 'Booking Approved';
       case 'booking_cancelled':
         return 'Booking Cancelled';
+      case 'booking_rejected':
+        return 'Booking Rejected';
       case 'new_message':
         return 'New Message';
       default:
         return 'Notification';
     }
+  }
+
+  Widget _buildNotificationAvatar(AppNotification notification) {
+    if (notification.type == 'new_message' &&
+        notification.senderId != null &&
+        notification.senderId!.isNotEmpty) {
+      return FutureBuilder<MyUser?>(
+        future: _getSenderFuture(notification.senderId!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircleAvatar(
+              radius: 28.r,
+              backgroundColor: Colors.grey.shade200,
+              child: SizedBox(
+                width: 18.w,
+                height: 18.w,
+                child: const CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          }
+
+          final photoUrl = snapshot.data?.photoUrl;
+          return CircleAvatar(
+            radius: 28.r,
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
+                ? NetworkImage(photoUrl)
+                : null,
+            child: (photoUrl == null || photoUrl.isEmpty)
+                ? ClipOval(
+                    child: Image.asset(
+                      AppAssets.avatar,
+                      width: 56.w,
+                      height: 56.h,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : null,
+          );
+        },
+      );
+    }
+
+    return CircleAvatar(
+      radius: 28.r,
+      backgroundColor: AppColors.transparentColor,
+      child: Image.asset(
+        _getNotificationAsset(notification.type),
+        width: 52.w,
+        height: 52.h,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Future<MyUser?> _getSenderFuture(String senderId) {
+    return _senderFutures.putIfAbsent(
+      senderId,
+      () => SupabaseUtils.readUserFromSupabase(senderId),
+    );
   }
 
   String _getNotificationAsset(String? type) {

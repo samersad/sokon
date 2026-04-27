@@ -125,6 +125,17 @@ class _ProfileTabState extends State<ProfileTab> {
                           if (isOwner) ...[
                             SizedBox(height: 20.h),
                             buildRowTile(
+                              icon: Icons.assignment_outlined,
+                              title: "Booking Requests",
+                              color: Colors.indigo,
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.ownerBookingRequestsRoute,
+                                );
+                              },
+                            ),
+                            SizedBox(height: 20.h),
+                            buildRowTile(
                               icon: Icons.apartment_outlined,
                               title: "My Apartments",
                               color: Colors.green,

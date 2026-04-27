@@ -13,10 +13,23 @@ class ChatRemoteDataImpl implements ChatRemoteDataSource {
         .from('chats')
         .stream(primaryKey: ['id'])
         .order('timestamp', ascending: false)
-        .map((event) => event.where((chat) {
-              List users = chat['users'] ?? [];
-              return users.contains(userId);
-            }).toList());
+        .map((event) {
+          final chats = event.where((chat) {
+            final users = chat['users'] as List? ?? [];
+            return users.contains(userId);
+          }).toList();
+
+          chats.sort((a, b) {
+            final aTime = _parseTimestamp(a['timestamp']);
+            final bTime = _parseTimestamp(b['timestamp']);
+            if (aTime == null && bTime == null) return 0;
+            if (aTime == null) return 1;
+            if (bTime == null) return -1;
+            return bTime.compareTo(aTime);
+          });
+
+          return chats;
+        });
   }
 
   @override
@@ -25,7 +38,26 @@ class ChatRemoteDataImpl implements ChatRemoteDataSource {
         .from('messages')
         .stream(primaryKey: ['id'])
         .eq('chat_id', chatId)
-        .order('timestamp', ascending: false);
+        .order('timestamp', ascending: true)
+        .map((messages) {
+          final sortedMessages = List<Map<String, dynamic>>.from(messages);
+          sortedMessages.sort((a, b) {
+            final aTime = _parseTimestamp(a['timestamp']);
+            final bTime = _parseTimestamp(b['timestamp']);
+            if (aTime == null && bTime == null) return 0;
+            if (aTime == null) return -1;
+            if (bTime == null) return 1;
+            final timeComparison = aTime.compareTo(bTime);
+            if (timeComparison != 0) {
+              return timeComparison;
+            }
+
+            final aId = a['id']?.toString() ?? '';
+            final bId = b['id']?.toString() ?? '';
+            return aId.compareTo(bId);
+          });
+          return sortedMessages;
+        });
   }
 
   @override
@@ -57,5 +89,13 @@ class ChatRemoteDataImpl implements ChatRemoteDataSource {
         message: notificationData['message'],
       );
     }
+  }
+
+  DateTime? _parseTimestamp(dynamic value) {
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

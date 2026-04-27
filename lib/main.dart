@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
+import 'package:sokon/core/cache/cubit_manger/user_states.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/model/my_user.dart';
@@ -22,6 +23,7 @@ import 'package:sokon/features/ui/pages/booking_screen/booking_screen.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/chat_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/my_bookings_screen.dart';
+import 'package:sokon/features/ui/pages/tabs/profile_tab/owner_booking_requests/owner_booking_requests_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
 import 'core/cache/shared_prefs_helper.dart';
@@ -85,6 +87,16 @@ Future<void> main() async {
   }
 
   userViewModel.updateUser(restoredUser);
+  userViewModel.stream.listen((state) async {
+    if (state is UserUpdated) {
+      if (state.user == null) {
+        await FirebaseCloudMessaging.clearTokenForUser(null);
+      } else {
+        await FirebaseCloudMessaging.syncTokenForUser(state.user!.id);
+      }
+    }
+  });
+  await FirebaseCloudMessaging.syncTokenForUser(restoredUser?.id);
 
   if (session == null || restoredUser == null) {
     await SharedPrefsHelper.removeData(key: "token");
@@ -98,6 +110,7 @@ Future<void> main() async {
     await supabaseClient.realtime.setAuth(data.session?.accessToken);
 
     if (data.event == AuthChangeEvent.signedOut) {
+      await FirebaseCloudMessaging.clearTokenForUser(userViewModel.user?.id);
       await SharedPrefsHelper.removeData(key: "token");
       await SharedPrefsHelper.removeData(key: "cached_user");
       userViewModel.updateUser(null);
@@ -190,6 +203,8 @@ class MyApp extends StatelessWidget {
                 const MyApartmentsScreen(),
             AppRoutes.chatRoute: (context) => const ChatScreen(),
             AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
+            AppRoutes.ownerBookingRequestsRoute: (context) =>
+                const OwnerBookingRequestsScreen(),
             AppRoutes.userLocationPickerRoute: (context) =>
                 const UserLocationPicker(),
           },

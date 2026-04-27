@@ -19,5 +19,6 @@ class AppRoutes {
   static String myApartmentsRoute = "my_apartments";
   static String chatRoute = "chat";
   static String myBookingsRoute = "my_bookings";
+  static String ownerBookingRequestsRoute = "owner_booking_requests";
   static String userLocationPickerRoute = "user_location_picker";
 }

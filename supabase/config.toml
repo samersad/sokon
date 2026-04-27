@@ -1,0 +1,10 @@
+project_id = "sokon"
+
+[functions.send-booking-notification]
+verify_jwt = true
+
+[functions.send-chat-notification]
+verify_jwt = true
+
+[functions.send-booking-status-notification]
+verify_jwt = true

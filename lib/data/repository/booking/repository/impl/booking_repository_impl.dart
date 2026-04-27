@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../../../core/model/booking.dart';
+import '../../../../../supabase_utils.dart';
 import '../../data_sources/remote/booking_remote_data_source.dart';
 import '../booking_repository.dart';
 
@@ -24,6 +25,19 @@ class BookingRepositoryImpl implements BookingRepository {
     return remoteDataSource.hasActiveBookingForApartment(
       userId: userId,
       apartmentId: apartmentId,
+    );
+  }
+
+  @override
+  Future<void> updateBookingStatus({
+    required Booking booking,
+    required String status,
+    String? changedByName,
+  }) async {
+    await SupabaseUtils.updateBookingStatus(
+      booking: booking,
+      status: status,
+      changedByName: changedByName,
     );
   }
 }

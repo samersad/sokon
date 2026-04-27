@@ -7,4 +7,9 @@ abstract class BookingRepository {
     required String userId,
     required String apartmentId,
   });
+  Future<void> updateBookingStatus({
+    required Booking booking,
+    required String status,
+    String? changedByName,
+  });
 }

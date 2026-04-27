@@ -8,6 +8,7 @@ import 'package:sokon/core/model/booking.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
+import 'package:sokon/supabase_utils.dart';
 
 import '../../../../widgets/back_container.dart';
 import 'cubit/my_bookings_states.dart';
@@ -215,6 +216,22 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             "Owner: ${booking.ownerName ?? 'N/A'}",
             style: AppStyles.medium12gray,
           ),
+          SizedBox(height: 12.h),
+          if (_canCancel(booking))
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => _cancelBooking(booking),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: BorderSide(color: Colors.red.withOpacity(0.4)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: const Text("Cancel Booking"),
+              ),
+            ),
         ],
       ),
     );
@@ -256,5 +273,56 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       return 'pending';
     }
     return normalized;
+  }
+
+  bool _canCancel(Booking booking) {
+    final status = normalizeStatus(booking.status);
+    return status == 'pending' || status == 'accepted' || status == 'confirmed';
+  }
+
+  Future<void> _cancelBooking(Booking booking) async {
+    if (booking.id == null) {
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel booking'),
+        content: const Text('Do you want to cancel this booking request?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) {
+      return;
+    }
+
+    final user = context.read<UserViewModel>().user;
+    try {
+      await SupabaseUtils.updateBookingStatus(
+        booking: booking,
+        status: 'cancelled',
+        changedByName: user?.name,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking cancelled')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to cancel booking: $e')),
+      );
+    }
   }
 }

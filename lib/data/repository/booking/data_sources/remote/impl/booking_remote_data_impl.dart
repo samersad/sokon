@@ -38,4 +38,17 @@ class BookingRemoteDataImpl implements BookingRemoteDataSource {
       return status != 'cancelled' && status != 'rejected';
     });
   }
+
+  @override
+  Future<void> updateBookingStatus({
+    required Booking booking,
+    required String status,
+    String? changedByName,
+  }) async {
+    await SupabaseUtils.updateBookingStatus(
+      booking: booking,
+      status: status,
+      changedByName: changedByName,
+    );
+  }
 }

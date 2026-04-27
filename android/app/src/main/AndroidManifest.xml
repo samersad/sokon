@@ -30,6 +30,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDM7e19DP2CPQ6N1eCY-VRxOYmGOnfNKns"/>

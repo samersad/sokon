@@ -4,6 +4,10 @@ A new Flutter project.
 
 ## Getting Started
 
+## Design
+
+- [Figma: Sokon Design](https://www.figma.com/design/wOZFCq2M2p9KS4ROrA4OJz/Sokon?node-id=2222-2165&m=dev)
+
 This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:

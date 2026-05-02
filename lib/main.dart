@@ -208,7 +208,20 @@ class MyApp extends StatelessWidget {
             AppRoutes.userLocationPickerRoute: (context) =>
                 const UserLocationPicker(),
           },
-          theme: ThemeData.light(),
+          theme: ThemeData(
+            brightness: Brightness.light,
+            colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF234F68)),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF234F68),
+              brightness: Brightness.dark,
+            ),
+            useMaterial3: true,
+          ),
+          themeMode: ThemeMode.system,
         );
       },
     );

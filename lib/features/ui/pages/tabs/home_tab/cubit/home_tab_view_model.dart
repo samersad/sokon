@@ -17,6 +17,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
       : super(HomeTabStates.initial());
 
   Future<void> loadHomeData() async {
+    if (isClosed) return;
     emit(state.copyWith(
       isLoadingLocation: true,
       isLoadingEstates: true,
@@ -29,6 +30,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
         _loadApartments(),
       ]);
     } catch (e) {
+      if (isClosed) return;
       emit(state.copyWith(
         isLoadingLocation: false,
         isLoadingEstates: false,
@@ -38,6 +40,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
   }
 
   Future<void> getUserLocationData() async {
+    if (isClosed) return;
     emit(state.copyWith(
       isLoadingLocation: true,
       clearErrorMessage: true,
@@ -46,6 +49,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     try {
       await _loadUserLocation();
     } catch (e) {
+      if (isClosed) return;
       emit(state.copyWith(
         isLoadingLocation: false,
         errorMessage: e.toString(),
@@ -57,6 +61,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     final userLocation = locationViewModel.userLocation;
     final userAddress = locationViewModel.userAddress;
 
+    if (isClosed) return;
     emit(state.copyWith(
       isLoadingLocation: false,
       userLocation: userLocation,
@@ -70,6 +75,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
   }
 
   void clearErrorMessage() {
+    if (isClosed) return;
     emit(state.copyWith(clearErrorMessage: true));
   }
 
@@ -78,6 +84,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     final userLocation = locationViewModel.userLocation;
     final userAddress = locationViewModel.userAddress;
 
+    if (isClosed) return;
     emit(state.copyWith(
       isLoadingLocation: false,
       userLocation: userLocation,
@@ -93,6 +100,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     await apartmentViewModel.getAllApartments();
     final allApartments = apartmentViewModel.apartmentList;
 
+    if (isClosed) return;
     emit(state.copyWith(
       isLoadingEstates: false,
       featuredApartments: _buildFeaturedApartments(allApartments),

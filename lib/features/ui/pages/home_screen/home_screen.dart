@@ -18,31 +18,33 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final HomeScreenViewModel viewModel = getIt<HomeScreenViewModel>();
     final userViewModel = context.read<UserViewModel>();
+    final theme = Theme.of(context);
     bool isOwner = userViewModel.user?.role == 'owner';
 
     return BlocBuilder<HomeScreenViewModel, HomeScreenStates>(
       bloc: viewModel,
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.whiteColor,
+          backgroundColor: theme.scaffoldBackgroundColor,
           bottomNavigationBar: AnimatedBottomNavigationBar.builder(
             gapWidth: isOwner ? 50 : 0,
-            backgroundColor: AppColors.whiteColor,
+            backgroundColor: theme.cardColor,
             itemCount: viewModel.selectedIcon.length,
             leftCornerRadius: 36.r,
             rightCornerRadius: 36.r,
             tabBuilder: (int index, bool isActive) {
-              return viewModel.selectedIndex == index
-                  ? Image.asset(
-                      viewModel.selectedIcon[index],
-                      width: 35.w,
-                      height: 35.h,
-                    )
-                  : Image.asset(
-                      viewModel.unSelectedIcon[index],
-                      width: 35.w,
-                      height: 35.h,
-                    );
+              final isDarkMode = theme.brightness == Brightness.dark;
+              final isSelected = viewModel.selectedIndex == index;
+              return Image.asset(
+                isSelected
+                    ? viewModel.selectedIcon[index]
+                    : viewModel.unSelectedIcon[index],
+                width: 35.w,
+                height: 35.h,
+                color: isDarkMode
+                    ? (isSelected ? Colors.white : Colors.white.withOpacity(0.4))
+                    : null,
+              );
             },
             activeIndex: viewModel.selectedIndex,
             gapLocation: isOwner ? GapLocation.center : GapLocation.none,
@@ -52,7 +54,7 @@ class HomeScreen extends StatelessWidget {
           ),
           floatingActionButton: isOwner
               ? FloatingActionButton(
-                  backgroundColor: AppColors.blackColor,
+                  backgroundColor: theme.primaryColor,
                   shape: const CircleBorder(),
                   elevation: 0,
                   onPressed: () {
@@ -60,7 +62,7 @@ class HomeScreen extends StatelessWidget {
                   },
                   child: Icon(
                     Icons.add,
-                    color: AppColors.whiteColor,
+                    color: theme.focusColor,
                     size: 40.r,
                   ),
                 )

@@ -28,6 +28,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocProvider.value(
       value: viewModel,
       child: BlocConsumer<ForgetPasswordViewModel, ForgetPasswordState>(
@@ -52,7 +53,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.whiteColor,
+            backgroundColor: theme.scaffoldBackgroundColor,
             body: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,7 +63,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                       Image.asset(AppAssets.forgetBg),
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 70.h, horizontal: 15.w),
-                        child: Text("New Password", style: AppStyles.regular30primary),
+                        child: Text("New Password", style: theme.textTheme.headlineMedium),
                       ),
                     ],
                   ),
@@ -77,7 +78,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                           SizedBox(height: 20.h),
                           CustomTextFormField(
                             controller: passwordCtrl,
-                            hintStyle: AppStyles.medium12gray,
+                            hintStyle: theme.textTheme.bodyMedium,
                             hintText: "New Password",
                             obscureText: viewModel.hidePassword,
                             suffixIconName: IconButton(
@@ -90,14 +91,14 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                                 viewModel.changePasswordVisibility();
                               },
                             ),
-                            fillColor: AppColors.offWhiteColor,
-                            borderSideColor: AppColors.grayColor,
+                            fillColor: theme.disabledColor,
+                            borderSideColor: theme.highlightColor,
                             validator: (val) => AppValidators.validatePassword(val),
                           ),
                           SizedBox(height: 20.h),
                           CustomTextFormField(
                             controller: confirmPasswordCtrl,
-                            hintStyle: AppStyles.medium12gray,
+                            hintStyle: theme.textTheme.bodyMedium,
                             hintText: "Confirm New Password",
                             obscureText: viewModel.hidePassword,
                             suffixIconName: IconButton(
@@ -110,8 +111,8 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                                 viewModel.changePasswordVisibility();
                               },
                             ),
-                            fillColor: AppColors.offWhiteColor,
-                            borderSideColor: AppColors.grayColor,
+                            fillColor: theme.disabledColor,
+                            borderSideColor: theme.highlightColor,
                             validator: (val) => AppValidators.validateConfirmPassword(val, passwordCtrl.text),
                           ),
                           SizedBox(height: 70.h),
@@ -124,9 +125,9 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                             text: "Finish",
                             width: 336.w,
                             borderRadius: 30.r,
-                            backgroundColorElevated: AppColors.primaryColor,
+                            backgroundColorElevated: theme.primaryColor,
                             textStyle: AppStyles.semiBold20White,
-                            borderColor: AppColors.blackColor,
+                            borderColor: Colors.transparent,
                             customPadding: 16.h,
                           ),
                           SizedBox(height: 30.h),

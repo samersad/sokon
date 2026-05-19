@@ -118,6 +118,7 @@ class _VerificationScreenState extends State<VerificationScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocProvider.value(
       value: viewModel,
       child: BlocListener<ForgetPasswordViewModel, ForgetPasswordState>(
@@ -134,7 +135,7 @@ class _VerificationScreenState extends State<VerificationScreen>
           }
         },
         child: Scaffold(
-          backgroundColor: AppColors.whiteColor,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SingleChildScrollView(
             child: Column(
               children: [
@@ -148,12 +149,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                         children: [
                           Text(
                             "Verification",
-                            style: AppStyles.regular30primary,
+                            style: theme.textTheme.headlineMedium,
                           ),
                           SizedBox(height: 8.h),
                           Text(
                             "* We will send you a message to reset your password",
-                            style: AppStyles.medium12gray,
+                            style: theme.textTheme.bodyMedium,
                           ),
                         ],
                       ),
@@ -167,12 +168,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                     children: [
                       Text(
                         "Enter the 8-digit code sent to:",
-                        style: AppStyles.medium12gray,
+                        style: theme.textTheme.bodyMedium,
                       ),
                       SizedBox(height: 10.h),
                       Text(
                         email ?? "",
-                        style: AppStyles.semiBold15black,
+                        style: theme.textTheme.labelMedium,
                       ),
                       SizedBox(height: 24.h),
                       AnimatedBuilder(
@@ -196,8 +197,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                       SizedBox(height: 20.h),
                       _secondsLeft > 0
                           ? Text(
-                              "Resend code in $_secondsLeft s",
-                              style: AppStyles.medium12gray,
+                            "Resend code in $_secondsLeft s",
+                              style: theme.textTheme.bodyMedium,
                             )
                           : GestureDetector(
                               onTap: () {
@@ -206,7 +207,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                               },
                               child: Text(
                                 "Resend Code",
-                                style: AppStyles.semiBold14Primary,
+                                style: theme.textTheme.displaySmall,
                               ),
                             ),
                       SizedBox(height: 40.h),
@@ -219,9 +220,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                         text: "Submit",
                         width: 336.w,
                         borderRadius: 30.r,
-                        backgroundColorElevated: AppColors.primaryColor,
+                        backgroundColorElevated: theme.primaryColor,
                         textStyle: AppStyles.semiBold20White,
-                        borderColor: AppColors.blackColor,
+                        borderColor: Colors.transparent,
                         customPadding: 16.h,
                       ),
                       SizedBox(height: 30.h),

@@ -34,6 +34,7 @@ class _MessageTabState extends State<MessageTab> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final userId = userViewModel.user?.id ?? '';
 
@@ -41,16 +42,16 @@ class _MessageTabState extends State<MessageTab> {
       bloc: viewModel,
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Messages", style: AppStyles.bold24Primary),
+                  Text("Messages", style: theme.textTheme.headlineMedium),
                   SizedBox(height: 20.h),
-                  const SearchWidget(hintText: "Search"),
+                  SearchWidget(hintText: "Search"),
                   SizedBox(height: 10.h),
                   Expanded(
                     child: Builder(
@@ -150,12 +151,16 @@ class _MessageTabState extends State<MessageTab> {
           },
         );
       },
-      child: Container(
-        padding: EdgeInsets.all(15.sp),
-        decoration: BoxDecoration(
-          color: AppColors.whiteColor,
+        child: Builder(builder: (context) {
+        final theme = Theme.of(context);
+        return Container(
+          padding: EdgeInsets.all(15.sp),
+          decoration: BoxDecoration(
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(15.r),
-          border: Border.all(color: AppColors.grayColor.withOpacity(0.1)),
+          border: Border.all(color: theme.brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.2)
+              : theme.dividerColor.withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -194,14 +199,14 @@ class _MessageTabState extends State<MessageTab> {
                 children: [
                   Text(
                     displayName,
-                    style: AppStyles.bold16PrimaryColor,
+                    style: theme.textTheme.labelMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     lastMessage,
-                    style: AppStyles.medium12gray,
+                    style: theme.textTheme.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -210,7 +215,8 @@ class _MessageTabState extends State<MessageTab> {
             ),
           ],
         ),
-      ),
+        );
+      }),
     );
   }
 }

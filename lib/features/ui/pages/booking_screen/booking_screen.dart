@@ -38,6 +38,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocListener<BookingViewModel, BookingStates>(
       bloc: viewModel,
       listener: (context, state) {
@@ -70,12 +71,12 @@ class _BookingScreenState extends State<BookingScreen> {
         builder: (context, state) {
           return Scaffold(
             appBar: AppBar(
-              backgroundColor: AppColors.whiteColor,
+              backgroundColor: theme.scaffoldBackgroundColor,
               elevation: 0,
-              title: Text("Booking", style: AppStyles.bold20blackIner),
+              title: Text("Booking", style: theme.textTheme.titleLarge),
               centerTitle: true,
             ),
-            backgroundColor: AppColors.whiteColor,
+            backgroundColor: theme.scaffoldBackgroundColor,
             body: SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -87,7 +88,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         constraints: BoxConstraints(minHeight: 110.h),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12.sp),
-                          border: Border.all(color: AppColors.grayColor, width: 2),
+                          border: Border.all(color: theme.highlightColor, width: 2),
                         ),
                         child: Padding(
                           padding: EdgeInsets.all(10.w),
@@ -114,7 +115,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   children: [
                                     AutoSizeText(
                                       apartment.name ?? "Apartment",
-                                      style: AppStyles.semiBold14DarkPrimary,
+                                      style: theme.textTheme.labelMedium,
                                       maxLines: 2,
                                     ),
                                     SizedBox(height: 5.h),
@@ -126,7 +127,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                         Expanded(
                                           child: AutoSizeText(
                                             apartment.address ?? "No Address",
-                                            style: AppStyles.medium12gray,
+                                            style: theme.textTheme.bodyMedium,
                                             maxLines: 2,
                                           ),
                                         ),
@@ -136,11 +137,11 @@ class _BookingScreenState extends State<BookingScreen> {
                                     Row(
                                       children: [
                                         Text("${apartment.price ?? 0}/month",
-                                            style: AppStyles.regular14black),
+                                            style: theme.textTheme.bodyMedium),
                                         const Spacer(),
                                         Image.asset(AppAssets.star, width: 14.w),
                                         SizedBox(width: 4.w),
-                                        Text("4.8", style: AppStyles.regular14black),
+                                        Text("4.8", style: theme.textTheme.bodyMedium),
                                       ],
                                     ),
                                   ],
@@ -153,7 +154,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       SizedBox(height: 20.h),
 
-                      Text("Period", style: AppStyles.bold20black),
+                      Text("Period", style: theme.textTheme.headlineSmall),
 
                       InkWell(
                         onTap: () async {
@@ -171,9 +172,9 @@ class _BookingScreenState extends State<BookingScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Date", style: AppStyles.regular14gray),
+                                Text("Date", style: theme.textTheme.bodyMedium),
                                 Text(viewModel.getFormattedDate(),
-                                    style: AppStyles.medium16black),
+                                    style: theme.textTheme.labelMedium),
                               ],
                             ),
                           ],
@@ -184,25 +185,23 @@ class _BookingScreenState extends State<BookingScreen> {
                         SizedBox(height: 8.h),
                         Text(
                           "Select date",
-                          style: AppStyles.regular14gray.copyWith(
-                            color: Colors.red,
-                          ),
+                          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.red),
                         ),
                       ],
 
                       SizedBox(height: 10.h),
-                      Divider(color: AppColors.grayColor),
+                      Divider(color: theme.dividerColor),
 
                       SizedBox(height: 10.h),
 
                       Text(
                         "Make sure to check your date before making any sort of payments",
-                        style: AppStyles.regular14gray,
+                        style: theme.textTheme.bodyMedium,
                       ),
 
                       SizedBox(height: 20.h),
 
-                      Text("Payments", style: AppStyles.bold20black),
+                      Text("Payments", style: theme.textTheme.headlineSmall),
 
                       Row(
                         children: [
@@ -214,7 +213,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               state.cardNumber == null
                                   ? "No Card Added"
                                   : "**** **** **** ${state.cardNumber!.substring(state.cardNumber!.length - 4)}",
-                              style: AppStyles.bold20black,
+                              style: theme.textTheme.labelMedium,
                             ),
                           ),
                           TextButton(
@@ -228,7 +227,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             },
                             child: Text(
                               state.cardNumber == null ? "Add Card" : "Edit",
-                              style: AppStyles.bold20black,
+                              style: theme.textTheme.labelMedium,
                             ),
                           ),
                         ],
@@ -240,7 +239,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         onPressed: () {},
                         child: Text(
                           "Enter a Voucher",
-                          style: AppStyles.bold20black.copyWith(
+                          style: theme.textTheme.labelMedium?.copyWith(
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -248,13 +247,13 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       SizedBox(height: 20.h),
 
-                      Text("Price Details", style: AppStyles.bold20black),
+                      Text("Price Details", style: theme.textTheme.headlineSmall),
 
-                      buildRow("Period time",
+                      buildRow(context, "Period time",
                           state.selectedDate == null ? "-" : "${state.selectedDate!.duration.inDays} Days"),
-                      buildRow("Monthly payment", "${apartment.price ?? 0} EG"),
-                      buildRow("Tax", "10 EG"),
-                      buildRow("Total", "${(apartment.price ?? 0) + 10} EG",
+                      buildRow(context, "Monthly payment", "${apartment.price ?? 0} EG"),
+                      buildRow(context, "Tax", "10 EG"),
+                      buildRow(context, "Total", "${(apartment.price ?? 0) + 10} EG",
                           isTotal: true),
 
                       SizedBox(height: 40.h),
@@ -264,7 +263,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         text: "Confirm and Pay",
                         customPadding: 20,
                         borderRadius: 10.r,
-                        backgroundColorElevated: AppColors.darkBlueColor,
+                        backgroundColorElevated: theme.primaryColor,
                         textStyle: AppStyles.semiBold20White,
                       ),
                     ],
@@ -278,21 +277,22 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget buildRow(String t1, String t2, {bool isTotal = false}) {
+  Widget buildRow(BuildContext context, String t1, String t2, {bool isTotal = false}) {
+    final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
         children: [
           Text(
             t1,
-            style: isTotal ? AppStyles.medium16black : AppStyles.regular14gray,
+            style: isTotal ? theme.textTheme.labelMedium : theme.textTheme.bodyMedium,
           ),
           const Spacer(),
           Text(
             t2,
             style: isTotal
-                ? AppStyles.bold18PrimaryColor
-                : AppStyles.medium16black,
+                ? theme.textTheme.titleMedium
+                : theme.textTheme.labelMedium,
           ),
         ],
       ),
@@ -300,6 +300,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void showSuccessDialog(BuildContext parentContext) {
+    final theme = Theme.of(parentContext);
     showDialog(
       context: parentContext,
       barrierDismissible: false,
@@ -319,13 +320,13 @@ class _BookingScreenState extends State<BookingScreen> {
                   Text(
                     "Yey, your booking success",
                     textAlign: TextAlign.center,
-                    style: AppStyles.bold20black,
+                    style: theme.textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 10),
                   Text(
                       "you have successfully booked a property, enjoy your property",
                       textAlign: TextAlign.center,
-                      style: AppStyles.regular14gray),
+                      style: theme.textTheme.bodyMedium),
                   const SizedBox(height: 25),
                   CustomElevatedButtom(
                     onPressed: () {
@@ -337,7 +338,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     text: "successfully",
                     customPadding: 15,
                     borderRadius: 10.r,
-                    backgroundColorElevated: AppColors.darkBlueColor,
+                    backgroundColorElevated: theme.primaryColor,
                     textStyle: AppStyles.semiBold20White,
                   )
                 ],

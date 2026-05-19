@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_states.dart';
+import 'package:sokon/core/cache/cubit_manger/theme_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_routes.dart';
@@ -45,6 +46,8 @@ class _ProfileTabState extends State<ProfileTab> {
       child: BlocBuilder<ProfileViewModel, ProfileStates>(
         bloc: viewModel,
         builder: (context, profileState) {
+          final theme = Theme.of(context);
+          final themeCubit = context.read<ThemeViewModel>();
           return BlocBuilder<UserViewModel, UserState>(
             builder: (context, state) {
               var userViewModel = context.read<UserViewModel>();
@@ -54,7 +57,7 @@ class _ProfileTabState extends State<ProfileTab> {
               String? photoUrl = user?.photoUrl;
 
               return Scaffold(
-                backgroundColor: AppColors.whiteColor,
+                backgroundColor: theme.scaffoldBackgroundColor,
                 body: SafeArea(
                   child: SingleChildScrollView(
                     child: Padding(
@@ -73,7 +76,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                   ),
                                   child: CircleAvatar(
                                     radius: 70.r,
-                                    backgroundColor: Colors.grey.shade200,
+                                    backgroundColor: theme.disabledColor,
                                     backgroundImage: (photoUrl != null &&
                                             photoUrl.isNotEmpty
                                         ? NetworkImage(photoUrl)
@@ -86,14 +89,12 @@ class _ProfileTabState extends State<ProfileTab> {
                           ),
                           SizedBox(height: 15.h),
                           Text(user?.name ?? "No Name",
-                              style: AppStyles.bold20black),
+                              style: theme.textTheme.headlineSmall),
                           SizedBox(height: 5.h),
                           Text(user?.email ?? "No Email",
-                              style: AppStyles.regular14black),
+                              style: theme.textTheme.bodyMedium),
                           SizedBox(height: 40.h),
-                          Divider(
-                              color: AppColors.grayColor.withOpacity(0.3),
-                              thickness: 1.h),
+                          Divider(color: theme.dividerColor.withOpacity(0.3), thickness: 1.h),
                           SizedBox(height: 20.h),
                           buildRowTile(
                             icon: Icons.settings_outlined,
@@ -101,6 +102,15 @@ class _ProfileTabState extends State<ProfileTab> {
                             color: Colors.blue,
                             onTap: () => Navigator.of(context)
                                 .pushNamed(AppRoutes.settingsScreenRoute),
+                          ),
+                          SizedBox(height: 20.h),
+                          buildRowTile(
+                            icon: themeCubit.isDark
+                                ? Icons.dark_mode_outlined
+                                : Icons.light_mode_outlined,
+                            title: themeCubit.isDark ? "Dark Mode" : "Light Mode",
+                            color: theme.primaryColor,
+                            onTap: () => _showThemeSheet(context, themeCubit),
                           ),
                           SizedBox(height: 20.h),
                           buildRowTile(
@@ -170,7 +180,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                   SizedBox(width: 5.w),
                                   Text(
                                     "Logout",
-                                    style: AppStyles.medium16RedColor,
+                                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.redColor),
                                   ),
                                 ],
                               )),
@@ -202,7 +212,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             },
                             child: Text(
                               "Delete account",
-                              style: AppStyles.medium16RedColor,
+                              style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.redColor),
                             ),
                           ),
                           SizedBox(height: 30.h),
@@ -225,6 +235,7 @@ class _ProfileTabState extends State<ProfileTab> {
     required VoidCallback onTap,
     required Color color,
   }) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -241,13 +252,60 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
             SizedBox(width: 15.w),
             Expanded(
-              child: Text(title, style: AppStyles.semiBold15black),
+              child: Text(title, style: theme.textTheme.labelMedium),
             ),
             Icon(Icons.arrow_forward_ios,
-                color: AppColors.grayColor, size: 16.sp),
+                color: theme.highlightColor, size: 16.sp),
           ],
         ),
       ),
+    );
+  }
+
+  void _showThemeSheet(BuildContext context, ThemeViewModel themeCubit) {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (sheetContext) {
+        final currentTheme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Theme", style: currentTheme.textTheme.displaySmall),
+                SizedBox(height: 12.h),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.light_mode_outlined),
+                  title: Text("Light Mode", style: currentTheme.textTheme.labelMedium),
+                  trailing: themeCubit.isDark ? null : Icon(Icons.check, color: currentTheme.primaryColor),
+                  onTap: () {
+                    themeCubit.setDark(dark: false);
+                    Navigator.pop(sheetContext);
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.dark_mode_outlined),
+                  title: Text("Dark Mode", style: currentTheme.textTheme.labelMedium),
+                  trailing: themeCubit.isDark ? Icon(Icons.check, color: currentTheme.primaryColor) : null,
+                  onTap: () {
+                    themeCubit.setDark(dark: true);
+                    Navigator.pop(sheetContext);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

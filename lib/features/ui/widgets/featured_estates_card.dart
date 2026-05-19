@@ -13,6 +13,7 @@ class FeaturedEstatesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () => Navigator.of(context).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
 
@@ -22,7 +23,7 @@ class FeaturedEstatesCard extends StatelessWidget {
           width: 270.w,
           padding: EdgeInsets.all(10.w),
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
+            color: theme.disabledColor,
             borderRadius: BorderRadius.circular(30),
           ),
           child: Row(
@@ -49,7 +50,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                       apartment.name ?? "No Name",
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppStyles.bold12Primary,
+                      style: theme.textTheme.displaySmall,
                     ),
                     Row(
                       children: [
@@ -58,7 +59,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                         SizedBox(width: 4.w),
                         Text("4.9",
                             style:
-                            AppStyles.bold12Primary),
+                            theme.textTheme.displaySmall),
                       ],
                     ),
                     Row(
@@ -73,8 +74,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                             maxLines: 1,
                             overflow:
                             TextOverflow.ellipsis,
-                            style: AppStyles
-                                .medium10blueDarkColor,
+                            style: theme.textTheme.displaySmall,
                           ),
                         ),
                       ],
@@ -84,13 +84,12 @@ class FeaturedEstatesCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: "EG ${apartment.price ?? 0}/",
-                            style: AppStyles
-                                .bold18PrimaryColor,
+                            style: theme.textTheme.displaySmall,
                           ),
                           TextSpan(
                             text: "month",
                             style:
-                            AppStyles.bold8Primary,
+                            theme.textTheme.displaySmall,
                           ),
                         ],
                       ),

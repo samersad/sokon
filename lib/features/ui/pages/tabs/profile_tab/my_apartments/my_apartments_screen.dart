@@ -32,10 +32,11 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocBuilder<ApartmentViewModel, ApartmentState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +47,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                     children: [
                       const BackContainer(),
                       SizedBox(width: 15.w),
-                      Text("My Apartments", style: AppStyles.bold20black),
+                      Text("My Apartments", style: theme.textTheme.headlineLarge),
                     ],
                   ),
                 ),
@@ -56,13 +57,13 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Manage your properties",
-                          style: AppStyles.medium13GrayWithOpacity),
+                          style: theme.textTheme.bodyMedium),
                     ],
                   ),
                 ),
                 SizedBox(height: 20.h),
                 Expanded(
-                  child: _buildContent(state),
+                  child: _buildContent(context, state),
                 ),
               ],
             ),
@@ -72,9 +73,10 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
     );
   }
 
-  Widget _buildContent(ApartmentState state) {
+  Widget _buildContent(BuildContext context, ApartmentState state) {
+    final theme = Theme.of(context);
     if (state is ApartmentLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+      return Center(child: CircularProgressIndicator(color: theme.primaryColor));
     } else if (state is ApartmentError) {
       return Center(
         child: Padding(
@@ -84,14 +86,14 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               SizedBox(height: 12.h),
-              Text(state.message, textAlign: TextAlign.center, style: AppStyles.medium13Gray),
+              Text(state.message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
             ],
           ),
         ),
       );
     } else if (state is ApartmentLoaded) {
       if (state.apartments.isEmpty) {
-        return _buildEmptyState();
+        return _buildEmptyState(context);
       }
       return ListView.separated(
         physics: const BouncingScrollPhysics(),
@@ -102,7 +104,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
           final apartment = state.apartments[index];
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
                 BoxShadow(
@@ -150,7 +152,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                             children: [
                               Image.asset(AppAssets.star, width: 14.w),
                               SizedBox(width: 4.w),
-                              Text("4.7", style: AppStyles.bold12Primary),
+                              Text("4.7", style: theme.textTheme.labelMedium),
                             ],
                           ),
                         ),
@@ -168,7 +170,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                             Expanded(
                               child: Text(
                                 apartment.name ?? "No Name",
-                                style: AppStyles.bold16PrimaryColor,
+                                style: theme.textTheme.labelMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -178,11 +180,11 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                                 children: [
                                   TextSpan(
                                     text: "EGP ${apartment.price?.toInt() ?? 0}",
-                                    style: AppStyles.bold18PrimaryColor.copyWith(color: AppColors.blueColor),
+                                    style: theme.textTheme.titleMedium,
                                   ),
                                   TextSpan(
                                     text: " /mo",
-                                    style: AppStyles.medium12gray,
+                                    style: theme.textTheme.bodyMedium,
                                   ),
                                 ],
                               ),
@@ -197,7 +199,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                             Expanded(
                               child: Text(
                                 apartment.address ?? "No Address",
-                                style: AppStyles.medium10blueDarkColor.copyWith(color: AppColors.grayColor),
+                                style: theme.textTheme.bodyMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -207,11 +209,11 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                         SizedBox(height: 12.h),
                         Row(
                           children: [
-                            _buildFeature(AppAssets.bedroomsIcon, "${apartment.bedrooms ?? 0} Beds"),
+                            _buildFeature(context, AppAssets.bedroomsIcon, "${apartment.bedrooms ?? 0} Beds"),
                             SizedBox(width: 16.w),
-                            _buildFeature(AppAssets.bathroomsIcon, "${apartment.bathrooms ?? 0} Baths"),
+                            _buildFeature(context, AppAssets.bathroomsIcon, "${apartment.bathrooms ?? 0} Baths"),
                             SizedBox(width: 16.w),
-                            _buildFeature(AppAssets.livingRoomsIcon, "${apartment.livingRooms ?? 0} Living"),
+                            _buildFeature(context, AppAssets.livingRoomsIcon, "${apartment.livingRooms ?? 0} Living"),
                           ],
                         ),
                         SizedBox(height: 16.h),
@@ -266,18 +268,20 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
     return const SizedBox.shrink();
   }
 
-  Widget _buildFeature(String asset, String text) {
+  Widget _buildFeature(BuildContext context, String asset, String text) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(asset, width: 16.w, color: AppColors.primaryColor.withOpacity(0.7)),
+        Image.asset(asset, width: 16.w, color: theme.primaryColor.withOpacity(0.7)),
         SizedBox(width: 4.w),
-        Text(text, style: AppStyles.medium10blueDarkColor),
+        Text(text, style: theme.textTheme.bodyMedium),
       ],
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -285,7 +289,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
           Container(
             padding: EdgeInsets.all(30.r),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -294,21 +298,21 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                 )
               ],
             ),
-            child: Icon(Icons.home_work_outlined, size: 70.sp, color: AppColors.primaryColor.withOpacity(0.2)),
+            child: Icon(Icons.home_work_outlined, size: 70.sp, color: theme.primaryColor.withOpacity(0.2)),
           ),
           SizedBox(height: 24.h),
-          Text("No apartments found", style: AppStyles.bold18PrimaryColor),
+          Text("No apartments found", style: theme.textTheme.titleMedium),
           SizedBox(height: 10.h),
           Text("You haven't listed any apartments yet.\nStart by adding your first property!",
               textAlign: TextAlign.center,
-              style: AppStyles.medium12gray),
+              style: theme.textTheme.bodyMedium),
           SizedBox(height: 30.h),
           ElevatedButton(
             onPressed: () {
                Navigator.pushNamed(context, AppRoutes.addApartmentRoute);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
+              backgroundColor: theme.primaryColor,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.r)),
@@ -321,25 +325,26 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
   }
 
   void _showDeleteDialog(String apartmentId) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: theme.cardColor,
+        surfaceTintColor: theme.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
         title: Row(
           children: [
             const Icon(Icons.warning_amber_rounded, color: Colors.red),
             SizedBox(width: 10.w),
-            Text("Delete Listing", style: AppStyles.bold18PrimaryColor),
+            Text("Delete Listing", style: theme.textTheme.titleMedium),
           ],
         ),
         content: Text("Are you sure you want to delete this property? This action cannot be undone and the listing will be removed immediately.",
-            style: AppStyles.regular14gray),
+            style: theme.textTheme.bodyMedium),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: AppStyles.medium12gray),
+            child: Text("Cancel", style: theme.textTheme.bodyMedium),
           ),
           ElevatedButton(
             onPressed: () {

@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
+import 'package:sokon/core/cache/cubit_manger/theme_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_states.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/apartment.dart';
@@ -31,6 +32,7 @@ import 'core/di/di.dart';
 import 'core/services/firebase_cloud_messaging.dart';
 import 'supabase_utils.dart';
 import 'core/utils/app_routes.dart';
+import 'core/utils/app_theme.dart';
 import 'features/ui/auth/login/login_screen.dart';
 import 'features/ui/pages/add_apartment/add_apartment.dart';
 import 'features/ui/pages/apartment_details_screen/apartment_details.dart';
@@ -51,13 +53,12 @@ Future<void> main() async {
   );
   await FirebaseCloudMessaging.init();
 
-
+  await SharedPrefsHelper.init();
   await configureDependencies();
   final userViewModel = getIt<UserViewModel>();
   final locationViewModel = getIt<LocationViewModel>();
   final apartmentViewModel = getIt<ApartmentViewModel>();
-
-  await SharedPrefsHelper.init();
+  final themeViewModel = ThemeViewModel();
   final supabaseClient = Supabase.instance.client;
   await _refreshSupabaseSessionIfNeeded(supabaseClient);
   await _syncRealtimeAuth(supabaseClient);
@@ -123,6 +124,7 @@ Future<void> main() async {
         BlocProvider.value(value: userViewModel),
         BlocProvider.value(value: locationViewModel),
         BlocProvider.value(value: apartmentViewModel),
+        BlocProvider.value(value: themeViewModel),
       ],
       child: MyApp(routeName: routeName),
     ),
@@ -168,47 +170,59 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          initialRoute: routeName,
-          routes: {
-            AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
-            AppRoutes.loginRoute: (context) => const LoginScreen(),
-            AppRoutes.registerRoute: (context) => const RegisterScreen(),
-            AppRoutes.forgetPasswordRoute: (context) =>
-                const ForgetPasswordScreen(),
-            AppRoutes.verificationRoute: (context) =>
-                const VerificationScreen(),
-            AppRoutes.forgetPassword2Route: (context) =>
-                const ForgetPasswordScreen2(),
-            AppRoutes.addApartmentRoute: (context) => const AddApartment(),
-            AppRoutes.editApartmentRoute: (context) {
-              final apartment =
-                  ModalRoute.of(context)!.settings.arguments as Apartment;
-              return EditApartment(apartment: apartment);
-            },
-            AppRoutes.apartmentDetailsRoute: (context) =>
-                const ApartmentDetails(),
-            AppRoutes.locationPickerRoute: (context) => const LocationPicker(),
-            AppRoutes.topLocationRoute: (context) => const TopLocationScreen(),
-            AppRoutes.nearbyEstateRoute: (context) =>
-                const NearbyEstateScreen(),
-            AppRoutes.featuredEstateRoute: (context) =>
-                const FeaturedEstateScreen(),
-            AppRoutes.settingsScreenRoute: (context) => const SettingsScreen(),
-            AppRoutes.notificationRoute: (context) => const NotifactionScreen(),
-            AppRoutes.addCardRoute: (context) => const AddCardScreen(),
-            AppRoutes.bookingRoute: (context) => const BookingScreen(),
-            AppRoutes.myApartmentsRoute: (context) =>
-                const MyApartmentsScreen(),
-            AppRoutes.chatRoute: (context) => const ChatScreen(),
-            AppRoutes.myBookingsRoute: (context) => const MyBookingsScreen(),
-            AppRoutes.ownerBookingRequestsRoute: (context) =>
-                const OwnerBookingRequestsScreen(),
-            AppRoutes.userLocationPickerRoute: (context) =>
-                const UserLocationPicker(),
+        return BlocBuilder<ThemeViewModel, ThemeState>(
+          builder: (context, themeState) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              initialRoute: routeName,
+              routes: {
+                AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
+                AppRoutes.loginRoute: (context) => const LoginScreen(),
+                AppRoutes.registerRoute: (context) => const RegisterScreen(),
+                AppRoutes.forgetPasswordRoute: (context) =>
+                    const ForgetPasswordScreen(),
+                AppRoutes.verificationRoute: (context) =>
+                    const VerificationScreen(),
+                AppRoutes.forgetPassword2Route: (context) =>
+                    const ForgetPasswordScreen2(),
+                AppRoutes.addApartmentRoute: (context) => const AddApartment(),
+                AppRoutes.editApartmentRoute: (context) {
+                  final apartment =
+                      ModalRoute.of(context)!.settings.arguments as Apartment;
+                  return EditApartment(apartment: apartment);
+                },
+                AppRoutes.apartmentDetailsRoute: (context) =>
+                    const ApartmentDetails(),
+                AppRoutes.locationPickerRoute: (context) =>
+                    const LocationPicker(),
+                AppRoutes.topLocationRoute: (context) =>
+                    const TopLocationScreen(),
+                AppRoutes.nearbyEstateRoute: (context) =>
+                    const NearbyEstateScreen(),
+                AppRoutes.featuredEstateRoute: (context) =>
+                    const FeaturedEstateScreen(),
+                AppRoutes.settingsScreenRoute: (context) =>
+                    const SettingsScreen(),
+                AppRoutes.notificationRoute: (context) =>
+                    const NotifactionScreen(),
+                AppRoutes.addCardRoute: (context) => const AddCardScreen(),
+                AppRoutes.bookingRoute: (context) => const BookingScreen(),
+                AppRoutes.myApartmentsRoute: (context) =>
+                    const MyApartmentsScreen(),
+                AppRoutes.chatRoute: (context) => const ChatScreen(),
+                AppRoutes.myBookingsRoute: (context) =>
+                    const MyBookingsScreen(),
+                AppRoutes.ownerBookingRequestsRoute: (context) =>
+                    const OwnerBookingRequestsScreen(),
+                AppRoutes.userLocationPickerRoute: (context) =>
+                    const UserLocationPicker(),
+
+              },
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: themeState.themeMode,
+            );
           },
-          theme: ThemeData.light(),
         );
       },
     );

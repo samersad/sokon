@@ -7,8 +7,8 @@ import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_states.dart';
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_view_model.dart';
-import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
 import 'package:sokon/features/ui/widgets/featured_estates_card.dart';
+import 'package:sokon/features/ui/widgets/search_widget.dart';
 
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
@@ -42,8 +42,9 @@ class _SearchTabState extends State<SearchTab> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.whiteColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
@@ -53,27 +54,16 @@ class _SearchTabState extends State<SearchTab> {
               Row(
                 children: [
                   SizedBox(width: 15.w),
-                  Text("Search", style: AppStyles.bold24Primary),
+                  Text("Search", style: theme.textTheme.headlineMedium),
                 ],
               ),
               SizedBox(height: 20.h),
-              CustomTextFormField(
+              SearchWidget(
+                hintText: "Search...",
                 controller: _searchController,
                 onChanged: (query) => viewModel.search(query),
-                paddingVertical: 18.h,
-                borderRadius: 14,
-                fillColor: AppColors.whiteColor,
-                borderSideColor: AppColors.grayColor.withOpacity(0.3),
-                hintText: "Search...",
-                hintStyle: AppStyles.medium12gray,
-                prefixIconName: Padding(
-                  padding: EdgeInsets.all(12.sp),
-                  child: Image.asset(AppAssets.searchIcon, width: 20.w),
-                ),
-                suffixIconName: IconButton(
-                  onPressed: () => _showFilterBottomSheet(context),
-                  icon: Image.asset(AppAssets.filterIcon, width: 20.w),
-                ),
+                onFilterTap: () => _showFilterBottomSheet(context),
+
               ),
               SizedBox(height: 20.h),
               Expanded(
@@ -90,7 +80,7 @@ class _SearchTabState extends State<SearchTab> {
                     return ListView(
                       children: [
                         if (state is SearchInitial && state.recentSearches.isNotEmpty) ...[
-                          Text("Recent", style: AppStyles.bold18PrimaryColor),
+                          Text("Recent", style: theme.textTheme.titleMedium),
                           SizedBox(height: 10.h),
                           ...state.recentSearches.map((s) => _buildListItem(
                                 icon: Icons.access_time,
@@ -104,7 +94,7 @@ class _SearchTabState extends State<SearchTab> {
                           SizedBox(height: 20.h),
                         ],
                         if (state is SearchLoaded) ...[
-                          Text("Result", style: AppStyles.bold18PrimaryColor),
+                          Text("Result", style: theme.textTheme.titleMedium),
                           SizedBox(height: 10.h),
                           if (state.results.isEmpty)
                             const Center(child: Text("No estates found."))
@@ -143,8 +133,8 @@ class _SearchTabState extends State<SearchTab> {
         ),
         child: Icon(icon, color: AppColors.grayColor, size: 20.sp),
       ),
-      title: Text(title, style: AppStyles.semiBold15black),
-      subtitle: Text(subtitle, style: AppStyles.medium10blueDarkColor),
+      title: Text(title, style: Theme.of(context).textTheme.labelMedium),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
     );
   }
 
@@ -152,6 +142,7 @@ class _SearchTabState extends State<SearchTab> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.primaryColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -181,42 +172,40 @@ class _SearchTabState extends State<SearchTab> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20.h),
-                        Center(child: Text("Filter", style: AppStyles.bold20black)),
                         SizedBox(height: 30.h),
-                        Text("Looking for", style: AppStyles.bold16PrimaryColor),
+                        Text("Looking for", style: Theme.of(context).textTheme.labelMedium),
                         _buildFilterCheckbox("For Rent", _isForRent, (v) => setSheetState(() => _isForRent = v!)),
-                        _buildFilterCheckbox("For Sale", _isForSale, (v) => setSheetState(() => _isForSale = v!)),
+                        // _buildFilterCheckbox("For Sale", _isForSale, (v) => setSheetState(() => _isForSale = v!)),
                         SizedBox(height: 20.h),
-                        Text("Property Type", style: AppStyles.bold16PrimaryColor),
-                        ...["Apartment", "Penthouse", "Hotel", "Villa"].map((type) => _buildFilterCheckbox(
+                        Text("Property Type", style: Theme.of(context).textTheme.labelMedium),
+                        ...["Apartment",].map((type) => _buildFilterCheckbox(
                               type,
                               _selectedPropertyType == type,
                               (v) => setSheetState(() => _selectedPropertyType = type),
                             )),
                         SizedBox(height: 20.h),
-                        Text("Price Range", style: AppStyles.bold16PrimaryColor),
+                        Text("Price Range", style: Theme.of(context).textTheme.labelMedium),
                         RangeSlider(
                           values: _currentRangeValues,
                           min: 0,
-                          max: 1000,
+                          max: 5000,
                           divisions: 100,
-                          activeColor: AppColors.primaryColor,
+                          activeColor: AppColors.white,
                           labels: RangeLabels(
-                            "\$${_currentRangeValues.start.round()}",
-                            "\$${_currentRangeValues.end.round()}",
+                            "\EG${_currentRangeValues.start.round()}",
+                            "\EG${_currentRangeValues.end.round()}",
                           ),
                           onChanged: (val) => setSheetState(() => _currentRangeValues = val),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("\$${_currentRangeValues.start.round()}", style: AppStyles.medium12gray),
-                            Text("\$${_currentRangeValues.end.round()}", style: AppStyles.medium12gray),
+                            Text("\EG${_currentRangeValues.start.round()}", style: Theme.of(context).textTheme.bodyMedium),
+                            Text("\EG${_currentRangeValues.end.round()}", style: Theme.of(context).textTheme.bodyMedium),
                           ],
                         ),
                         SizedBox(height: 20.h),
-                        Text("Facilities", style: AppStyles.bold16PrimaryColor),
+                        Text("Facilities", style: Theme.of(context).textTheme.labelMedium),
                         SizedBox(height: 15.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -305,14 +294,14 @@ class _SearchTabState extends State<SearchTab> {
           Container(
             padding: EdgeInsets.all(12.sp),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : Colors.transparent,
-              border: Border.all(color: isSelected ? AppColors.primaryColor : AppColors.grayColor.withOpacity(0.3)),
+              color: isSelected ? AppColors.whiteColor :AppColors.transparentColor,
+              border: Border.all(color: isSelected ? AppColors.transparentColor : AppColors.grayColor.withOpacity(0.3)),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(icon, color: isSelected ? AppColors.primaryColor : AppColors.grayColor),
           ),
           SizedBox(height: 5.h),
-          Text(label, style: isSelected ? AppStyles.medium10blueDarkColor : AppStyles.medium12gray),
+          Text(label, style: isSelected ? AppStyles.semiBold14White : AppStyles.medium12gray),
         ],
       ),
     );

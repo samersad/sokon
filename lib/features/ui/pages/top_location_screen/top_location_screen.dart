@@ -11,8 +11,9 @@ class TopLocationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -23,10 +24,10 @@ class TopLocationScreen extends StatelessWidget {
                 BackContainer(),
                 SizedBox(height: 20.h,),
                 Text("Top Location",
-                    style: AppStyles.bold24Primary),
+                    style: theme.textTheme.headlineMedium),
                 SizedBox(height: 5.h,),
                 Text("Find the best recommendations place to live",
-                    style: AppStyles.medium13GrayWithOpacity),
+                    style: theme.textTheme.bodyMedium),
                 SizedBox(height: 10.h,),
                 SizedBox(
                   child: GridView.builder(
@@ -45,7 +46,7 @@ class TopLocationScreen extends StatelessWidget {
                             width: double.infinity,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(30),
-                              color: Colors.grey.shade200,
+                              color: theme.disabledColor,
                             ),
                             child: Padding(
                               padding:  EdgeInsets.all(16.sp),
@@ -55,7 +56,7 @@ class TopLocationScreen extends StatelessWidget {
                                   Center(child: Image.asset(AppAssets.topImage)),
                                   SizedBox(height: 10.h,),
                                   Text("Malang",
-                                      style: AppStyles.bold12Primary),
+                                      style: theme.textTheme.labelMedium),
                                 ],
                               ),
                             )

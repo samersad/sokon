@@ -39,6 +39,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final user = userViewModel.user;
 
@@ -46,7 +47,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       bloc: viewModel,
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.whiteColor,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
@@ -55,10 +56,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 children: [
                   const BackContainer(),
                   SizedBox(height: 20.h),
-                  Text("My Bookings", style: AppStyles.bold24Primary),
+                  Text("My Bookings", style: theme.textTheme.headlineMedium),
                   SizedBox(height: 5.h),
                   Text("Track your apartment bookings",
-                      style: AppStyles.medium13GrayWithOpacity),
+                      style: theme.textTheme.bodyMedium),
                   SizedBox(height: 20.h),
                   Expanded(
                     child: user == null
@@ -85,7 +86,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                       SizedBox(height: 15.h),
                                   itemBuilder: (context, index) {
                                     var booking = state.bookings[index];
-                                    return buildBookingCard(booking);
+                                    return buildBookingCard(context, booking);
                                   },
                                 );
                               }
@@ -102,14 +103,15 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
-  Widget buildBookingCard(Booking booking) {
+  Widget buildBookingCard(BuildContext context, Booking booking) {
+    final theme = Theme.of(context);
     final dateFormat = DateFormat('dd MMM yyyy');
     return Container(
       padding: EdgeInsets.all(15.sp),
       decoration: BoxDecoration(
-        color: AppColors.whiteColor,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: AppColors.grayColor.withOpacity(0.2)),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -145,7 +147,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   children: [
                     Text(
                       booking.apartmentName ?? "Apartment",
-                      style: AppStyles.bold16PrimaryColor,
+                      style: theme.textTheme.labelMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -153,12 +155,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     Row(
                       children: [
                         Icon(Icons.location_on,
-                            color: AppColors.grayColor, size: 14.sp),
+                            color: theme.highlightColor, size: 14.sp),
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
                             booking.apartmentAddress ?? "No address",
-                            style: AppStyles.medium12gray,
+                            style: theme.textTheme.bodyMedium,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -192,20 +194,20 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Period", style: AppStyles.regular12gray),
+                  Text("Period", style: theme.textTheme.bodyMedium),
                   Text(
                     "${booking.startDate != null ? dateFormat.format(booking.startDate!) : '-'} - ${booking.endDate != null ? dateFormat.format(booking.endDate!) : '-'}",
-                    style: AppStyles.bold12PrimaryColor,
+                    style: theme.textTheme.labelMedium,
                   ),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text("Total Price", style: AppStyles.regular12gray),
+                  Text("Total Price", style: theme.textTheme.bodyMedium),
                   Text(
                     "${booking.totalPrice ?? 0} EG",
-                    style: AppStyles.bold14Primary,
+                    style: theme.textTheme.displaySmall,
                   ),
                 ],
               ),
@@ -214,7 +216,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           SizedBox(height: 10.h),
           Text(
             "Owner: ${booking.ownerName ?? 'N/A'}",
-            style: AppStyles.medium12gray,
+            style: theme.textTheme.bodyMedium,
           ),
           SizedBox(height: 12.h),
           if (_canCancel(booking))

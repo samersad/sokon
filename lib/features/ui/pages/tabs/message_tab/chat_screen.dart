@@ -64,6 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final senderId = userViewModel.user?.id ?? '';
     final senderName = userViewModel.user?.name ?? 'User';
@@ -75,11 +76,15 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
+            leading: IconButton(onPressed: (){
+              Navigator.pop(context);
+            }, icon: Icon(Icons.arrow_back_ios_new,color: theme.primaryColor,),),
+            automaticallyImplyLeading: true,
             title: Row(
               children: [
                 CircleAvatar(
                   radius: 18.r,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: theme.disabledColor,
                   backgroundImage: (receiverPhotoUrl != null && receiverPhotoUrl!.isNotEmpty)
                       ? NetworkImage(receiverPhotoUrl!)
                       : AssetImage(AppAssets.avatar) as ImageProvider,
@@ -87,11 +92,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 SizedBox(width: 10.w),
                 Expanded(
                     child: Text(receiverName,
-                        style: AppStyles.bold20black,
-                        overflow: TextOverflow.ellipsis)),
+                        style: theme.textTheme.displaySmall,                        overflow: TextOverflow.ellipsis)),
               ],
             ),
-            backgroundColor: AppColors.white,
+            backgroundColor: theme.scaffoldBackgroundColor,
             elevation: 1,
           ),
           body: Column(
@@ -102,14 +106,14 @@ class _ChatScreenState extends State<ChatScreen> {
                     if (state is ChatLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is ChatError) {
-                      return Center(child: Text("Error: ${state.message}"));
+                      return Center(child: Text("Error: ${state.message}", style: theme.textTheme.bodyMedium));
                     } else if (state is ChatMessagesLoaded) {
                       final messages = state.messages;
                       if (messages.isEmpty) {
                         return Center(
                           child: Text(
                             "Start the conversation",
-                            style: AppStyles.medium13Gray,
+                            style: theme.textTheme.bodyMedium,
                           ),
                         );
                       }
@@ -145,9 +149,9 @@ class _ChatScreenState extends State<ChatScreen> {
                               height: 20.r,
                               child: const CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(
+                          : Icon(
                               Icons.image_outlined,
-                              color: AppColors.primaryColor,
+                              color: theme.primaryColor,
                             ),
                       onPressed: _isSendingPhoto
                           ? null
@@ -164,6 +168,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Expanded(
                       child: TextField(
                         controller: _messageController,
+                        style: theme.textTheme.titleMedium ,
                         minLines: 1,
                         maxLines: 4,
                         decoration: InputDecoration(
@@ -179,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.send, color: AppColors.primaryColor),
+                      icon: Icon(Icons.send, color: theme.primaryColor),
                       onPressed: () {
                         _sendTextMessage(
                           chatId: chatId,
@@ -195,6 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
+              SizedBox(height: 20.h,)
             ],
           ),
         );
@@ -242,6 +248,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
+      backgroundColor: AppColors.whiteBlue,
       builder: (context) {
         return SafeArea(
           child: Wrap(
@@ -329,6 +336,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessageItem(Map<String, dynamic> data, bool isMe) {
+    final theme = Theme.of(context);
+
     final payload = _parseMessagePayload(data);
     final message = payload.text;
     final imageUrl = payload.imageUrl;
@@ -350,8 +359,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     ? EdgeInsets.all(6.sp)
                     : EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
                 decoration: BoxDecoration(
-                  color: isMe ? AppColors.primaryColor : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(18.r),
+                  color: isMe ? AppColors.whiteBlue :  AppColors.grayColor,
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,7 +384,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 child: Icon(
                                   Icons.broken_image_outlined,
                                   color:
-                                      isMe ? Colors.white70 : AppColors.primaryColor,
+                                      isMe ? Colors.white70 : theme.primaryColor,
                                   size: 28.r,
                                 ),
                               );
@@ -388,7 +397,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Text(
                         message,
                         style: TextStyle(
-                          color: isMe ? Colors.white : Colors.black,
+                          color: isMe ? theme.colorScheme.onPrimary : theme.textTheme.bodyMedium?.color,
                         ),
                       ),
                   ],
@@ -399,7 +408,7 @@ class _ChatScreenState extends State<ChatScreen> {
               SizedBox(height: 4.h),
               Text(
                 DateFormat('h:mm a').format(sentAt.toLocal()),
-                style: AppStyles.regular12gray.copyWith(fontSize: 11.sp),
+                style: theme.textTheme.titleMedium,
               ),
             ],
           ],

@@ -28,6 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final userViewModel = context.read<UserViewModel>();
+    final theme = Theme.of(context);
     return BlocListener<RegisterViewModel, RegisterStates>(
       bloc: viewModel,
       listener: (context, state) {
@@ -38,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           AlertDialogUtils.showMessage(
             context: context,
             msg: state.errorMessage,
-            pos: Text("Ok", style: AppStyles.semiBold14Primary),
+            pos: Text("Ok", style: theme.textTheme.labelMedium),
           );
         } else if (state is RegisterNeedsRoleStates) {
           AlertDialogUtils.hideLoading(context: context);
@@ -55,18 +56,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         bloc: viewModel,
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.offWhiteColor,
+            backgroundColor: theme.scaffoldBackgroundColor,
             body: SafeArea(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 120.h),
-                    Center(child: Text("Sign Up", style: AppStyles.bold32Primary)),
+                    Center(child: Text("Sign Up", style: theme.textTheme.headlineLarge)),
                     SizedBox(height: 100.h),
                     Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
                         borderRadius: BorderRadius.only(
                           topRight: Radius.circular(67),
                           topLeft: Radius.circular(67),
@@ -81,20 +82,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               SizedBox(height: 19.h),
                               CustomTextFormField(
                                 controller: viewModel.userCtrl,
-                                hintStyle: AppStyles.medium12gray,
+                                hintStyle: theme.textTheme.bodyMedium,
                                 hintText: "Username",
-                                fillColor: AppColors.offWhiteColor,
-                                borderSideColor: AppColors.grayColor,
+                                fillColor: theme.disabledColor,
+                                borderSideColor: theme.highlightColor,
                                 validator: (val) =>
                                     AppValidators.validateUsername(val),
                               ),
                               SizedBox(height: 16.h),
                               CustomTextFormField(
                                 controller: viewModel.emailCtrl,
-                                hintStyle: AppStyles.medium12gray,
+                                hintStyle: theme.textTheme.bodyMedium,
                                 hintText: "Email",
-                                fillColor: AppColors.offWhiteColor,
-                                borderSideColor: AppColors.grayColor,
+                                fillColor: theme.disabledColor,
+                                borderSideColor: theme.highlightColor,
                                 validator: (val) =>
                                     AppValidators.validateEmail(val),
                               ),
@@ -103,10 +104,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               /// PASSWORD FIELD
                               CustomTextFormField(
                                 controller: viewModel.passwordCtrl,
-                                hintStyle: AppStyles.medium12gray,
+                                hintStyle: theme.textTheme.bodyMedium,
                                 hintText: "Password",
-                                fillColor: AppColors.offWhiteColor,
-                                borderSideColor: AppColors.grayColor,
+                                fillColor: theme.disabledColor,
+                                borderSideColor: theme.highlightColor,
                                 obscureText: viewModel.hidePassword,
                                 validator: (val) =>
                                     AppValidators.validatePassword(val),
@@ -128,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 },
                                 text: "Sign up",
                                 width: 250.w,
-                                backgroundColorElevated: AppColors.primaryColor,
+                                backgroundColorElevated: theme.primaryColor,
                                 textStyle: AppStyles.semiBold20White,
                                 borderColor: Colors.transparent,
                                 customPadding: 19.h,
@@ -165,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 children: [
                                   Text(
                                     "have an account?",
-                                    style: AppStyles.regular14gray,
+                                    style: theme.textTheme.bodyMedium,
                                   ),
                                   TextButton(
                                     onPressed: () {

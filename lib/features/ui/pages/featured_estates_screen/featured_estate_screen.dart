@@ -29,11 +29,12 @@ class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocBuilder<FeaturedEstateViewModel, FeaturedEstateStates>(
       bloc: viewModel,
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.whiteColor,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -43,10 +44,10 @@ class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
                   children: [
                     const BackContainer(),
                     SizedBox(height: 20.h),
-                    Text("Featured Estates", style: AppStyles.bold24Primary),
+                    Text("Featured Estates", style: theme.textTheme.headlineMedium),
                     SizedBox(height: 5.h),
                     Text("Find the best recommendations place to live",
-                        style: AppStyles.medium13GrayWithOpacity),
+                        style: theme.textTheme.bodyMedium),
                     SizedBox(height: 10.h),
                     Builder(
                       builder: (context) {

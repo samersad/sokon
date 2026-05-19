@@ -45,6 +45,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocBuilder<NotificationViewModel, NotificationStates>(
       bloc: viewModel,
       builder: (context, state) {
@@ -53,7 +54,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
             : const <AppNotification>[];
 
         return Scaffold(
-          backgroundColor: AppColors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
@@ -62,7 +63,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
                 children: [
                   const BackContainer(),
                   SizedBox(height: 20.h),
-                  Text("Notification", style: AppStyles.bold24Primary),
+                  Text("Notification", style: theme.textTheme.headlineMedium),
                   SizedBox(height: 20.h),
                   if (state is NotificationLoading)
                     const Expanded(
@@ -101,6 +102,8 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
     BuildContext context,
     AppNotification notification,
   ) {
+    final theme = Theme.of(context);
+
     final createdAt = notification.createdAt;
     final timeText = createdAt == null
         ? ""
@@ -113,10 +116,10 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
       child: Container(
         padding: EdgeInsets.all(14.sp),
         decoration: BoxDecoration(
-          color: isUnread ? AppColors.offWhiteColor : AppColors.whiteColor,
+          color: isUnread ? theme.disabledColor : theme.cardColor,
           borderRadius: BorderRadius.circular(24.r),
           border: Border.all(
-            color: AppColors.grayColor.withValues(alpha: 0.15),
+            color: theme.dividerColor.withValues(alpha: 0.15),
           ),
         ),
         child: Row(
@@ -134,7 +137,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
                         child: Text(
                           notification.title ??
                               _getNotificationTitle(notification.type),
-                          style: AppStyles.bold16PrimaryColor,
+                          style: theme.textTheme.labelMedium,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -153,12 +156,12 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
                   SizedBox(height: 6.h),
                   AutoSizeText(
                     notification.body ?? "",
-                    style: AppStyles.medium12gray,
+                    style: theme.textTheme.bodyMedium,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 3,
                   ),
                   SizedBox(height: 12.h),
-                  Text(timeText, style: AppStyles.regular12gray),
+                  Text(timeText, style: theme.textTheme.labelSmall),
                 ],
               ),
             ),
@@ -216,6 +219,8 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
   }
 
   Widget _buildNotificationAvatar(AppNotification notification) {
+    final theme = Theme.of(context);
+
     if (notification.type == 'new_message' &&
         notification.senderId != null &&
         notification.senderId!.isNotEmpty) {
@@ -225,7 +230,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircleAvatar(
               radius: 28.r,
-              backgroundColor: Colors.grey.shade200,
+              backgroundColor: theme.disabledColor,
               child: SizedBox(
                 width: 18.w,
                 height: 18.w,
@@ -237,7 +242,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
           final photoUrl = snapshot.data?.photoUrl;
           return CircleAvatar(
             radius: 28.r,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: theme.disabledColor,
             backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
                 ? NetworkImage(photoUrl)
                 : null,

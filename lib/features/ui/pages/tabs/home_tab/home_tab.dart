@@ -63,6 +63,7 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final user = userViewModel.user;
 
@@ -105,6 +106,7 @@ class _HomeTabState extends State<HomeTab> {
                         child: InkWell(
                           onTap: () {
                             showModalBottomSheet(
+                              backgroundColor: Colors.white,
                               context: context,
                               builder: (_) => SafeArea(
                                 child: Column(
@@ -138,9 +140,9 @@ class _HomeTabState extends State<HomeTab> {
                             height: 50.h,
                             padding: EdgeInsets.symmetric(horizontal: 10.w),
                             decoration: BoxDecoration(
-                              color: AppColors.whiteColor,
+                              color: theme.cardColor,
                               borderRadius: BorderRadius.circular(25),
-                              border: Border.all(color: AppColors.grayColor),
+                              border: Border.all(color: theme.highlightColor),
                             ),
                             child: Row(
                               children: [
@@ -151,7 +153,7 @@ class _HomeTabState extends State<HomeTab> {
                                     address,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppStyles.medium10blueDarkColor,
+                                    style: theme.textTheme.bodyMedium,
                                   ),
                                 ),
                                 if (state.isLoadingLocation)
@@ -230,7 +232,7 @@ class _HomeTabState extends State<HomeTab> {
                     ],
                   ),
                   SizedBox(height: 20.h),
-                  const SearchWidget(
+                  SearchWidget(
                     hintText: "Search House, Apartment, etc",
                   ),
                   SizedBox(height: 20.h),
@@ -265,13 +267,13 @@ class _HomeTabState extends State<HomeTab> {
                   SizedBox(height: 20.h),
                   Row(
                     children: [
-                      Text("Featured Estates", style: AppStyles.bold18PrimaryColor),
+                      Text("Featured Estates", style: theme.textTheme.displaySmall),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
                         },
-                        child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
+                        child: Text("View all", style: theme.textTheme.displaySmall),
                       ),
                     ],
                   ),
@@ -286,13 +288,13 @@ class _HomeTabState extends State<HomeTab> {
                   SizedBox(height: 20.h),
                   Row(
                     children: [
-                      Text("Top Location", style: AppStyles.bold18PrimaryColor),
+                      Text("Top Location", style: theme.textTheme.displaySmall),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
                         },
-                        child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
+                        child: Text("View all", style: theme.textTheme.displaySmall),
                       ),
                     ],
                   ),
@@ -308,7 +310,7 @@ class _HomeTabState extends State<HomeTab> {
                           width: 130.w,
                           padding: EdgeInsets.symmetric(horizontal: 8.w),
                           decoration: BoxDecoration(
-                            color: AppColors.offWhiteColor,
+                            color: theme.disabledColor,
                             borderRadius: BorderRadius.circular(13),
                           ),
                           child: Row(
@@ -320,7 +322,7 @@ class _HomeTabState extends State<HomeTab> {
                                   "Malang",
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppStyles.bold12Primary,
+                                  style: theme.textTheme.labelMedium,
                                 ),
                               ),
                             ],
@@ -332,13 +334,13 @@ class _HomeTabState extends State<HomeTab> {
                   SizedBox(height: 10.h),
                   Row(
                     children: [
-                      Text("Nearby Estate", style: AppStyles.bold18PrimaryColor),
+                      Text("Nearby Estate", style: theme.textTheme.displaySmall),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
                         },
-                        child: Text("View all", style: AppStyles.semiBold10PrimaryColor),
+                        child: Text("View all", style: theme.textTheme.displaySmall),
                       ),
                     ],
                   ),

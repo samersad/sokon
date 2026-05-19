@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/cache/cubit_manger/theme_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/cubit/settings_states.dart';
@@ -43,6 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeCubit = context.read<ThemeViewModel>();
     return BlocConsumer<SettingsViewModel, SettingsState>(
       bloc: viewModel,
       listener: (context, state) {
@@ -62,12 +64,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            backgroundColor: AppColors.whiteColor,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
-            title: Text("Edit Profile", style: AppStyles.bold20black),
+            title: Text("Edit Profile", style: Theme.of(context).textTheme.titleLarge),
             centerTitle: true,
+            actions: [
+              IconButton(
+                onPressed: themeCubit.toggleTheme,
+                icon: Icon(
+                  themeCubit.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.whiteColor,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: Stack(
               children: [
@@ -81,9 +91,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Center(
                           child: Stack(
                             children: [
-                              CircleAvatar(
-                                radius: 70.r,
-                                backgroundColor: Colors.grey.shade200,
+                        CircleAvatar(
+                          radius: 70.r,
+                                backgroundColor: Theme.of(context).disabledColor,
                                 backgroundImage: viewModel.profileImage != null
                                     ? FileImage(viewModel.profileImage!)
                                     : (user?.photoUrl != null && user!.photoUrl!.isNotEmpty
@@ -118,8 +128,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           controller: nameController,
                           paddingVertical: 15.h,
                           borderSideColor: AppColors.grayColor,
-                          hintStyle: AppStyles.regular14black,
-                          fillColor: AppColors.transparentColor,
+                          hintStyle: Theme.of(context).textTheme.bodyMedium,
+                          fillColor: Theme.of(context).disabledColor,
                         ),
                         SizedBox(height: 20.h),
                         Text("Email", style: AppStyles.semiBold14DarkPrimary),
@@ -129,8 +139,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           controller: emailController,
                           paddingVertical: 15.h,
                           borderSideColor: AppColors.grayColor,
-                          hintStyle: AppStyles.regular14black,
-                          fillColor: AppColors.transparentColor,
+                          hintStyle: Theme.of(context).textTheme.bodyMedium,
+                          fillColor: Theme.of(context).disabledColor,
                         ),
                         SizedBox(height: 70.h),
                         CustomElevatedButtom(

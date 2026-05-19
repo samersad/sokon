@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../../../core/utils/app_colors.dart';
 import '../../../../../../core/utils/app_styles.dart';
 import '../../../../widgets/custom_elevated_buttom.dart';
 
@@ -36,15 +35,16 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
 
-        title: Text("Add Card", style: AppStyles.bold20blackIner),
+        title: Text("Add Card", style: theme.textTheme.titleLarge),
         centerTitle: true,
       ),
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -57,7 +57,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 showBackView: isCvvFocused,
                 onCreditCardWidgetChange: (CreditCardBrand brand) {},
                 bankName: 'My Bank',
-                cardBgColor: AppColors.primaryColor,
+                cardBgColor: theme.primaryColor,
                 enableFloatingCard: true,
                 height: 220.h,
                 width: MediaQuery.of(context).size.width,
@@ -68,8 +68,8 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 cardType: CardType.mastercard,
                 isHolderNameVisible: true,
                 animationDuration: const Duration(milliseconds: 1000),
-                frontCardBorder: Border.all(color: Colors.grey),
-                backCardBorder: Border.all(color: Colors.grey),
+                frontCardBorder: Border.all(color: theme.highlightColor),
+                backCardBorder: Border.all(color: theme.highlightColor),
                 padding: 16,
               ),
 
@@ -133,7 +133,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   text: "Add Card",
                   customPadding: 15,
                   borderRadius: 20.r,
-                  backgroundColorElevated: AppColors.darkBlueColor,
+                  backgroundColorElevated: theme.primaryColor,
                   textStyle: AppStyles.semiBold20White,
                 ),
               )

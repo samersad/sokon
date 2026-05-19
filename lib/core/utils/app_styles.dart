@@ -60,6 +60,12 @@ class AppStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.blackColor,
   );
+  static TextStyle bold12White = TextStyle(
+    fontFamily: montserrat,
+    fontSize: 12.sp,
+    fontWeight: FontWeight.normal,
+    color: AppColors.white,
+  );
 
   static TextStyle bold10black = TextStyle(
     fontFamily: montserrat,
@@ -223,9 +229,14 @@ class AppStyles {
     fontFamily: raleway,
     fontSize: 16.sp,
     fontWeight: FontWeight.w700,
-    color: AppColors.whiteBlue,
+    color: AppColors.redColor,
   );
-
+  static TextStyle medium16primary = TextStyle(
+    fontFamily: raleway,
+    fontSize: 16.sp,
+    fontWeight: FontWeight.w700,
+    color: AppColors.primaryColor,
+  );
   static TextStyle medium13blue = TextStyle(
     fontFamily: poppins,
     fontSize: 13.sp,

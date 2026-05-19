@@ -12,13 +12,14 @@ class NearbyEstateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () => Navigator.of(context).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
       child: Container(
         width: 168.w,
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
+          color: theme.disabledColor,
           borderRadius: BorderRadius.circular(27),
         ),
         child:
@@ -49,7 +50,7 @@ class NearbyEstateCard extends StatelessWidget {
               apartment.name ?? "No Name",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppStyles.bold12Primary,
+              style:theme.textTheme.displaySmall,
             ),
       
             SizedBox(height: 6.h),
@@ -63,7 +64,7 @@ class NearbyEstateCard extends StatelessWidget {
                     apartment.address ?? "No Address",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppStyles.medium10blueDarkColor,
+                    style: theme.textTheme.displaySmall,
                   ),
                 ),
                 Image.asset(AppAssets.downIcon, width: 12.w),
@@ -80,11 +81,11 @@ class NearbyEstateCard extends StatelessWidget {
                       children: [
                         TextSpan(
                           text: "EG ${apartment.price ?? 0}/",
-                          style: AppStyles.bold18PrimaryColor,
+                          style: theme.textTheme.displaySmall,
                         ),
                         TextSpan(
                           text: "month",
-                          style: AppStyles.bold8Primary,
+                          style: theme.textTheme.displaySmall,
                         ),
                       ],
                     ),
@@ -92,7 +93,7 @@ class NearbyEstateCard extends StatelessWidget {
                 ),
                 Image.asset(AppAssets.star, width: 14.w),
                 SizedBox(width: 4.w),
-                Text("4.7", style: AppStyles.bold12Primary),
+                Text("4.7", style: theme.textTheme.displaySmall),
               ],
             ),
           ],

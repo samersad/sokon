@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../core/utils/app_colors.dart';
-
 class CustomTextFormField extends StatefulWidget {
   CustomTextFormField({
     super.key,
@@ -57,46 +55,47 @@ class CustomTextFormField extends StatefulWidget {
 class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return TextFormField(
       onChanged: widget.onChanged,
       maxLines: widget.maxLines,
-      cursorColor: AppColors.primaryColor,
+      cursorColor: theme.primaryColor,
       validator: widget.validator,
       keyboardType: widget.keyboardType,
       obscureText: widget.obscureText,
       controller: widget.controller,
       obscuringCharacter: widget.obscuringCharacter,
-      cursorErrorColor: AppColors.redColor,
+      cursorErrorColor: theme.colorScheme.error,
       style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
         contentPadding: EdgeInsetsGeometry.symmetric(
           vertical: widget.paddingVertical.h,
           horizontal: widget.paddingHorizontal.w,
         ),
-        fillColor: widget.fillColor ?? AppColors.offWhiteColor,
+        fillColor: widget.fillColor ?? theme.disabledColor,
         filled: true,
         enabledBorder: bulitOutLineInputBorder(
-          borderSideColor: widget.borderSideColor ?? AppColors.primaryColor,
+          borderSideColor: widget.borderSideColor ?? theme.highlightColor,
           radius: widget.borderRadius,
         ),
         focusedBorder: bulitOutLineInputBorder(
-          borderSideColor: widget.borderSideColor ?? AppColors.primaryColor,
+          borderSideColor: widget.borderSideColor ?? theme.primaryColor,
         ),
 
         errorBorder: bulitOutLineInputBorder(
-          borderSideColor: AppColors.redColor,
+          borderSideColor: theme.colorScheme.error,
         ),
         focusedErrorBorder: bulitOutLineInputBorder(
-          borderSideColor: AppColors.redColor,
+          borderSideColor: theme.colorScheme.error,
         ),
         hintText: widget.hintText,
         hintStyle: widget.hintStyle ?? Theme.of(context).textTheme.bodyMedium,
         labelText: widget.labelText,
         labelStyle: widget.labelStyle ?? Theme.of(context).textTheme.bodyMedium,
         prefixIcon: widget.prefixIconName,
-        prefixIconColor: Theme.of(context).highlightColor,
+        prefixIconColor: theme.highlightColor,
         suffixIcon: widget.suffixIconName,
-        suffixIconColor: Theme.of(context).highlightColor,
+        suffixIconColor: theme.highlightColor,
       ),
     );
   }

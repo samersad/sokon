@@ -27,6 +27,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocProvider(
       create: (context) => viewModel,
       child: BlocListener<ForgetPasswordViewModel, ForgetPasswordState>(
@@ -42,7 +43,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           }
         },
         child: Scaffold(
-          backgroundColor: AppColors.whiteColor,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,8 +52,8 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                   children: [
                     Image.asset(AppAssets.forgetBg),
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: 70.h, horizontal: 15.w),
-                      child: Text("Forgot Password", style: AppStyles.regular30primary),
+                        padding: EdgeInsets.symmetric(vertical: 70.h, horizontal: 15.w),
+                      child: Text("Forgot Password", style: theme.textTheme.headlineMedium),
                     ),
                   ],
                 ),
@@ -64,14 +65,14 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Enter Your Email Address ", style: AppStyles.regular15black),
+                        Text("Enter Your Email Address ", style: theme.textTheme.bodyMedium),
                         SizedBox(height: 20.h),
                         CustomTextFormField(
                           controller: emailCtrl,
-                          hintStyle: AppStyles.medium12gray,
+                          hintStyle: theme.textTheme.bodyMedium,
                           hintText: "Email",
-                          fillColor: AppColors.offWhiteColor,
-                          borderSideColor: AppColors.grayColor,
+                          fillColor: theme.disabledColor,
+                          borderSideColor: theme.highlightColor,
                           validator: (val) {
                             if (val == null || val.isEmpty) return "Email is required";
                             return AppValidators.validateEmail(val);
@@ -87,9 +88,9 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                           text: "Continue",
                           width: 336.w,
                           borderRadius: 30.r,
-                          backgroundColorElevated: AppColors.primaryColor,
+                          backgroundColorElevated: theme.primaryColor,
                           textStyle: AppStyles.semiBold20White,
-                          borderColor: AppColors.blackColor,
+                          borderColor: Colors.transparent,
                           customPadding: 16.h,
                         ),
                         SizedBox(height: 30.h),

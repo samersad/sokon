@@ -48,6 +48,7 @@ class _OwnerBookingRequestsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final user = context.read<UserViewModel>().user;
 
     return BlocBuilder<OwnerBookingRequestsViewModel,
@@ -55,7 +56,7 @@ class _OwnerBookingRequestsScreenState
       bloc: viewModel,
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +68,7 @@ class _OwnerBookingRequestsScreenState
                     children: [
                       const BackContainer(),
                       SizedBox(width: 15.w),
-                      Text("Booking Requests", style: AppStyles.bold20black),
+                      Text("Booking Requests", style: theme.textTheme.headlineMedium),
                     ],
                   ),
                 ),
@@ -75,7 +76,7 @@ class _OwnerBookingRequestsScreenState
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Text(
                     "Review live booking activity for your apartments",
-                    style: AppStyles.medium13GrayWithOpacity,
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ),
                 SizedBox(height: 20.h),
@@ -97,9 +98,10 @@ class _OwnerBookingRequestsScreenState
   }
 
   Widget _buildContent(OwnerBookingRequestsStates state) {
+    final theme = Theme.of(context);
     if (state is OwnerBookingRequestsLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primaryColor),
+      return Center(
+        child: CircularProgressIndicator(color: theme.primaryColor),
       );
     }
 
@@ -115,7 +117,7 @@ class _OwnerBookingRequestsScreenState
               Text(
                 state.message,
                 textAlign: TextAlign.center,
-                style: AppStyles.medium13Gray,
+                style: theme.textTheme.bodyMedium,
               ),
             ],
           ),
@@ -144,6 +146,7 @@ class _OwnerBookingRequestsScreenState
   }
 
   Widget _buildBookingCard(Booking booking) {
+    final theme = Theme.of(context);
     final periodFormat = DateFormat('dd MMM yyyy');
     final createdAtFormat = DateFormat('dd MMM yyyy, hh:mm a');
     final status = _normalizeStatus(booking.status);
@@ -152,8 +155,11 @@ class _OwnerBookingRequestsScreenState
     return Container(
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: theme.brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.2)
+            : theme.dividerColor.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -199,7 +205,7 @@ class _OwnerBookingRequestsScreenState
                   children: [
                     Text(
                       booking.apartmentName ?? "Apartment",
-                      style: AppStyles.bold16PrimaryColor,
+                      style: theme.textTheme.labelMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -210,13 +216,13 @@ class _OwnerBookingRequestsScreenState
                         Icon(
                           Icons.location_on,
                           size: 14.sp,
-                          color: AppColors.grayColor,
+                          color: theme.highlightColor,
                         ),
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
                             booking.apartmentAddress ?? "No address",
-                            style: AppStyles.medium12gray,
+                            style: theme.textTheme.bodyMedium,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -226,7 +232,7 @@ class _OwnerBookingRequestsScreenState
                     SizedBox(height: 8.h),
                     Text(
                       "Client: ${booking.clientName ?? 'N/A'}",
-                      style: AppStyles.bold12PrimaryColor,
+                      style: theme.textTheme.displaySmall,
                     ),
                   ],
                 ),
@@ -253,7 +259,7 @@ class _OwnerBookingRequestsScreenState
           Container(
             padding: EdgeInsets.all(12.r),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
+              color: theme.disabledColor,
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Column(
@@ -281,9 +287,9 @@ class _OwnerBookingRequestsScreenState
           ),
           if (isUpdating) ...[
             SizedBox(height: 12.h),
-            const LinearProgressIndicator(
+            LinearProgressIndicator(
               minHeight: 3,
-              color: AppColors.primaryColor,
+              color: theme.primaryColor,
             ),
           ],
           if (_shouldShowActions(status)) ...[
@@ -296,17 +302,18 @@ class _OwnerBookingRequestsScreenState
   }
 
   Widget _buildInfoRow({required String label, required String value}) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppStyles.regular12gray),
+        Text(label, style: theme.textTheme.bodyMedium),
         SizedBox(width: 12.w),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: AppStyles.bold12PrimaryColor,
+            style: theme.textTheme.displaySmall,
           ),
         ),
       ],
@@ -314,6 +321,7 @@ class _OwnerBookingRequestsScreenState
   }
 
   Widget _buildActions(Booking booking, String status, bool isUpdating) {
+   var theme=Theme.of(context);
     if (status == 'pending') {
       return Row(
         children: [
@@ -330,7 +338,7 @@ class _OwnerBookingRequestsScreenState
                         successMessage: 'Booking accepted',
                       ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
+                backgroundColor: theme.primaryColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -338,7 +346,7 @@ class _OwnerBookingRequestsScreenState
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: const Text("Accept"),
+              child: Text("Accept",style: theme.textTheme.bodySmall,),
             ),
           ),
           SizedBox(width: 12.w),
@@ -395,6 +403,7 @@ class _OwnerBookingRequestsScreenState
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 32.w),
@@ -404,7 +413,7 @@ class _OwnerBookingRequestsScreenState
             Container(
               padding: EdgeInsets.all(26.r),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -416,19 +425,19 @@ class _OwnerBookingRequestsScreenState
               child: Icon(
                 Icons.assignment_outlined,
                 size: 60.sp,
-                color: AppColors.primaryColor.withOpacity(0.22),
+                color: theme.primaryColor.withOpacity(0.22),
               ),
             ),
             SizedBox(height: 22.h),
             Text(
               "No booking requests yet",
-              style: AppStyles.bold18PrimaryColor,
+              style: theme.textTheme.labelLarge,
             ),
             SizedBox(height: 8.h),
             Text(
               "New booking activity for your apartments will appear here in real time.",
               textAlign: TextAlign.center,
-              style: AppStyles.medium12gray,
+              style: theme.textTheme.bodyMedium,
             ),
           ],
         ),

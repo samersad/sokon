@@ -49,6 +49,7 @@ class _EditApartmentState extends State<EditApartment> {
   @override
   Widget build(BuildContext context) {
     final userViewModel = context.read<UserViewModel>();
+    final theme = Theme.of(context);
     return BlocListener<AddApartmentViewModel, AddApartmentStates>(
       bloc: viewModel,
       listener: (context, state) {
@@ -99,7 +100,7 @@ class _EditApartmentState extends State<EditApartment> {
           final locationViewModel = context.read<LocationViewModel>();
           return Scaffold(
             appBar: AppBar(
-              title: Text("Edit Apartment", style: AppStyles.bold20black),
+              title: Text("Edit Apartment", style: theme.textTheme.titleLarge),
               centerTitle: true,
             ),
             body: Padding(
@@ -112,7 +113,7 @@ class _EditApartmentState extends State<EditApartment> {
                     _buildVideoPickerSection(),
                     SizedBox(height: 20.h),
 
-                    Text("Apartment Name:", style: AppStyles.medium16black),
+                    Text("Apartment Name:", style: theme.textTheme.labelMedium),
                     SizedBox(height: 5.h),
                     CustomTextFormField(
                       controller: viewModel.nameCRl,
@@ -121,7 +122,7 @@ class _EditApartmentState extends State<EditApartment> {
                     ),
                     SizedBox(height: 20.h),
 
-                    Text("Address (optional)", style: AppStyles.medium16black),
+                    Text("Address (optional)", style: theme.textTheme.labelMedium),
                     SizedBox(height: 5.h),
                     BlocBuilder<LocationViewModel, LocationState>(
                       builder: (context, state) {
@@ -165,7 +166,7 @@ class _EditApartmentState extends State<EditApartment> {
                                 "Selected on map: ${locationViewModel.apartmentAddress}",
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppStyles.medium12gray,
+                                style: theme.textTheme.bodyMedium,
                               ),
                             ],
                           ],
@@ -192,12 +193,12 @@ class _EditApartmentState extends State<EditApartment> {
                           ),
                         ),
                         SizedBox(width: 5.w),
-                        Text("EG/mo", style: AppStyles.bold10Primary),
+                        Text("EG/mo", style: theme.textTheme.displaySmall),
                       ],
                     ),
                     SizedBox(height: 20.h),
 
-                    Text("Description:", style: AppStyles.medium16black),
+                    Text("Description:", style: theme.textTheme.labelMedium),
                     SizedBox(height: 5.h),
                     CustomTextFormField(
                       controller: viewModel.descriptionCRl,
@@ -208,7 +209,7 @@ class _EditApartmentState extends State<EditApartment> {
                     ),
                     SizedBox(height: 20.h),
 
-                    Text("Property Photos:", style: AppStyles.medium16black),
+                    Text("Property Photos:", style: theme.textTheme.labelMedium),
                     SizedBox(height: 10.h),
                     Row(
                       children: [
@@ -337,7 +338,7 @@ class _EditApartmentState extends State<EditApartment> {
                     ),
                     SizedBox(height: 20.h),
 
-                    Text("Property Details:", style: AppStyles.medium16black),
+                    Text("Property Details:", style: theme.textTheme.labelMedium),
                     SizedBox(height: 15.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -365,6 +366,8 @@ class _EditApartmentState extends State<EditApartment> {
                         ),
                       ],
                     ),
+                    SizedBox(height: 20.h),
+                    _buildPeopleCapacityCard(theme),
                     SizedBox(height: 40.h),
 
                     Center(
@@ -475,11 +478,12 @@ class _EditApartmentState extends State<EditApartment> {
     required VoidCallback onIncrease,
     required VoidCallback onDecrease,
   }) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         Image.asset(imageName, width: 34.w),
         SizedBox(height: 4.h),
-        Text(name, style: AppStyles.medium12gray),
+        Text(name, style: theme.textTheme.bodyMedium),
         SizedBox(height: 8.h),
         Row(
           children: [
@@ -487,12 +491,12 @@ class _EditApartmentState extends State<EditApartment> {
               onTap: onDecrease,
               child: CircleAvatar(
                 radius: 12.r,
-                backgroundColor: AppColors.offWhiteColor,
-                child: Icon(Icons.remove, size: 16.sp, color: Colors.black),
+                backgroundColor: theme.disabledColor,
+                child: Icon(Icons.remove, size: 16.sp, color: theme.highlightColor),
               ),
             ),
             SizedBox(width: 8.w),
-            Text(value.toString(), style: AppStyles.bold10black),
+            Text(value.toString(), style: theme.textTheme.labelMedium),
             SizedBox(width: 8.w),
             InkWell(
               onTap: onIncrease,
@@ -505,6 +509,90 @@ class _EditApartmentState extends State<EditApartment> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildPeopleCapacityCard(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(18.r),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF132238), const Color(0xFF0F172A)]
+              : [const Color(0xFFF4F8FC), const Color(0xFFE4EEF8)],
+        ),
+        borderRadius: BorderRadius.circular(22.r),
+        border: Border.all(
+          color: theme.primaryColor.withOpacity(isDark ? 0.35 : 0.18),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Icon(Icons.groups_rounded, color: theme.primaryColor, size: 26.sp),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Living Capacity", style: theme.textTheme.labelMedium),
+                SizedBox(height: 4.h),
+                Text(
+                  "Update how many people this apartment can host.",
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 12.w),
+          _buildCounterChip(
+            theme: theme,
+            value: viewModel.maxPeople,
+            onIncrease: viewModel.increaseMaxPeople,
+            onDecrease: viewModel.decreaseMaxPeople,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCounterChip({
+    required ThemeData theme,
+    required int value,
+    required VoidCallback onIncrease,
+    required VoidCallback onDecrease,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(18.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: onDecrease,
+            child: Icon(Icons.remove_circle_outline, color: theme.highlightColor, size: 22.sp),
+          ),
+          SizedBox(width: 10.w),
+          Text("$value", style: theme.textTheme.labelMedium),
+          SizedBox(width: 10.w),
+          InkWell(
+            onTap: onIncrease,
+            child: Icon(Icons.add_circle, color: theme.primaryColor, size: 22.sp),
+          ),
+        ],
+      ),
     );
   }
 }

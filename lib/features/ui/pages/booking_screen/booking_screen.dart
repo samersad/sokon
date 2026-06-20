@@ -194,6 +194,10 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       SizedBox(height: 10.h),
 
+                      _buildPeopleSelector(theme),
+
+                      SizedBox(height: 16.h),
+
                       Text(
                         "Make sure to check your date before making any sort of payments",
                         style: theme.textTheme.bodyMedium,
@@ -251,6 +255,11 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       buildRow(context, "Period time",
                           state.selectedDate == null ? "-" : "${state.selectedDate!.duration.inDays} Days"),
+                      buildRow(
+                        context,
+                        "People renting",
+                        "${state.peopleCount} / ${apartment.availablePeople ?? apartment.maxPeople ?? 1}",
+                      ),
                       buildRow(context, "Monthly payment", "${apartment.price ?? 0} EG"),
                       buildRow(context, "Tax", "10 EG"),
                       buildRow(context, "Total", "${(apartment.price ?? 0) + 10} EG",
@@ -293,6 +302,72 @@ class _BookingScreenState extends State<BookingScreen> {
             style: isTotal
                 ? theme.textTheme.titleMedium
                 : theme.textTheme.labelMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeopleSelector(ThemeData theme) {
+    final availablePeople = apartment.availablePeople ?? apartment.maxPeople ?? 1;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF132238), const Color(0xFF0F172A)]
+              : [const Color(0xFFF7FAFD), const Color(0xFFE7F0F8)],
+        ),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(
+          color: theme.primaryColor.withOpacity(isDark ? 0.35 : 0.14),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46.w,
+            height: 46.w,
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Icon(Icons.groups_rounded, color: theme.primaryColor, size: 24.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("People", style: theme.textTheme.labelMedium),
+                SizedBox(height: 4.h),
+                Text(
+                  "$availablePeople ${availablePeople == 1 ? 'spot' : 'spots'} currently available",
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: viewModel.state.peopleCount > 1
+                ? () => viewModel.updatePeopleCount(viewModel.state.peopleCount - 1)
+                : null,
+            icon: const Icon(Icons.remove_circle_outline),
+            color: theme.highlightColor,
+          ),
+          Text(
+            "${viewModel.state.peopleCount}",
+            style: theme.textTheme.labelMedium,
+          ),
+          IconButton(
+            onPressed: viewModel.state.peopleCount < availablePeople
+                ? () => viewModel.updatePeopleCount(viewModel.state.peopleCount + 1)
+                : null,
+            icon: const Icon(Icons.add_circle),
+            color: theme.primaryColor,
           ),
         ],
       ),

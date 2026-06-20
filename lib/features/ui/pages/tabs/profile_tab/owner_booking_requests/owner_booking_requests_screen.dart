@@ -277,6 +277,11 @@ class _OwnerBookingRequestsScreenState
                 ),
                 SizedBox(height: 10.h),
                 _buildInfoRow(
+                  label: "People",
+                  value: "${booking.peopleCount ?? 1}",
+                ),
+                SizedBox(height: 10.h),
+                _buildInfoRow(
                   label: "Requested",
                   value: booking.createdAt != null
                       ? createdAtFormat.format(booking.createdAt!)

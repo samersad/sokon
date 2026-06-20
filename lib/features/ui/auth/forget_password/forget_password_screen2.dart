@@ -78,7 +78,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                           SizedBox(height: 20.h),
                           CustomTextFormField(
                             controller: passwordCtrl,
-                            hintStyle: theme.textTheme.bodyMedium,
+                            hintStyle: theme.textTheme.titleLarge,
                             hintText: "New Password",
                             obscureText: viewModel.hidePassword,
                             suffixIconName: IconButton(

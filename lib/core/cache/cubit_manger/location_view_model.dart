@@ -38,10 +38,14 @@ class LocationViewModel extends Cubit<LocationState> {
     }
   }
 
-  Future<void> changeApartmentLocation(LatLng latLng) async {
+  Future<void> changeApartmentLocation(
+    LatLng latLng, {
+    String? resolvedAddress,
+  }) async {
     emit(LocationLoading());
     apartmentLocation = latLng;
-    apartmentAddress = await getAddressFromLatLng(apartmentLocation!);
+    apartmentAddress =
+        resolvedAddress ?? await getAddressFromLatLng(apartmentLocation!);
     emit(LocationUpdated(
       userLocation: userLocation,
       userAddress: userAddress,
@@ -66,10 +70,13 @@ class LocationViewModel extends Cubit<LocationState> {
     return "Unknown Address";
   }
 
-  Future<void> changeUserLocation(LatLng latLng) async {
+  Future<void> changeUserLocation(
+    LatLng latLng, {
+    String? resolvedAddress,
+  }) async {
     emit(LocationLoading());
     userLocation = latLng;
-    userAddress = await getAddressFromLatLng(latLng);
+    userAddress = resolvedAddress ?? await getAddressFromLatLng(latLng);
     emit(LocationUpdated(
       userLocation: userLocation,
       userAddress: userAddress,

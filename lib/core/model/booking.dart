@@ -13,6 +13,7 @@ class Booking {
   DateTime? startDate;
   DateTime? endDate;
   double? totalPrice;
+  int? peopleCount;
   String? status; // 'pending', 'accepted', 'cancelled'
   DateTime? createdAt;
 
@@ -29,6 +30,7 @@ class Booking {
     this.startDate,
     this.endDate,
     this.totalPrice,
+    this.peopleCount,
     this.status = 'pending',
     this.createdAt,
   });
@@ -47,6 +49,7 @@ class Booking {
       startDate: data["startDate"] != null ? DateTime.parse(data["startDate"]) : null,
       endDate: data["endDate"] != null ? DateTime.parse(data["endDate"]) : null,
       totalPrice: (data["totalPrice"] as num?)?.toDouble(),
+      peopleCount: data["people_count"],
       status: data["status"],
       createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
     );
@@ -65,6 +68,7 @@ class Booking {
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
       'totalPrice': totalPrice,
+      'people_count': peopleCount,
       'status': status,
       'createdAt': createdAt?.toIso8601String(),
     };

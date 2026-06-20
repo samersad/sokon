@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 text: "Sign up",
                                 width: 250.w,
                                 backgroundColorElevated: theme.primaryColor,
-                                textStyle: AppStyles.semiBold20White,
+                                textStyle: theme.textTheme.titleLarge,
                                 borderColor: Colors.transparent,
                                 customPadding: 19.h,
                               ),

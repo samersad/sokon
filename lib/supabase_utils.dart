@@ -129,8 +129,19 @@ class SupabaseUtils {
     String? changedByName,
   }) async {
     final normalizedStatus = status.toLowerCase().trim();
-    await client.from('bookings').update({'status': normalizedStatus}).eq('id', booking.id!);
-    booking.status = normalizedStatus;
+    final response = await client.rpc(
+      'update_booking_status_with_capacity',
+      params: {
+        'p_booking_id': booking.id,
+        'p_status': normalizedStatus,
+      },
+    );
+
+    if (response is Map<String, dynamic>) {
+      booking.status = response['status'] as String? ?? normalizedStatus;
+    } else {
+      booking.status = normalizedStatus;
+    }
 
     await notifyBookingStatusChange(
       booking: booking,
@@ -320,6 +331,7 @@ class SupabaseUtils {
     final clientName = booking.clientName?.trim();
     final apartmentName = booking.apartmentName?.trim();
     final ownerName = booking.ownerName?.trim();
+    final peopleCount = booking.peopleCount ?? 1;
 
     if (clientName != null &&
         clientName.isNotEmpty &&
@@ -327,11 +339,11 @@ class SupabaseUtils {
         apartmentName.isNotEmpty &&
         ownerName != null &&
         ownerName.isNotEmpty) {
-      return "$clientName submitted a booking request for $apartmentName managed by $ownerName.";
+      return "$clientName requested $apartmentName for $peopleCount ${peopleCount == 1 ? 'person' : 'people'} with $ownerName.";
     }
 
     if (clientName != null && clientName.isNotEmpty && apartmentName != null && apartmentName.isNotEmpty) {
-      return "$clientName submitted a booking request for $apartmentName.";
+      return "$clientName submitted a booking request for $apartmentName for $peopleCount ${peopleCount == 1 ? 'person' : 'people'}.";
     }
 
     return "A new booking request has been submitted.";
@@ -405,6 +417,7 @@ class SupabaseUtils {
 
   static Future<void> sendBookingPushToOwner(Booking booking) async {
     try {
+      final peopleCount = booking.peopleCount ?? 1;
       await client.functions.invoke(
         'send-booking-notification',
         body: {
@@ -412,7 +425,7 @@ class SupabaseUtils {
           'bookingId': booking.id,
           'title': 'New Booking Request',
           'body':
-              'Client ${booking.clientName} booked ${booking.apartmentName} from ${booking.ownerName}',
+              'Client ${booking.clientName} requested ${booking.apartmentName} for $peopleCount ${peopleCount == 1 ? 'person' : 'people'}',
           'type': 'new_booking',
         },
       );

@@ -39,6 +39,16 @@ class BookingViewModel extends Cubit<BookingStates> {
     );
   }
 
+  void updatePeopleCount(int peopleCount) {
+    emit(
+      state.copyWith(
+        peopleCount: peopleCount,
+        status: BookingStatus.initial,
+        clearErrorMessage: true,
+      ),
+    );
+  }
+
   String getFormattedDate() {
     if (state.selectedDate == null) return "Select Date";
     final format = DateFormat('dd MMM');
@@ -81,6 +91,27 @@ class BookingViewModel extends Cubit<BookingStates> {
       return;
     }
 
+    final availablePeople = apartment.availablePeople ?? apartment.maxPeople ?? 1;
+    if (availablePeople <= 0) {
+      emit(
+        state.copyWith(
+          status: BookingStatus.error,
+          errorMessage: "This apartment is fully booked.",
+        ),
+      );
+      return;
+    }
+
+    if (state.peopleCount > availablePeople) {
+      emit(
+        state.copyWith(
+          status: BookingStatus.error,
+          errorMessage: "Only $availablePeople people can be added to this apartment right now.",
+        ),
+      );
+      return;
+    }
+
     emit(
       state.copyWith(
         showDateError: false,
@@ -103,6 +134,7 @@ class BookingViewModel extends Cubit<BookingStates> {
       startDate: state.selectedDate!.start,
       endDate: state.selectedDate!.end,
       totalPrice: apartment.price,
+      peopleCount: state.peopleCount,
       status: 'pending',
     );
 

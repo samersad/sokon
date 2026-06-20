@@ -45,6 +45,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   @override
   Widget build(BuildContext context) {
     final userViewModel = context.read<UserViewModel>();
+    final theme = Theme.of(context);
 
     return BlocBuilder<ApartmentDetailsViewModel, ApartmentDetailsStates>(
       bloc: viewModel,
@@ -70,15 +71,12 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                         buildVideoPlayer(apartment),
                         SizedBox(height: 20.h),
                         Text(
-                          "$Apartment Name",
-                          style: AppStyles.bold18PrimaryColor,
+                          apartment.name ?? "Apartment",
+                          style: theme.textTheme.headlineMedium,
                         ),
                         SizedBox(height: 10.h),
-                        Text(
-                          "${apartment.name ?? "Apartment"}:",
-                          style: AppStyles.bold18PrimaryColor,
-                        ),
-                        SizedBox(height: 10.h),
+                        _buildCapacityBanner(apartment, theme),
+                        SizedBox(height: 16.h),
                         _buildLocationSection(apartment),
                         SizedBox(height: 20.h),
                         Row(
@@ -104,18 +102,18 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                         SizedBox(height: 20.h),
                         Row(
                           children: [
-                            Text("Description:", style: AppStyles.bold18PrimaryColor),
+                            Text("Description", style: theme.textTheme.headlineMedium),
                             const Spacer(),
                             Image.asset(AppAssets.yesIcon, width: 18.w),
                             SizedBox(width: 5.w),
-                            Text("Verified:", style: AppStyles.medium16whiteBlue),
+                            Text("Verified", style: theme.textTheme.displaySmall),
                           ],
                         ),
                         SizedBox(height: 10.h),
                         ReadMoreText(
                           apartment.description ?? "No description available.",
                           trimLength: 150,
-                          style: AppStyles.medium13PrimaryColor,
+                          style: theme.textTheme.bodyMedium,
                           trimMode: TrimMode.Length,
                           colorClickableText: AppColors.redColor,
                           trimCollapsedText: 'Read more',
@@ -126,7 +124,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.05),
+                            color: theme.disabledColor,
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Padding(
@@ -151,13 +149,13 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                                     children: [
                                       Text(
                                         apartment.ownerName ?? "Owner",
-                                        style: AppStyles.bold16PrimaryColor,
+                                        style: theme.textTheme.labelMedium,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       SizedBox(height: 2.h),
                                       Text("Professional Owner",
-                                          style: AppStyles.bold12PrimaryColor),
+                                          style: theme.textTheme.displaySmall),
                                     ],
                                   ),
                                 ),
@@ -195,8 +193,8 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                           ),
                         ),
                         SizedBox(height: 20.h),
-                        Text("Gallery", style: AppStyles.bold18PrimaryColor),
-                        Text("Take a look inside", style: AppStyles.medium13Gray),
+                        Text("Gallery", style: theme.textTheme.headlineMedium),
+                        Text("Take a look inside", style: theme.textTheme.bodyMedium),
                         SizedBox(height: 10.h),
                         SizedBox(
                           height: 110.h,
@@ -259,7 +257,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                               Navigator.of(context)
                                   .pushNamed(AppRoutes.bookingRoute, arguments: apartment);
                             },
-                            text: "Rent Now",
+                            text: apartment.availablePeople == 0
+                                ? "Fully Booked"
+                                : "Rent Now",
                             width: 500.w,
                             customPadding: 16.h,
                             borderRadius: 12.r,
@@ -285,19 +285,20 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     required String name,
     required String value,
   }) {
+    final theme = Theme.of(context);
     return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(imageName, width: 20.w, fit: BoxFit.contain),
           SizedBox(width: 4.w),
-          Text(value, style: AppStyles.medium10blueDarkColor),
+          Text(value, style: theme.textTheme.bodyMedium),
           SizedBox(width: 2.w),
           Flexible(
             child: AutoSizeText(
               name,
               maxLines: 1,
-              style: AppStyles.medium10blueDarkColor,
+              style: theme.textTheme.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -356,6 +357,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   }
 
   Widget _buildLocationSection(Apartment apartment) {
+    final theme = Theme.of(context);
     final hasManualAddress =
         apartment.address != null && apartment.address!.trim().isNotEmpty;
     final hasMapAddress = apartment.locationAddress != null &&
@@ -407,17 +409,17 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           ),
           SizedBox(height: 12.h),
         ],
-        Text("Address:", style: AppStyles.bold18PrimaryColor),
+        Text("Address", style: theme.textTheme.headlineMedium),
         SizedBox(height: 6.h),
         Text(
           displayedAddress,
-          style: AppStyles.medium16black,
+          style: theme.textTheme.bodyMedium,
         ),
         if (displayedAddress == 'Address picker') ...[
           SizedBox(height: 4.h),
           Text(
             "Owner did not add an address yet.",
-            style: AppStyles.medium12gray,
+            style: theme.textTheme.bodyMedium,
           ),
         ],
         if (canOpenMap) ...[
@@ -443,7 +445,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               icon: Icon(Icons.map_outlined, size: 18.sp),
               label: Text(
                 "Open in Map",
-                style: AppStyles.bold12Primary,
+                style: theme.textTheme.displaySmall,
               ),
             ),
           ),
@@ -458,14 +460,68 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   }
 
   Widget _buildPriceText(Apartment apartment) {
+    final theme = Theme.of(context);
     return RichText(
       text: TextSpan(
         children: [
           TextSpan(
             text: "EG ${apartment.price ?? 0}/",
-            style: AppStyles.medium16black,
+            style: theme.textTheme.labelMedium,
           ),
-          TextSpan(text: "month", style: AppStyles.bold10black),
+          TextSpan(text: "month", style: theme.textTheme.bodyMedium),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCapacityBanner(Apartment apartment, ThemeData theme) {
+    final maxPeople = apartment.maxPeople ?? 1;
+    final availablePeople = apartment.availablePeople ?? maxPeople;
+    final occupiedPeople = maxPeople - availablePeople;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(18.r),
+      decoration: BoxDecoration(
+
+        borderRadius: BorderRadius.circular(22.r),
+        border: Border.all(
+          color: theme.primaryColor.withOpacity(isDark ? 0.32 : 0.16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50.w,
+            height: 50.w,
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Icon(Icons.groups_rounded, color: theme.primaryColor, size: 28.sp),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Living Capacity", style: theme.textTheme.labelMedium),
+                SizedBox(height: 4.h),
+                Text(
+                  "$availablePeople of $maxPeople people available",
+                  style: theme.textTheme.bodyMedium,
+                ),
+                if (occupiedPeople > 0) ...[
+                  SizedBox(height: 4.h),
+                  Text(
+                    "$occupiedPeople ${occupiedPeople == 1 ? 'person is' : 'people are'} already renting here",
+                    style: theme.textTheme.displaySmall,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );

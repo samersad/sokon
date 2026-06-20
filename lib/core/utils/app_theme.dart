@@ -33,7 +33,9 @@ class AppTheme {
       labelSmall: AppStyles.medium16primary,
       labelLarge: AppStyles.bold18PrimaryColor,
       titleSmall: AppStyles.bold20black,
-      titleMedium: AppStyles.medium16primary
+      titleMedium: AppStyles.medium16primary,
+      titleLarge: AppStyles.semiBold20White,
+
 
 
     ),
@@ -83,6 +85,7 @@ class AppTheme {
       titleSmall: AppStyles.bold20black.copyWith(color: AppColors.redColor),
       labelLarge: AppStyles.bold18PrimaryColor,
       titleMedium: AppStyles.semiBold14White,
+      titleLarge: AppStyles.semiBold20White.copyWith(color: AppColors.blackColor),
 
 
       labelSmall: AppStyles.medium16primary.copyWith(

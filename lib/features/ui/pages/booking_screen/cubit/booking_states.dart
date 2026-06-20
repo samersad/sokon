@@ -7,6 +7,7 @@ class BookingStates {
   final String? cardNumber;
   final String? cardHolder;
   final String? expiryDate;
+  final int peopleCount;
   final bool showDateError;
   final BookingStatus status;
   final String? errorMessage;
@@ -16,6 +17,7 @@ class BookingStates {
     this.cardNumber,
     this.cardHolder,
     this.expiryDate,
+    this.peopleCount = 1,
     this.showDateError = false,
     this.status = BookingStatus.initial,
     this.errorMessage,
@@ -30,6 +32,7 @@ class BookingStates {
     bool clearCardHolder = false,
     String? expiryDate,
     bool clearExpiryDate = false,
+    int? peopleCount,
     bool? showDateError,
     BookingStatus? status,
     String? errorMessage,
@@ -40,6 +43,7 @@ class BookingStates {
       cardNumber: clearCardNumber ? null : (cardNumber ?? this.cardNumber),
       cardHolder: clearCardHolder ? null : (cardHolder ?? this.cardHolder),
       expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
+      peopleCount: peopleCount ?? this.peopleCount,
       showDateError: showDateError ?? this.showDateError,
       status: status ?? this.status,
       errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),

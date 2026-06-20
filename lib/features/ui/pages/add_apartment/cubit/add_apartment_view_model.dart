@@ -29,6 +29,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   int bedrooms = 1;
   int bathrooms = 1;
   int livingRooms = 1;
+  int maxPeople = 1;
+  int _reservedPeople = 0;
 
   final TextEditingController nameCRl = TextEditingController();
   final TextEditingController descriptionCRl = TextEditingController();
@@ -49,6 +51,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     bedrooms = 1;
     bathrooms = 1;
     livingRooms = 1;
+    maxPeople = 1;
+    _reservedPeople = 0;
     emit(AddApartmentInitial());
   }
 
@@ -60,6 +64,13 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     bedrooms = apartment.bedrooms ?? 1;
     bathrooms = apartment.bathrooms ?? 1;
     livingRooms = apartment.livingRooms ?? 1;
+    maxPeople = apartment.maxPeople ?? 1;
+    final initialMaxPeople = apartment.maxPeople ?? maxPeople;
+    final initialAvailablePeople = apartment.availablePeople ?? initialMaxPeople;
+    _reservedPeople = initialMaxPeople - initialAvailablePeople;
+    if (_reservedPeople < 0) {
+      _reservedPeople = 0;
+    }
     existingImageUrls = List.from(apartment.images ?? []);
     existingVideoUrl = apartment.videoUrl;
     
@@ -113,6 +124,18 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   void decreaseLivingRooms() {
     if (livingRooms > 1) {
       livingRooms--;
+      emit(AddApartmentUpdateUI());
+    }
+  }
+
+  void increaseMaxPeople() {
+    maxPeople++;
+    emit(AddApartmentUpdateUI());
+  }
+
+  void decreaseMaxPeople() {
+    if (maxPeople > 1) {
+      maxPeople--;
       emit(AddApartmentUpdateUI());
     }
   }
@@ -222,6 +245,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         bedrooms: bedrooms,
         bathrooms: bathrooms,
         livingRooms: livingRooms,
+        maxPeople: maxPeople,
+        availablePeople: maxPeople,
         address: manualAddress.isNotEmpty ? manualAddress : mapAddress,
         locationAddress: mapAddress,
         lat: locationViewModel.apartmentLocation?.latitude,
@@ -296,6 +321,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         bedrooms: bedrooms,
         bathrooms: bathrooms,
         livingRooms: livingRooms,
+        maxPeople: maxPeople,
+        availablePeople: maxPeople - _reservedPeople,
         address: addressCRl.text.trim().isNotEmpty
             ? addressCRl.text.trim()
             : locationViewModel.apartmentAddress,
@@ -309,6 +336,12 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       );
 
       emit(AddApartmentProgress("Updating apartment data..."));
+      if (apartment.availablePeople! < 0) {
+        emit(AddApartmentError(
+          "People capacity cannot be lower than the number already renting this apartment.",
+        ));
+        return;
+      }
       await apartmentRepository.updateApartment(
         apartment,
         userViewModel.user!.id!,

@@ -218,6 +218,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             "Owner: ${booking.ownerName ?? 'N/A'}",
             style: theme.textTheme.bodyMedium,
           ),
+          SizedBox(height: 6.h),
+          Text(
+            "People: ${booking.peopleCount ?? 1}",
+            style: theme.textTheme.bodyMedium,
+          ),
           SizedBox(height: 12.h),
           if (_canCancel(booking))
             SizedBox(

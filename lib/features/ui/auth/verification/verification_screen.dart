@@ -221,7 +221,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                         width: 336.w,
                         borderRadius: 30.r,
                         backgroundColorElevated: theme.primaryColor,
-                        textStyle: AppStyles.semiBold20White,
+                        textStyle: theme.textTheme.titleLarge,
                         borderColor: Colors.transparent,
                         customPadding: 16.h,
                       ),

@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 text: "Login",
                                 width: 200,
                                 backgroundColorElevated: theme.primaryColor,
-                                textStyle: AppStyles.semiBold20White,
+                                textStyle: theme.textTheme.titleLarge,
                                 borderColor: Colors.transparent,
                                 customPadding: 19.h,
                               ),

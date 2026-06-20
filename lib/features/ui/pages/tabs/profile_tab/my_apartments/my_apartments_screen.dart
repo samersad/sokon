@@ -216,6 +216,27 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                             _buildFeature(context, AppAssets.livingRoomsIcon, "${apartment.livingRooms ?? 0} Living"),
                           ],
                         ),
+                        SizedBox(height: 12.h),
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: theme.disabledColor,
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.groups_rounded, color: theme.primaryColor, size: 18.sp),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  "People: ${apartment.availablePeople ?? apartment.maxPeople ?? 1}/${apartment.maxPeople ?? 1} available",
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         SizedBox(height: 16.h),
                         const Divider(height: 1, color: Color(0xFFEEEEEE)),
                         SizedBox(height: 12.h),

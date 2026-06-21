@@ -3,6 +3,9 @@ class MyUser {
   String id;
   String name;
   String email;
+  String? college;
+  String? phoneNumber;
+  String? gender;
   String? role; // 'owner' or 'client'
   String? photoUrl;
   String? fcmToken;
@@ -12,6 +15,9 @@ class MyUser {
     required this.id,
     required this.name,
     required this.email,
+    this.college,
+    this.phoneNumber,
+    this.gender,
     this.role,
     this.photoUrl,
     this.fcmToken,
@@ -23,6 +29,9 @@ class MyUser {
       id: data["id"],
       name: data["name"],
       email: data["email"],
+      college: data["college"],
+      phoneNumber: data["phoneNumber"],
+      gender: data["gender"],
       role: data["role"],
       photoUrl: data["photoUrl"],
       fcmToken: data["fcmToken"],
@@ -35,6 +44,9 @@ class MyUser {
       "id": id,
       "name": name,
       "email": email,
+      "college": college,
+      "phoneNumber": phoneNumber,
+      "gender": gender,
       "role": role,
       "photoUrl": photoUrl,
       "fcmToken": fcmToken,

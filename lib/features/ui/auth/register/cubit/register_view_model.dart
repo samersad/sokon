@@ -11,11 +11,20 @@ class RegisterViewModel extends Cubit<RegisterStates> {
   final AuthRepository authRepository;
   RegisterViewModel(this.authRepository) : super(RegisterInitialStates());
 
+  static const List<String> genderOptions = ['male', 'female'];
+  static const List<String> roleOptions = ['client', 'owner'];
+
   final TextEditingController userCtrl = TextEditingController();
   final TextEditingController emailCtrl = TextEditingController();
+  final TextEditingController collegeCtrl = TextEditingController();
+  final TextEditingController phoneCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
+  final TextEditingController confirmPasswordCtrl = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  String selectedGender = genderOptions.first;
+  String? selectedRole;
+  MyUser? pendingGoogleUser;
   bool hidePassword = true;
 
   void changePasswordVisibility() {
@@ -23,16 +32,48 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     emit(ChangePasswordVisibilityState());
   }
 
+  void setGender(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return;
+    }
+    selectedGender = value;
+    emit(RegisterFormChangedState());
+  }
+
+  void setRole(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return;
+    }
+    selectedRole = value;
+    if (selectedRole == 'owner') {
+      collegeCtrl.clear();
+    }
+    emit(RegisterFormChangedState());
+  }
+
+  bool get isOwner => selectedRole == 'owner';
+  bool get hasPendingGoogleUser => pendingGoogleUser != null;
+
   Future<void> register(UserViewModel userCubit) async {
     if (formKey.currentState?.validate() ?? false) {
+      final role = selectedRole?.trim();
+      if (role == null || role.isEmpty) {
+        emit(RegisterErrorStates("Please select a role"));
+        return;
+      }
       emit(RegisterLoadingStates());
       try {
         final user = await authRepository.register(
           emailCtrl.text,
           passwordCtrl.text,
           userCtrl.text,
+          isOwner ? null : collegeCtrl.text,
+          phoneCtrl.text,
+          selectedGender,
+          role,
         );
-        emit(RegisterNeedsRoleStates(user));
+        userCubit.updateUser(user);
+        emit(RegisterSuccessStates(user));
       } catch (e) {
         emit(RegisterErrorStates(e.toString()));
       }
@@ -44,9 +85,23 @@ class RegisterViewModel extends Cubit<RegisterStates> {
       emit(RegisterLoadingStates());
       final user = await authRepository.signInWithGoogle();
 
+      if (user.gender == null || user.gender!.trim().isEmpty) {
+        user.gender = selectedGender;
+        await authRepository.updateProfile(
+          user,
+          user.name,
+          user.phoneNumber ?? '',
+          user.college,
+          user.gender,
+          null,
+        );
+      }
+
       if (user.role == null) {
+        pendingGoogleUser = user;
         emit(RegisterNeedsRoleStates(user));
       } else {
+        pendingGoogleUser = null;
         userCubit.updateUser(user);
         emit(RegisterSuccessStates(user));
       }
@@ -59,6 +114,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     try {
       emit(RegisterLoadingStates());
       await authRepository.updateUserRole(user, role);
+      pendingGoogleUser = null;
       userCubit.updateUser(user);
       emit(RegisterSuccessStates(user));
     } catch (e) {
@@ -66,15 +122,28 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     }
   }
 
+  Future<void> confirmPendingGoogleRole(UserViewModel userCubit) async {
+    final user = pendingGoogleUser;
+    final role = selectedRole?.trim();
+    if (user == null || role == null || role.isEmpty) {
+      emit(RegisterErrorStates("Please select a role"));
+      return;
+    }
+    await updateUserRole(user, role, userCubit);
+  }
+
   void showRoleSelectionDialog(
-      BuildContext context, MyUser user, UserViewModel userCubit) {
-    String? selectedRole;
+    BuildContext context,
+    MyUser user,
+    UserViewModel userCubit,
+  ) {
+    String? selectedDialogRole;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (dialogContext, setState) {
             return AlertDialog(
               title: const Text("Select your role"),
               content: Column(
@@ -83,24 +152,25 @@ class RegisterViewModel extends Cubit<RegisterStates> {
                   RadioListTile<String>(
                     title: const Text("Owner"),
                     value: 'owner',
-                    groupValue: selectedRole,
-                    onChanged: (value) => setState(() => selectedRole = value),
+                    groupValue: selectedDialogRole,
+                    onChanged: (value) => setState(() => selectedDialogRole = value),
                   ),
                   RadioListTile<String>(
                     title: const Text("Client"),
                     value: 'client',
-                    groupValue: selectedRole,
-                    onChanged: (value) => setState(() => selectedRole = value),
+                    groupValue: selectedDialogRole,
+                    onChanged: (value) => setState(() => selectedDialogRole = value),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    if (selectedRole != null) {
-                      Navigator.pop(context);
-                      updateUserRole(user, selectedRole!, userCubit);
+                    if (selectedDialogRole == null || selectedDialogRole!.isEmpty) {
+                      return;
                     }
+                    Navigator.pop(dialogContext);
+                    updateUserRole(user, selectedDialogRole!, userCubit);
                   },
                   child: const Text("Confirm"),
                 ),

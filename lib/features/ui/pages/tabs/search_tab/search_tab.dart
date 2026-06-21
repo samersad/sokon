@@ -142,7 +142,7 @@ class _SearchTabState extends State<SearchTab> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.primaryColor,
+      backgroundColor: AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -190,7 +190,7 @@ class _SearchTabState extends State<SearchTab> {
                           min: 0,
                           max: 5000,
                           divisions: 100,
-                          activeColor: AppColors.white,
+                          activeColor: AppColors.primaryColor,
                           labels: RangeLabels(
                             "\EG${_currentRangeValues.start.round()}",
                             "\EG${_currentRangeValues.end.round()}",
@@ -294,14 +294,19 @@ class _SearchTabState extends State<SearchTab> {
           Container(
             padding: EdgeInsets.all(12.sp),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.whiteColor :AppColors.transparentColor,
-              border: Border.all(color: isSelected ? AppColors.transparentColor : AppColors.grayColor.withOpacity(0.3)),
+              color: isSelected ? AppColors.grayColor :AppColors.transparentColor,
+              border: Border.all(width: 2,color: isSelected ? AppColors.primaryLight : AppColors.grayColor.withOpacity(0.3)),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Icon(icon, color: isSelected ? AppColors.primaryColor : AppColors.grayColor),
+            child: Column(
+              children: [
+                Icon(icon, color: isSelected ? AppColors.primaryColor : AppColors.grayColor),
+                Text(label, style: isSelected ? AppStyles.bold10Primary : AppStyles.medium12gray),
+              ],
+            )
+
           ),
           SizedBox(height: 5.h),
-          Text(label, style: isSelected ? AppStyles.semiBold14White : AppStyles.medium12gray),
         ],
       ),
     );

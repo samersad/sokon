@@ -22,3 +22,5 @@ class RegisterErrorStates extends RegisterStates {
 }
 
 class ChangePasswordVisibilityState extends RegisterStates {}
+
+class RegisterFormChangedState extends RegisterStates {}

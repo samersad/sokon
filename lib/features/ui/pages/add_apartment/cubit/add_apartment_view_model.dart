@@ -15,6 +15,15 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 @injectable
 class AddApartmentViewModel extends Cubit<AddApartmentStates> {
+  static const String fixedCity = 'Assuit';
+  static const List<String> districtOptions = [
+    'فيريال',
+    'سيتي',
+    'سيد',
+    'الجمهوريه',
+    'يسري راغب',
+    'آخر',
+  ];
   final ApartmentRepository apartmentRepository;
 
   AddApartmentViewModel(this.apartmentRepository) : super(AddApartmentInitial());
@@ -29,13 +38,18 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   int bedrooms = 1;
   int bathrooms = 1;
   int livingRooms = 1;
+  int floor = 1;
   int maxPeople = 1;
   int _reservedPeople = 0;
+  bool verified = false;
 
   final TextEditingController nameCRl = TextEditingController();
   final TextEditingController descriptionCRl = TextEditingController();
   final TextEditingController priceCRl = TextEditingController();
   final TextEditingController addressCRl = TextEditingController();
+  final TextEditingController cityCRl = TextEditingController(text: fixedCity);
+  final TextEditingController districtCRl = TextEditingController(text: districtOptions.first);
+  final TextEditingController floorCRl = TextEditingController(text: '1');
 
   File? videoFile;
 
@@ -44,6 +58,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     descriptionCRl.clear();
     priceCRl.clear();
     addressCRl.clear();
+    cityCRl.text = fixedCity;
+    districtCRl.text = districtOptions.first;
+    floor = 1;
+    floorCRl.text = '1';
+    verified = false;
     apartmentImages.clear();
     existingImageUrls = null;
     existingVideoUrl = null;
@@ -61,10 +80,15 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     descriptionCRl.text = apartment.description ?? "";
     priceCRl.text = apartment.price?.toString() ?? "";
     addressCRl.text = apartment.address ?? "";
+    cityCRl.text = fixedCity;
+    districtCRl.text = apartment.district ?? districtOptions.first;
+    floor = apartment.floor ?? 1;
+    floorCRl.text = floor.toString();
     bedrooms = apartment.bedrooms ?? 1;
     bathrooms = apartment.bathrooms ?? 1;
     livingRooms = apartment.livingRooms ?? 1;
     maxPeople = apartment.maxPeople ?? 1;
+    verified = apartment.verified ?? false;
     final initialMaxPeople = apartment.maxPeople ?? maxPeople;
     final initialAvailablePeople = apartment.availablePeople ?? initialMaxPeople;
     _reservedPeople = initialMaxPeople - initialAvailablePeople;
@@ -79,6 +103,19 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       locationViewModel.apartmentAddress = apartment.locationAddress ?? apartment.address;
     }
     
+    emit(AddApartmentUpdateUI());
+  }
+
+  void setDistrict(String value) {
+    if (!districtOptions.contains(value)) {
+      return;
+    }
+    districtCRl.text = value;
+    emit(AddApartmentUpdateUI());
+  }
+
+  void setFloor(String value) {
+    floor = int.tryParse(value.trim()) ?? 1;
     emit(AddApartmentUpdateUI());
   }
 
@@ -245,15 +282,19 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         bedrooms: bedrooms,
         bathrooms: bathrooms,
         livingRooms: livingRooms,
+        floor: int.tryParse(floorCRl.text.trim()) ?? floor,
         maxPeople: maxPeople,
         availablePeople: maxPeople,
         address: manualAddress.isNotEmpty ? manualAddress : mapAddress,
+        city: fixedCity,
+        district: districtCRl.text.trim(),
         locationAddress: mapAddress,
         lat: locationViewModel.apartmentLocation?.latitude,
         lng: locationViewModel.apartmentLocation?.longitude,
         ownerId: userViewModel.user?.id,
         ownerName: userViewModel.user?.name,
         ownerPhotoUrl: userViewModel.user?.photoUrl,
+        verified: false,
         createdAt: DateTime.now(),
       );
 
@@ -321,17 +362,21 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         bedrooms: bedrooms,
         bathrooms: bathrooms,
         livingRooms: livingRooms,
+        floor: int.tryParse(floorCRl.text.trim()) ?? floor,
         maxPeople: maxPeople,
         availablePeople: maxPeople - _reservedPeople,
         address: addressCRl.text.trim().isNotEmpty
             ? addressCRl.text.trim()
             : locationViewModel.apartmentAddress,
+        city: fixedCity,
+        district: districtCRl.text.trim(),
         locationAddress: locationViewModel.apartmentAddress,
         lat: locationViewModel.apartmentLocation?.latitude,
         lng: locationViewModel.apartmentLocation?.longitude,
         ownerId: userViewModel.user?.id,
         ownerName: userViewModel.user?.name,
         ownerPhotoUrl: userViewModel.user?.photoUrl,
+        verified: verified,
         createdAt: DateTime.now(), // Or preserve original created date
       );
 
@@ -359,6 +404,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     descriptionCRl.dispose();
     priceCRl.dispose();
     addressCRl.dispose();
+    cityCRl.dispose();
+    districtCRl.dispose();
+    floorCRl.dispose();
     return super.close();
   }
 }

@@ -13,6 +13,7 @@ import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_states.dart
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart';
 
 import '../../../../../core/utils/app_styles.dart';
+import '../../../widgets/district_location_card.dart';
 import '../../../widgets/featured_estates_card.dart';
 import '../../../widgets/nearby_estate_card.dart';
 import '../../../widgets/search_widget.dart';
@@ -92,6 +93,7 @@ class _HomeTabState extends State<HomeTab> {
         final location = state.userLocation ?? _defaultLocation;
         final featuredApartments = state.featuredApartments;
         final nearbyApartments = state.nearbyApartments;
+        final topDistricts = state.topDistricts;
 
         return Scaffold(
           body: SafeArea(
@@ -299,38 +301,46 @@ class _HomeTabState extends State<HomeTab> {
                     ],
                   ),
                   SizedBox(height: 10.h),
-                  SizedBox(
-                    height: 60.h,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                      itemBuilder: (_, __) {
-                        return Container(
-                          width: 130.w,
-                          padding: EdgeInsets.symmetric(horizontal: 8.w),
-                          decoration: BoxDecoration(
-                            color: theme.disabledColor,
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Row(
-                            children: [
-                              Image.asset(AppAssets.imageS, width: 28.w),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: Text(
-                                  "Malang",
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.labelMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                  if (state.isLoadingEstates && topDistricts.isEmpty)
+                    SizedBox(
+                      height: 60.h,
+                      child: const Center(child: CircularProgressIndicator()),
+                    )
+                  else if (topDistricts.isEmpty)
+                    SizedBox(
+                      height: 60.h,
+                      child: Center(
+                        child: Text(
+                          "No districts available",
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      height: 78.h,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: topDistricts.length,
+                        separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                        itemBuilder: (_, index) {
+                          final district = topDistricts[index];
+                          return SizedBox(
+                            width: 138.w,
+                            child: DistrictLocationCard(
+                              districtSummary: district,
+                              compact: true,
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.districtApartmentsRoute,
+                                  arguments: district,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   SizedBox(height: 10.h),
                   Row(
                     children: [

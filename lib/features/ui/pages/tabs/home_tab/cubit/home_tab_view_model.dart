@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../../../core/cache/cubit_manger/apartment_view_model.dart';
 import '../../../../../../core/cache/cubit_manger/location_view_model.dart';
 import '../../../../../../core/model/apartment.dart';
+import '../../../../../../core/model/district_summary.dart';
 import 'home_tab_states.dart';
 
 @injectable
@@ -108,6 +109,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
         apartments: allApartments,
         userLocation: state.userLocation,
       ),
+      topDistricts: _buildTopDistricts(allApartments),
     ));
   }
 
@@ -122,6 +124,10 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
       return bDate.compareTo(aDate);
     });
     return featured.take(5).toList();
+  }
+
+  List<DistrictSummary> _buildTopDistricts(List<Apartment> apartments) {
+    return buildDistrictSummaries(apartments).take(5).toList();
   }
 
   List<Apartment> _buildNearbyApartments({

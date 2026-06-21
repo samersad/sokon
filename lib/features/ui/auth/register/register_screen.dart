@@ -26,6 +26,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final RegisterViewModel viewModel = getIt<RegisterViewModel>();
 
   @override
+  void dispose() {
+    viewModel.userCtrl.dispose();
+    viewModel.emailCtrl.dispose();
+    viewModel.collegeCtrl.dispose();
+    viewModel.phoneCtrl.dispose();
+    viewModel.passwordCtrl.dispose();
+    viewModel.confirmPasswordCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userViewModel = context.read<UserViewModel>();
     final theme = Theme.of(context);
@@ -67,7 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(height: 100.h),
                     Container(
                       decoration: BoxDecoration(
-                        color: theme.cardColor,
+                        color: AppColors.offWhiteColor,
                         borderRadius: BorderRadius.only(
                           topRight: Radius.circular(67),
                           topLeft: Radius.circular(67),
@@ -79,7 +90,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           padding: EdgeInsets.symmetric(horizontal: 37.w),
                           child: Column(
                             children: [
-                              SizedBox(height: 19.h),
+
+                              SizedBox(height: 24.h),
                               CustomTextFormField(
                                 controller: viewModel.userCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
@@ -98,6 +110,115 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderSideColor: theme.highlightColor,
                                 validator: (val) =>
                                     AppValidators.validateEmail(val),
+                              ),
+                              SizedBox(height: 16.h),
+                              DropdownButtonFormField<String>(
+                                value: viewModel.selectedRole,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 20.w,
+                                    vertical: 15.h,
+                                  ),
+                                  filled: true,
+                                  fillColor: theme.disabledColor,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    borderSide: BorderSide(
+                                      color: theme.highlightColor,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    borderSide: BorderSide(
+                                      color: theme.primaryColor,
+                                      width: 1,
+                                    ),
+                                  ),
+                                ),
+                                iconEnabledColor: theme.highlightColor,
+                                dropdownColor: theme.cardColor,
+                                style: theme.textTheme.bodyMedium,
+                                hint: const Text("Role"),
+                                items: RegisterViewModel.roleOptions
+                                    .map(
+                                      (role) => DropdownMenuItem<String>(
+                                        value: role,
+                                        child: Text(
+                                          role[0].toUpperCase() + role.substring(1),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: viewModel.setRole,
+                                validator: (value) => value == null || value.isEmpty
+                                    ? 'this field is required'
+                                    : null,
+                              ),
+                              SizedBox(height: 16.h),
+                              if (!viewModel.isOwner) ...[
+                                CustomTextFormField(
+                                  controller: viewModel.collegeCtrl,
+                                  hintStyle: theme.textTheme.bodyMedium,
+                                  hintText: "College",
+                                  fillColor: theme.disabledColor,
+                                  borderSideColor: theme.highlightColor,
+                                  validator: AppValidators.validateFullName,
+                                ),
+                                SizedBox(height: 16.h),
+                              ],
+                              CustomTextFormField(
+                                controller: viewModel.phoneCtrl,
+                                hintStyle: theme.textTheme.bodyMedium,
+                                hintText: "Phone Number",
+                                keyboardType: TextInputType.phone,
+                                fillColor: theme.disabledColor,
+                                borderSideColor: theme.highlightColor,
+                                validator: (val) =>
+                                    AppValidators.validatePhoneNumber(val),
+                              ),
+                              SizedBox(height: 16.h),
+                              DropdownButtonFormField<String>(
+                                value: viewModel.selectedGender,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 20.w,
+                                    vertical: 15.h,
+                                  ),
+                                  filled: true,
+                                  fillColor: theme.disabledColor,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    borderSide: BorderSide(
+                                      color: theme.highlightColor,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    borderSide: BorderSide(
+                                      color: theme.primaryColor,
+                                      width: 1,
+                                    ),
+                                  ),
+                                ),
+                                iconEnabledColor: theme.highlightColor,
+                                dropdownColor: theme.cardColor,
+                                style: theme.textTheme.bodyMedium,
+                                items: RegisterViewModel.genderOptions
+                                    .map(
+                                      (gender) => DropdownMenuItem<String>(
+                                        value: gender,
+                                        child: Text(
+                                          gender[0].toUpperCase() + gender.substring(1),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: viewModel.setGender,
+                                validator: (value) => value == null || value.isEmpty
+                                    ? 'this field is required'
+                                    : null,
                               ),
                               SizedBox(height: 16.h),
 
@@ -122,12 +243,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   },
                                 ),
                               ),
-                              SizedBox(height: 79.h),
+                              SizedBox(height: 16.h),
+                              CustomTextFormField(
+                                controller: viewModel.confirmPasswordCtrl,
+                                hintStyle: theme.textTheme.bodyMedium,
+                                hintText: "Confirm Password",
+                                fillColor: theme.disabledColor,
+                                borderSideColor: theme.highlightColor,
+                                obscureText: viewModel.hidePassword,
+                                validator: (val) => AppValidators.validateConfirmPassword(
+                                  val,
+                                  viewModel.passwordCtrl.text,
+                                ),
+                                suffixIconName: IconButton(
+                                  icon: Icon(
+                                    viewModel.hidePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
+                                  onPressed: () {
+                                    viewModel.changePasswordVisibility();
+                                  },
+                                ),
+                              ),
+                              SizedBox(height: 19.h),
                               CustomElevatedButtom(
                                 onPressed: () {
                                   viewModel.register(userViewModel);
                                 },
-                                text: "Sign up",
+                                text: "Register",
                                 width: 250.w,
                                 backgroundColorElevated: theme.primaryColor,
                                 textStyle: theme.textTheme.titleLarge,

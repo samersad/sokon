@@ -6,7 +6,6 @@ import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
-import 'package:sokon/core/utils/app_styles.dart';
 
 import '../../../../../../core/utils/app_routes.dart';
 import '../../../../widgets/back_container.dart';
@@ -42,12 +41,18 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 15.h,
+                  ),
                   child: Row(
                     children: [
                       const BackContainer(),
                       SizedBox(width: 15.w),
-                      Text("My Apartments", style: theme.textTheme.headlineLarge),
+                      Text(
+                        "My Apartments",
+                        style: theme.textTheme.headlineLarge,
+                      ),
                     ],
                   ),
                 ),
@@ -56,15 +61,15 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Manage your properties",
-                          style: theme.textTheme.bodyMedium),
+                      Text(
+                        "Manage your properties",
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     ],
                   ),
                 ),
                 SizedBox(height: 20.h),
-                Expanded(
-                  child: _buildContent(context, state),
-                ),
+                Expanded(child: _buildContent(context, state)),
               ],
             ),
           ),
@@ -76,7 +81,9 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
   Widget _buildContent(BuildContext context, ApartmentState state) {
     final theme = Theme.of(context);
     if (state is ApartmentLoading) {
-      return Center(child: CircularProgressIndicator(color: theme.primaryColor));
+      return Center(
+        child: CircularProgressIndicator(color: theme.primaryColor),
+      );
     } else if (state is ApartmentError) {
       return Center(
         child: Padding(
@@ -86,7 +93,11 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               SizedBox(height: 12.h),
-              Text(state.message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+              Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium,
+              ),
             ],
           ),
         ),
@@ -123,12 +134,17 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                     children: [
                       AspectRatio(
                         aspectRatio: 16 / 9,
-                        child: apartment.images != null && apartment.images!.isNotEmpty
+                        child:
+                            apartment.images != null &&
+                                apartment.images!.isNotEmpty
                             ? Image.network(
                                 apartment.images![0],
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
-                                    Image.asset(AppAssets.imageC, fit: BoxFit.cover),
+                                    Image.asset(
+                                      AppAssets.imageC,
+                                      fit: BoxFit.cover,
+                                    ),
                               )
                             : Image.asset(AppAssets.imageC, fit: BoxFit.cover),
                       ),
@@ -136,7 +152,10 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                         top: 12.h,
                         right: 12.w,
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 6.h,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(12.r),
@@ -144,7 +163,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.1),
                                 blurRadius: 4,
-                              )
+                              ),
                             ],
                           ),
                           child: Row(
@@ -152,7 +171,10 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                             children: [
                               Image.asset(AppAssets.star, width: 14.w),
                               SizedBox(width: 4.w),
-                              Text("4.7", style: theme.textTheme.labelMedium),
+                              Text(
+                                apartment.ratingLabel,
+                                style: theme.textTheme.labelMedium,
+                              ),
                             ],
                           ),
                         ),
@@ -179,7 +201,8 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: "EGP ${apartment.price?.toInt() ?? 0}",
+                                    text:
+                                        "EGP ${apartment.price?.toInt() ?? 0}",
                                     style: theme.textTheme.titleMedium,
                                   ),
                                   TextSpan(
@@ -198,7 +221,7 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                             SizedBox(width: 6.w),
                             Expanded(
                               child: Text(
-                                apartment.address ?? "No Address",
+                                apartment.displayLocationLabel,
                                 style: theme.textTheme.bodyMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -209,24 +232,43 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                         SizedBox(height: 12.h),
                         Row(
                           children: [
-                            _buildFeature(context, AppAssets.bedroomsIcon, "${apartment.bedrooms ?? 0} Beds"),
+                            _buildFeature(
+                              context,
+                              AppAssets.bedroomsIcon,
+                              "${apartment.bedrooms ?? 0} Beds",
+                            ),
                             SizedBox(width: 16.w),
-                            _buildFeature(context, AppAssets.bathroomsIcon, "${apartment.bathrooms ?? 0} Baths"),
+                            _buildFeature(
+                              context,
+                              AppAssets.bathroomsIcon,
+                              "${apartment.bathrooms ?? 0} Baths",
+                            ),
                             SizedBox(width: 16.w),
-                            _buildFeature(context, AppAssets.livingRoomsIcon, "${apartment.livingRooms ?? 0} Living"),
+                            _buildFeature(
+                              context,
+                              AppAssets.livingRoomsIcon,
+                              "${apartment.livingRooms ?? 0} Living",
+                            ),
                           ],
                         ),
                         SizedBox(height: 12.h),
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 10.h,
+                          ),
                           decoration: BoxDecoration(
                             color: theme.disabledColor,
                             borderRadius: BorderRadius.circular(14.r),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.groups_rounded, color: theme.primaryColor, size: 18.sp),
+                              Icon(
+                                Icons.groups_rounded,
+                                color: theme.primaryColor,
+                                size: 18.sp,
+                              ),
                               SizedBox(width: 8.w),
                               Expanded(
                                 child: Text(
@@ -258,7 +300,9 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   padding: EdgeInsets.symmetric(vertical: 12.h),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
                                 ),
                               ),
                             ),
@@ -269,8 +313,13 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: IconButton(
-                                onPressed: () => _showDeleteDialog(apartment.id!),
-                                icon: Icon(Icons.delete_outline_rounded, color: Colors.red, size: 22.sp),
+                                onPressed: () =>
+                                    _showDeleteDialog(apartment.id!),
+                                icon: Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: Colors.red,
+                                  size: 22.sp,
+                                ),
                                 tooltip: "Delete",
                               ),
                             ),
@@ -294,7 +343,11 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(asset, width: 16.w, color: theme.primaryColor.withOpacity(0.7)),
+        Image.asset(
+          asset,
+          width: 16.w,
+          color: theme.primaryColor.withOpacity(0.7),
+        ),
         SizedBox(width: 4.w),
         Text(text, style: theme.textTheme.bodyMedium),
       ],
@@ -316,27 +369,35 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
                   blurRadius: 20,
-                )
+                ),
               ],
             ),
-            child: Icon(Icons.home_work_outlined, size: 70.sp, color: theme.primaryColor.withOpacity(0.2)),
+            child: Icon(
+              Icons.home_work_outlined,
+              size: 70.sp,
+              color: theme.primaryColor.withOpacity(0.2),
+            ),
           ),
           SizedBox(height: 24.h),
           Text("No apartments found", style: theme.textTheme.titleMedium),
           SizedBox(height: 10.h),
-          Text("You haven't listed any apartments yet.\nStart by adding your first property!",
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium),
+          Text(
+            "You haven't listed any apartments yet.\nStart by adding your first property!",
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium,
+          ),
           SizedBox(height: 30.h),
           ElevatedButton(
             onPressed: () {
-               Navigator.pushNamed(context, AppRoutes.addApartmentRoute);
+              Navigator.pushNamed(context, AppRoutes.addApartmentRoute);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.primaryColor,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.r)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25.r),
+              ),
             ),
             child: const Text("Add New Listing"),
           ),
@@ -352,7 +413,9 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: theme.cardColor,
         surfaceTintColor: theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24.r),
+        ),
         title: Row(
           children: [
             const Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -360,8 +423,10 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
             Text("Delete Listing", style: theme.textTheme.titleMedium),
           ],
         ),
-        content: Text("Are you sure you want to delete this property? This action cannot be undone and the listing will be removed immediately.",
-            style: theme.textTheme.bodyMedium),
+        content: Text(
+          "Are you sure you want to delete this property? This action cannot be undone and the listing will be removed immediately.",
+          style: theme.textTheme.bodyMedium,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -371,7 +436,10 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
             onPressed: () {
               final user = context.read<UserViewModel>().user;
               if (user != null) {
-                context.read<ApartmentViewModel>().deleteApartment(apartmentId, user.id);
+                context.read<ApartmentViewModel>().deleteApartment(
+                  apartmentId,
+                  user.id,
+                );
               }
               Navigator.pop(context);
             },
@@ -379,7 +447,9 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
             ),
             child: const Text("Delete"),
           ),

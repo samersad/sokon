@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 50.h),
                     Container(
                       decoration: BoxDecoration(
-                        color: theme.cardColor,
+                        color: AppColors.offWhiteColor,
                         borderRadius: BorderRadius.only(
                           topRight: Radius.circular(67),
                           topLeft: Radius.circular(67),

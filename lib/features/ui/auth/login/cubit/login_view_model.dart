@@ -66,14 +66,17 @@ class LoginViewModel extends Cubit<LoginStates> {
   }
 
   void showRoleSelectionDialog(
-      BuildContext context, MyUser user, UserViewModel userCubit) {
-    String? selectedRole;
+    BuildContext context,
+    MyUser user,
+    UserViewModel userCubit,
+  ) {
+    String? selectedDialogRole;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (dialogContext, setState) {
             return AlertDialog(
               title: const Text("Select your role"),
               content: Column(
@@ -82,24 +85,25 @@ class LoginViewModel extends Cubit<LoginStates> {
                   RadioListTile<String>(
                     title: const Text("Owner"),
                     value: 'owner',
-                    groupValue: selectedRole,
-                    onChanged: (value) => setState(() => selectedRole = value),
+                    groupValue: selectedDialogRole,
+                    onChanged: (value) => setState(() => selectedDialogRole = value),
                   ),
                   RadioListTile<String>(
                     title: const Text("Client"),
                     value: 'client',
-                    groupValue: selectedRole,
-                    onChanged: (value) => setState(() => selectedRole = value),
+                    groupValue: selectedDialogRole,
+                    onChanged: (value) => setState(() => selectedDialogRole = value),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    if (selectedRole != null) {
-                      Navigator.pop(context);
-                      updateUserRole(user, selectedRole!, userCubit);
+                    if (selectedDialogRole == null || selectedDialogRole!.isEmpty) {
+                      return;
                     }
+                    Navigator.pop(dialogContext);
+                    updateUserRole(user, selectedDialogRole!, userCubit);
                   },
                   child: const Text("Confirm"),
                 ),

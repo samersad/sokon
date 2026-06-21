@@ -4,7 +4,6 @@ import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 
 import '../../../core/utils/app_assets.dart';
-import '../../../core/utils/app_styles.dart';
 
 class NearbyEstateCard extends StatelessWidget {
   final Apartment apartment;
@@ -14,7 +13,9 @@ class NearbyEstateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
       child: Container(
         width: 168.w,
         padding: EdgeInsets.all(10.w),
@@ -22,8 +23,7 @@ class NearbyEstateCard extends StatelessWidget {
           color: theme.disabledColor,
           borderRadius: BorderRadius.circular(27),
         ),
-        child:
-        Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -35,33 +35,31 @@ class NearbyEstateCard extends StatelessWidget {
                     ? Image.network(
                         apartment.images![0],
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Image.asset(AppAssets.imageC, fit: BoxFit.cover),
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(AppAssets.imageC, fit: BoxFit.cover),
                       )
-                    : Image.asset(
-                        AppAssets.imageC,
-                        fit: BoxFit.cover,
-                      ),
+                    : Image.asset(AppAssets.imageC, fit: BoxFit.cover),
               ),
             ),
-      
+
             SizedBox(height: 8.h),
-      
+
             Text(
               apartment.name ?? "No Name",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style:theme.textTheme.displaySmall,
+              style: theme.textTheme.displaySmall,
             ),
-      
+
             SizedBox(height: 6.h),
-      
+
             Row(
               children: [
                 Image.asset(AppAssets.locationOrange, width: 14.w),
                 SizedBox(width: 4.w),
                 Expanded(
                   child: Text(
-                    apartment.address ?? "No Address",
+                    apartment.displayLocationLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.displaySmall,
@@ -70,9 +68,9 @@ class NearbyEstateCard extends StatelessWidget {
                 Image.asset(AppAssets.downIcon, width: 12.w),
               ],
             ),
-      
+
             SizedBox(height: 10.h),
-      
+
             Row(
               children: [
                 Expanded(
@@ -93,7 +91,10 @@ class NearbyEstateCard extends StatelessWidget {
                 ),
                 Image.asset(AppAssets.star, width: 14.w),
                 SizedBox(width: 4.w),
-                Text("4.7", style: theme.textTheme.displaySmall),
+                Text(
+                  apartment.ratingLabel,
+                  style: theme.textTheme.displaySmall,
+                ),
               ],
             ),
           ],

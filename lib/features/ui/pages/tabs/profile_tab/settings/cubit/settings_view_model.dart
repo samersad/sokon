@@ -35,13 +35,24 @@ class SettingsViewModel extends Cubit<SettingsState> {
     }
   }
 
-  Future<void> saveChanges(String name) async {
+  Future<void> saveChanges(
+    String name,
+    String phoneNumber,
+    String? college,
+  ) async {
     final user = userViewModel.user;
     if (user == null) return;
 
     emit(SettingsLoading());
     try {
-      final updatedUser = await authRepository.updateProfile(user, name, profileImage);
+      final updatedUser = await authRepository.updateProfile(
+        user,
+        name,
+        phoneNumber,
+        college,
+        user.gender,
+        profileImage,
+      );
       userViewModel.updateUser(updatedUser);
       emit(SettingsSuccess(updatedUser));
     } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../../../core/model/apartment.dart';
+import '../../../../../../core/model/district_summary.dart';
 
 class HomeTabStates {
   final bool isLoadingLocation;
@@ -9,6 +10,7 @@ class HomeTabStates {
   final String? userAddress;
   final List<Apartment> featuredApartments;
   final List<Apartment> nearbyApartments;
+  final List<DistrictSummary> topDistricts;
   final String? errorMessage;
 
   const HomeTabStates({
@@ -18,6 +20,7 @@ class HomeTabStates {
     this.userAddress,
     this.featuredApartments = const [],
     this.nearbyApartments = const [],
+    this.topDistricts = const [],
     this.errorMessage,
   });
 
@@ -32,6 +35,7 @@ class HomeTabStates {
     bool clearUserAddress = false,
     List<Apartment>? featuredApartments,
     List<Apartment>? nearbyApartments,
+    List<DistrictSummary>? topDistricts,
     String? errorMessage,
     bool clearErrorMessage = false,
   }) {
@@ -42,6 +46,7 @@ class HomeTabStates {
       userAddress: clearUserAddress ? null : (userAddress ?? this.userAddress),
       featuredApartments: featuredApartments ?? this.featuredApartments,
       nearbyApartments: nearbyApartments ?? this.nearbyApartments,
+      topDistricts: topDistricts ?? this.topDistricts,
       errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
     );
   }

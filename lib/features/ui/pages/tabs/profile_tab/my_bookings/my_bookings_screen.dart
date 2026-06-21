@@ -6,8 +6,6 @@ import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/model/booking.dart';
 import 'package:sokon/core/utils/app_assets.dart';
-import 'package:sokon/core/utils/app_colors.dart';
-import 'package:sokon/core/utils/app_styles.dart';
 import 'package:sokon/supabase_utils.dart';
 
 import '../../../../widgets/back_container.dart';
@@ -24,6 +22,7 @@ class MyBookingsScreen extends StatefulWidget {
 class _MyBookingsScreenState extends State<MyBookingsScreen> {
   final MyBookingsViewModel viewModel = getIt<MyBookingsViewModel>();
   bool isInitialized = false;
+  String? _ratingBookingId;
 
   @override
   void didChangeDependencies() {
@@ -58,27 +57,33 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   SizedBox(height: 20.h),
                   Text("My Bookings", style: theme.textTheme.headlineMedium),
                   SizedBox(height: 5.h),
-                  Text("Track your apartment bookings",
-                      style: theme.textTheme.bodyMedium),
+                  Text(
+                    "Track your apartment bookings",
+                    style: theme.textTheme.bodyMedium,
+                  ),
                   SizedBox(height: 20.h),
                   Expanded(
                     child: user == null
                         ? const Center(
-                            child: Text("Please login to see your bookings"))
+                            child: Text("Please login to see your bookings"),
+                          )
                         : Builder(
                             builder: (context) {
                               if (state is MyBookingsLoading) {
                                 return const Center(
-                                    child: CircularProgressIndicator());
+                                  child: CircularProgressIndicator(),
+                                );
                               }
                               if (state is MyBookingsError) {
                                 return Center(
-                                    child: Text("Error: ${state.message}"));
+                                  child: Text("Error: ${state.message}"),
+                                );
                               }
                               if (state is MyBookingsSuccess) {
                                 if (state.bookings.isEmpty) {
                                   return const Center(
-                                      child: Text("No bookings found"));
+                                    child: Text("No bookings found"),
+                                  );
                                 }
                                 return ListView.separated(
                                   itemCount: state.bookings.length,
@@ -91,7 +96,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 );
                               }
                               return const SizedBox.shrink();
-                            }
+                            },
                           ),
                   ),
                 ],
@@ -117,7 +122,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             color: Colors.black.withOpacity(0.05),
             blurRadius: 5,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -127,7 +132,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10.r),
-                child: (booking.apartmentImage != null &&
+                child:
+                    (booking.apartmentImage != null &&
                         booking.apartmentImage!.isNotEmpty)
                     ? Image.network(
                         booking.apartmentImage!,
@@ -135,8 +141,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         height: 70.h,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
-                            Image.asset(AppAssets.imageS,
-                                width: 70.w, height: 70.h),
+                            Image.asset(
+                              AppAssets.imageS,
+                              width: 70.w,
+                              height: 70.h,
+                            ),
                       )
                     : Image.asset(AppAssets.imageS, width: 70.w, height: 70.h),
               ),
@@ -154,8 +163,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     SizedBox(height: 5.h),
                     Row(
                       children: [
-                        Icon(Icons.location_on,
-                            color: theme.highlightColor, size: 14.sp),
+                        Icon(
+                          Icons.location_on,
+                          color: theme.highlightColor,
+                          size: 14.sp,
+                        ),
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
@@ -239,6 +251,63 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 child: const Text("Cancel Booking"),
               ),
             ),
+          if (_canRate(booking)) ...[
+            SizedBox(height: 12.h),
+            _buildRatingBox(context, booking),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingBox(BuildContext context, Booking booking) {
+    final theme = Theme.of(context);
+    final isSaving = _ratingBookingId == booking.id;
+    final selectedRating = booking.rating ?? 0;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: theme.disabledColor,
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            selectedRating > 0 ? "Your rating" : "Rate your stay",
+            style: theme.textTheme.bodyMedium,
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (index) {
+              final rating = index + 1;
+              final isSelected = rating <= selectedRating;
+              return IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.symmetric(horizontal: 2.w),
+                constraints: BoxConstraints(minWidth: 34.w, minHeight: 34.w),
+                onPressed: isSaving
+                    ? null
+                    : () => _rateBooking(booking, rating),
+                icon: Icon(
+                  isSelected ? Icons.star_rounded : Icons.star_border_rounded,
+                  color: isSelected ? const Color(0xFFFFB800) : Colors.grey,
+                  size: 30.sp,
+                ),
+              );
+            }),
+          ),
+          if (isSaving) ...[
+            SizedBox(height: 6.h),
+            SizedBox(
+              width: 18.w,
+              height: 18.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
         ],
       ),
     );
@@ -287,11 +356,48 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     return status == 'pending' || status == 'accepted' || status == 'confirmed';
   }
 
+  bool _canRate(Booking booking) {
+    final status = normalizeStatus(booking.status);
+    return booking.id != null &&
+        (status == 'accepted' || status == 'confirmed');
+  }
+
+  Future<void> _rateBooking(Booking booking, int rating) async {
+    if (booking.id == null) {
+      return;
+    }
+
+    setState(() {
+      _ratingBookingId = booking.id;
+    });
+
+    try {
+      await SupabaseUtils.rateBooking(booking: booking, rating: rating);
+      if (!mounted) return;
+      setState(() {
+        booking.rating = rating;
+        _ratingBookingId = null;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Rating saved')));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _ratingBookingId = null;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save rating: $e')));
+    }
+  }
+
   Future<void> _cancelBooking(Booking booking) async {
     if (booking.id == null) {
       return;
     }
 
+    final userName = context.read<UserViewModel>().user?.name;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -314,22 +420,21 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       return;
     }
 
-    final user = context.read<UserViewModel>().user;
     try {
       await SupabaseUtils.updateBookingStatus(
         booking: booking,
         status: 'cancelled',
-        changedByName: user?.name,
+        changedByName: userName,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking cancelled')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Booking cancelled')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to cancel booking: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to cancel booking: $e')));
     }
   }
 }

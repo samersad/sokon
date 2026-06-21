@@ -14,8 +14,16 @@ class AuthRepositoryImpl implements AuthRepository {
       remoteDataSource.login(email, password);
 
   @override
-  Future<MyUser> register(String email, String password, String name) =>
-      remoteDataSource.register(email, password, name);
+  Future<MyUser> register(
+    String email,
+    String password,
+    String name,
+    String? college,
+    String phoneNumber,
+    String gender,
+    String role,
+  ) =>
+      remoteDataSource.register(email, password, name, college, phoneNumber, gender, role);
 
   @override
   Future<MyUser> signInWithGoogle() => remoteDataSource.signInWithGoogle();
@@ -25,8 +33,15 @@ class AuthRepositoryImpl implements AuthRepository {
       remoteDataSource.updateUserRole(user, role);
 
   @override
-  Future<MyUser> updateProfile(MyUser user, String name, File? profileImage) =>
-      remoteDataSource.updateProfile(user, name, profileImage);
+  Future<MyUser> updateProfile(
+    MyUser user,
+    String name,
+    String phoneNumber,
+    String? college,
+    String? gender,
+    File? profileImage,
+  ) =>
+      remoteDataSource.updateProfile(user, name, phoneNumber, college, gender, profileImage);
 
   @override
   Future<void> signOut() => remoteDataSource.signOut();

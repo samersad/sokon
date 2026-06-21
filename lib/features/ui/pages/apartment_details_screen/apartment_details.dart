@@ -75,6 +75,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                           style: theme.textTheme.headlineMedium,
                         ),
                         SizedBox(height: 10.h),
+                        SizedBox(height: 12.h),
                         _buildCapacityBanner(apartment, theme),
                         SizedBox(height: 16.h),
                         _buildLocationSection(apartment),
@@ -93,6 +94,11 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                               value: "${apartment.bathrooms ?? 0}",
                             ),
                             propertyDetailsColumn(
+                              name: "Floor",
+                              imageName: AppAssets.livingRoomsIcon,
+                              value: "${apartment.floor ?? 1}",
+                            ),
+                            propertyDetailsColumn(
                               name: "Living Rooms",
                               imageName: AppAssets.livingRoomsIcon,
                               value: "${apartment.livingRooms ?? 0}",
@@ -104,9 +110,16 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                           children: [
                             Text("Description", style: theme.textTheme.headlineMedium),
                             const Spacer(),
-                            Image.asset(AppAssets.yesIcon, width: 18.w),
+                            Image.asset(
+                              apartment.verified == true ? AppAssets.yesIcon : AppAssets.imageC,
+                              width: 18.w,
+                              color: apartment.verified == true ? AppColors.primaryColor : AppColors.grayColor,
+                            ),
                             SizedBox(width: 5.w),
-                            Text("Verified", style: theme.textTheme.displaySmall),
+                            Text(
+                              apartment.verified == true ? "Verified" : "Not verified",
+                              style: theme.textTheme.displaySmall,
+                            ),
                           ],
                         ),
                         SizedBox(height: 10.h),
@@ -158,11 +171,6 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                                           style: theme.textTheme.displaySmall),
                                     ],
                                   ),
-                                ),
-                                SizedBox(width: 10.w),
-                                InkWell(
-                                  onTap: () {},
-                                  child: Image.asset(AppAssets.callIcon, width: 32.w),
                                 ),
                                 SizedBox(width: 10.w),
                                 if (canRent)
@@ -367,12 +375,17 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         ? apartment.address!
         : hasMapAddress
             ? apartment.locationAddress!
-            : 'Address picker';
+            : 'No detailed address provided';
     final canOpenMap = hasMapAddress;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          apartment.cityDistrictLabel,
+          style: theme.textTheme.displaySmall,
+        ),
+        SizedBox(height: 6.h),
         if (hasCoordinates) ...[
           SizedBox(
             height: 220.h,
@@ -415,7 +428,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           displayedAddress,
           style: theme.textTheme.bodyMedium,
         ),
-        if (displayedAddress == 'Address picker') ...[
+        if (displayedAddress == 'No detailed address provided') ...[
           SizedBox(height: 4.h),
           Text(
             "Owner did not add an address yet.",
@@ -527,12 +540,47 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
+  Widget _buildVerificationBadge(Apartment apartment, ThemeData theme) {
+    final isVerified = apartment.verified == true;
+    final backgroundColor = isVerified
+        ? AppColors.primaryColor.withOpacity(0.10)
+        : AppColors.grayColor.withOpacity(0.10);
+    final textColor = isVerified ? AppColors.primaryColor : AppColors.grayColor;
+    final icon = isVerified ? Icons.verified_rounded : Icons.verified_outlined;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18.sp, color: textColor),
+            SizedBox(width: 6.w),
+            Text(
+              isVerified ? "Verified" : "Not verified",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _openInGoogleMaps({
     required double lat,
     required double lng,
     required String address,
   }) async {
-    final hasAddress = address.trim().isNotEmpty && address != 'Address picker';
+    final hasAddress =
+        address.trim().isNotEmpty && address != 'No detailed address provided';
     final target = hasAddress
         ? Uri.parse(
             'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address.trim())}',

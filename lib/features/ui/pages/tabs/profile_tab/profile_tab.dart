@@ -89,7 +89,9 @@ class _ProfileTabState extends State<ProfileTab> {
                           ),
                           SizedBox(height: 15.h),
                           Text(user?.name ?? "No Name",
-                              style: theme.textTheme.headlineSmall),
+                              style: theme.textTheme.bodyMedium),
+                          SizedBox(height: 5.h),
+                          Text(_formatRole(user?.role), style: theme.textTheme.bodyMedium),
                           SizedBox(height: 5.h),
                           Text(user?.email ?? "No Email",
                               style: theme.textTheme.bodyMedium),
@@ -307,5 +309,13 @@ class _ProfileTabState extends State<ProfileTab> {
         );
       },
     );
+  }
+
+  String _formatRole(String? role) {
+    final value = role?.trim();
+    if (value == null || value.isEmpty) {
+      return "No Role";
+    }
+    return value[0].toUpperCase() + value.substring(1);
   }
 }

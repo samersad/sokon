@@ -34,11 +34,26 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<MyUser> register(String email, String password, String name) async {
+  Future<MyUser> register(
+    String email,
+    String password,
+    String name,
+    String? college,
+    String phoneNumber,
+    String gender,
+    String role,
+  ) async {
+    final normalizedRole = role.trim().toLowerCase();
     final AuthResponse res = await _client.auth.signUp(
       email: email,
       password: password,
-      data: {'full_name': name},
+      data: {
+        'full_name': name,
+        'phone_number': phoneNumber,
+        'gender': gender,
+        'role': normalizedRole,
+        if (college != null && college.trim().isNotEmpty) 'college': college,
+      },
     );
 
     if (res.user == null) throw Exception("Registration failed");
@@ -47,6 +62,10 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       id: res.user!.id,
       name: name,
       email: email,
+      college: college?.trim().isEmpty == true ? null : college?.trim(),
+      phoneNumber: phoneNumber,
+      gender: gender,
+      role: normalizedRole,
     );
 
     await SupabaseUtils.addUserToSupabase(user);
@@ -119,7 +138,14 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<MyUser> updateProfile(MyUser user, String name, File? profileImage) async {
+  Future<MyUser> updateProfile(
+    MyUser user,
+    String name,
+    String phoneNumber,
+    String? college,
+    String? gender,
+    File? profileImage,
+  ) async {
     String? photoUrl = user.photoUrl;
     if (profileImage != null) {
       photoUrl = await SupabaseUtils.uploadFile(
@@ -130,6 +156,9 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     }
 
     user.name = name;
+    user.phoneNumber = phoneNumber;
+    user.college = college?.trim().isEmpty == true ? null : college?.trim();
+    user.gender = gender?.trim().isEmpty == true ? user.gender : gender?.trim();
     user.photoUrl = photoUrl;
 
     await SupabaseUtils.addUserToSupabase(user);

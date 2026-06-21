@@ -14,6 +14,8 @@ class Booking {
   DateTime? endDate;
   double? totalPrice;
   int? peopleCount;
+  int? rating;
+  DateTime? ratedAt;
   String? status; // 'pending', 'accepted', 'cancelled'
   DateTime? createdAt;
 
@@ -31,6 +33,8 @@ class Booking {
     this.endDate,
     this.totalPrice,
     this.peopleCount,
+    this.rating,
+    this.ratedAt,
     this.status = 'pending',
     this.createdAt,
   });
@@ -46,12 +50,20 @@ class Booking {
       clientName: data["clientName"],
       ownerId: data["ownerId"],
       ownerName: data["ownerName"],
-      startDate: data["startDate"] != null ? DateTime.parse(data["startDate"]) : null,
+      startDate: data["startDate"] != null
+          ? DateTime.parse(data["startDate"])
+          : null,
       endDate: data["endDate"] != null ? DateTime.parse(data["endDate"]) : null,
       totalPrice: (data["totalPrice"] as num?)?.toDouble(),
       peopleCount: data["people_count"],
+      rating: (data["rating"] as num?)?.toInt(),
+      ratedAt: data["rated_at"] != null
+          ? DateTime.parse(data["rated_at"])
+          : null,
       status: data["status"],
-      createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
+      createdAt: data["createdAt"] != null
+          ? DateTime.parse(data["createdAt"])
+          : null,
     );
   }
 
@@ -69,6 +81,8 @@ class Booking {
       'endDate': endDate?.toIso8601String(),
       'totalPrice': totalPrice,
       'people_count': peopleCount,
+      'rating': rating,
+      'rated_at': ratedAt?.toIso8601String(),
       'status': status,
       'createdAt': createdAt?.toIso8601String(),
     };

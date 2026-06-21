@@ -21,6 +21,7 @@ import 'package:sokon/features/ui/location_picker/location_picker.dart';
 import 'package:sokon/features/ui/location_picker/user_location_picker.dart';
 import 'package:sokon/features/ui/pages/add_apartment/edit_apartment.dart';
 import 'package:sokon/features/ui/pages/booking_screen/booking_screen.dart';
+import 'package:sokon/features/ui/pages/district_apartments_screen/district_apartments_screen.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/chat_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/my_bookings_screen.dart';
@@ -197,6 +198,8 @@ class MyApp extends StatelessWidget {
                     const LocationPicker(),
                 AppRoutes.topLocationRoute: (context) =>
                     const TopLocationScreen(),
+                AppRoutes.districtApartmentsRoute: (context) =>
+                    const DistrictApartmentsScreen(),
                 AppRoutes.nearbyEstateRoute: (context) =>
                     const NearbyEstateScreen(),
                 AppRoutes.featuredEstateRoute: (context) =>

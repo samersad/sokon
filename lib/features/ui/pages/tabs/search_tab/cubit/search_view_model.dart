@@ -38,11 +38,17 @@ class SearchViewModel extends Cubit<SearchStates> {
         final name = apartment.name?.toLowerCase() ?? "";
         final description = apartment.description?.toLowerCase() ?? "";
         final address = apartment.address?.toLowerCase() ?? "";
+        final city = apartment.city?.toLowerCase() ?? "";
+        final district = apartment.district?.toLowerCase() ?? "";
+        final floor = apartment.floor?.toString() ?? "";
         final searchLower = query.toLowerCase();
 
         return name.contains(searchLower) ||
             description.contains(searchLower) ||
-            address.contains(searchLower);
+            address.contains(searchLower) ||
+            city.contains(searchLower) ||
+            district.contains(searchLower) ||
+            floor.contains(searchLower);
       }).toList();
 
       if (results.isNotEmpty && !_recentSearches.contains(query)) {

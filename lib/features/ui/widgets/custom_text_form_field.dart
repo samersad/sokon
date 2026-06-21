@@ -24,6 +24,9 @@ class CustomTextFormField extends StatefulWidget {
     this.borderRadius = 10,
     this.paddingVertical = 10,
     this.paddingHorizontal = 20,
+    this.readOnly = false,
+    this.enabled = true,
+    this.onTap,
   });
   //
   final Color? borderSideColor;
@@ -44,6 +47,9 @@ class CustomTextFormField extends StatefulWidget {
   final int maxLines;
   final void Function(String)? onChanged;
   final double borderRadius;
+  final bool readOnly;
+  final bool enabled;
+  final VoidCallback? onTap;
 
   final double paddingVertical;
   final double paddingHorizontal;
@@ -58,6 +64,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     final theme = Theme.of(context);
     return TextFormField(
       onChanged: widget.onChanged,
+      enabled: widget.enabled,
+      readOnly: widget.readOnly,
+      onTap: widget.onTap,
       maxLines: widget.maxLines,
       cursorColor: theme.primaryColor,
       validator: widget.validator,

@@ -24,10 +24,13 @@ class SupabaseUtils {
     String? folder,
   }) async {
     try {
-      final fileName = "${DateTime.now().millisecondsSinceEpoch}${p.extension(file.path)}";
+      final fileName =
+          "${DateTime.now().millisecondsSinceEpoch}${p.extension(file.path)}";
       final path = folder != null ? "$folder/$fileName" : fileName;
 
-      await client.storage.from(bucket).upload(
+      await client.storage
+          .from(bucket)
+          .upload(
             path,
             file,
             fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
@@ -48,7 +51,11 @@ class SupabaseUtils {
   }
 
   static Future<MyUser?> readUserFromSupabase(String id) async {
-    final response = await client.from('users').select().eq('id', id).maybeSingle();
+    final response = await client
+        .from('users')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
     if (response == null) return null;
     return MyUser.fromSupaBase(response);
   }
@@ -72,16 +79,22 @@ class SupabaseUtils {
   // Apartments
   static Future<void> addApartmentToSupabase(Apartment apartment) async {
     apartment.createdAt = DateTime.now();
-    final response = await client.from('apartments').insert(apartment.toSupaBase()).select().single();
+    final response = await client
+        .from('apartments')
+        .insert(apartment.toSupaBase())
+        .select()
+        .single();
     apartment.id = response['id'].toString();
 
-    await tryAddNotificationToSupabase(AppNotification(
-      title: "New apartment listed",
-      body: _buildNewApartmentBody(apartment),
-      createdAt: DateTime.now(),
-      type: notificationTypeNewApartment,
-      isRead: false,
-    ));
+    await tryAddNotificationToSupabase(
+      AppNotification(
+        title: "New apartment listed",
+        body: _buildNewApartmentBody(apartment),
+        createdAt: DateTime.now(),
+        type: notificationTypeNewApartment,
+        isRead: false,
+      ),
+    );
   }
 
   static Future<void> deleteApartmentFromSupabase(String apartmentId) async {
@@ -100,25 +113,34 @@ class SupabaseUtils {
   }
 
   static Future<List<Apartment>> getOwnerApartments(String ownerId) async {
-    final response = await client.from('apartments').select().eq('ownerId', ownerId);
+    final response = await client
+        .from('apartments')
+        .select()
+        .eq('ownerId', ownerId);
     return response.map((e) => Apartment.fromSupaBase(e)).toList();
   }
 
   // Bookings
   static Future<void> addBookingToSupabase(Booking booking) async {
     booking.createdAt = DateTime.now();
-    final response = await client.from('bookings').insert(booking.toSupaBase()).select().single();
+    final response = await client
+        .from('bookings')
+        .insert(booking.toSupaBase())
+        .select()
+        .single();
     booking.id = response['id'].toString();
 
-    await tryAddNotificationToSupabase(AppNotification(
-      title: "Booking request received",
-      body: _buildBookingRequestBody(booking),
-      createdAt: DateTime.now(),
-      type: notificationTypeNewBooking,
-      isRead: false,
-      receiverId: booking.ownerId,
-      bookingId: booking.id,
-    ));
+    await tryAddNotificationToSupabase(
+      AppNotification(
+        title: "Booking request received",
+        body: _buildBookingRequestBody(booking),
+        createdAt: DateTime.now(),
+        type: notificationTypeNewBooking,
+        isRead: false,
+        receiverId: booking.ownerId,
+        bookingId: booking.id,
+      ),
+    );
 
     await sendBookingPushToOwner(booking);
   }
@@ -131,10 +153,7 @@ class SupabaseUtils {
     final normalizedStatus = status.toLowerCase().trim();
     final response = await client.rpc(
       'update_booking_status_with_capacity',
-      params: {
-        'p_booking_id': booking.id,
-        'p_status': normalizedStatus,
-      },
+      params: {'p_booking_id': booking.id, 'p_status': normalizedStatus},
     );
 
     if (response is Map<String, dynamic>) {
@@ -148,6 +167,23 @@ class SupabaseUtils {
       status: normalizedStatus,
       changedByName: changedByName,
     );
+  }
+
+  static Future<Booking> rateBooking({
+    required Booking booking,
+    required int rating,
+  }) async {
+    final response = await client.rpc(
+      'rate_booking',
+      params: {'p_booking_id': booking.id, 'p_rating': rating},
+    );
+
+    final updatedBooking = Booking.fromSupaBase(
+      Map<String, dynamic>.from(response as Map),
+    );
+    booking.rating = updatedBooking.rating;
+    booking.ratedAt = updatedBooking.ratedAt;
+    return updatedBooking;
   }
 
   static Stream<List<Booking>> getBookingsStream(String userId) {
@@ -179,12 +215,20 @@ class SupabaseUtils {
   }
 
   // Notifications
-  static Future<void> addNotificationToSupabase(AppNotification notification) async {
-    final response = await client.from('notifications').insert(notification.toSupaBase()).select().single();
+  static Future<void> addNotificationToSupabase(
+    AppNotification notification,
+  ) async {
+    final response = await client
+        .from('notifications')
+        .insert(notification.toSupaBase())
+        .select()
+        .single();
     notification.id = response['id'].toString();
   }
 
-  static Future<void> tryAddNotificationToSupabase(AppNotification notification) async {
+  static Future<void> tryAddNotificationToSupabase(
+    AppNotification notification,
+  ) async {
     try {
       await addNotificationToSupabase(notification);
     } catch (_) {
@@ -199,8 +243,9 @@ class SupabaseUtils {
         .eq('receiverId', userId)
         .order('createdAt', ascending: false)
         .map((data) {
-          final notifications =
-              data.map((e) => AppNotification.fromSupaBase(e)).toList();
+          final notifications = data
+              .map((e) => AppNotification.fromSupaBase(e))
+              .toList();
           notifications.sort((a, b) {
             final aTime = a.createdAt;
             final bTime = b.createdAt;
@@ -265,8 +310,10 @@ class SupabaseUtils {
     String? changedByName,
   }) async {
     final normalizedStatus = status.toLowerCase().trim();
-    final isAccepted = normalizedStatus == 'accepted' || normalizedStatus == 'confirmed';
-    final isCancelled = normalizedStatus == 'cancelled' || normalizedStatus == 'canceled';
+    final isAccepted =
+        normalizedStatus == 'accepted' || normalizedStatus == 'confirmed';
+    final isCancelled =
+        normalizedStatus == 'cancelled' || normalizedStatus == 'canceled';
     final isRejected = normalizedStatus == 'rejected';
 
     if (!isAccepted && !isCancelled && !isRejected) {
@@ -281,18 +328,18 @@ class SupabaseUtils {
     final title = isAccepted
         ? "Booking approved"
         : isCancelled
-            ? "Booking cancelled"
-            : "Booking rejected";
+        ? "Booking cancelled"
+        : "Booking rejected";
     final body = isAccepted
         ? _buildBookingAcceptedBody(booking, changedByName)
         : isCancelled
-            ? _buildBookingCancelledBody(booking, changedByName)
-            : _buildBookingRejectedBody(booking, changedByName);
+        ? _buildBookingCancelledBody(booking, changedByName)
+        : _buildBookingRejectedBody(booking, changedByName);
     final type = isAccepted
         ? notificationTypeBookingAccepted
         : isCancelled
-            ? notificationTypeBookingCancelled
-            : notificationTypeBookingRejected;
+        ? notificationTypeBookingCancelled
+        : notificationTypeBookingRejected;
 
     await tryAddNotificationToSupabase(
       AppNotification(
@@ -318,7 +365,10 @@ class SupabaseUtils {
   static String _buildNewApartmentBody(Apartment apartment) {
     final ownerName = apartment.ownerName?.trim();
     final apartmentName = apartment.name?.trim();
-    if (ownerName != null && ownerName.isNotEmpty && apartmentName != null && apartmentName.isNotEmpty) {
+    if (ownerName != null &&
+        ownerName.isNotEmpty &&
+        apartmentName != null &&
+        apartmentName.isNotEmpty) {
       return "$ownerName listed $apartmentName for rent.";
     }
     if (apartmentName != null && apartmentName.isNotEmpty) {
@@ -342,14 +392,20 @@ class SupabaseUtils {
       return "$clientName requested $apartmentName for $peopleCount ${peopleCount == 1 ? 'person' : 'people'} with $ownerName.";
     }
 
-    if (clientName != null && clientName.isNotEmpty && apartmentName != null && apartmentName.isNotEmpty) {
+    if (clientName != null &&
+        clientName.isNotEmpty &&
+        apartmentName != null &&
+        apartmentName.isNotEmpty) {
       return "$clientName submitted a booking request for $apartmentName for $peopleCount ${peopleCount == 1 ? 'person' : 'people'}.";
     }
 
     return "A new booking request has been submitted.";
   }
 
-  static String _buildBookingAcceptedBody(Booking booking, String? changedByName) {
+  static String _buildBookingAcceptedBody(
+    Booking booking,
+    String? changedByName,
+  ) {
     final apartmentName = booking.apartmentName?.trim();
     final managerName = changedByName?.trim() ?? booking.ownerName?.trim();
     if (apartmentName != null &&
@@ -364,7 +420,10 @@ class SupabaseUtils {
     return "Your booking request has been approved.";
   }
 
-  static String _buildBookingCancelledBody(Booking booking, String? changedByName) {
+  static String _buildBookingCancelledBody(
+    Booking booking,
+    String? changedByName,
+  ) {
     final apartmentName = booking.apartmentName?.trim();
     final managerName = changedByName?.trim() ?? booking.ownerName?.trim();
     if (apartmentName != null &&
@@ -379,7 +438,10 @@ class SupabaseUtils {
     return "Your booking has been cancelled.";
   }
 
-  static String _buildBookingRejectedBody(Booking booking, String? changedByName) {
+  static String _buildBookingRejectedBody(
+    Booking booking,
+    String? changedByName,
+  ) {
     final apartmentName = booking.apartmentName?.trim();
     final managerName = changedByName?.trim() ?? booking.ownerName?.trim();
     if (apartmentName != null &&
@@ -400,7 +462,9 @@ class SupabaseUtils {
       return "You have a new message.";
     }
 
-    return normalized.length > 80 ? "${normalized.substring(0, 80)}..." : normalized;
+    return normalized.length > 80
+        ? "${normalized.substring(0, 80)}..."
+        : normalized;
   }
 
   static Future<void> notifyBookingStatusChange({

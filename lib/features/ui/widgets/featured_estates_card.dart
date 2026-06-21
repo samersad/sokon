@@ -5,7 +5,6 @@ import 'package:sokon/core/model/apartment.dart';
 
 import '../../../core/utils/app_assets.dart';
 import '../../../core/utils/app_routes.dart';
-import '../../../core/utils/app_styles.dart';
 
 class FeaturedEstatesCard extends StatelessWidget {
   final Apartment apartment;
@@ -15,7 +14,9 @@ class FeaturedEstatesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
 
       child: SizedBox(
         height: 150.h,
@@ -36,15 +37,24 @@ class FeaturedEstatesCard extends StatelessWidget {
                         width: 120.w,
                         height: 130.h,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Image.asset(AppAssets.image, width: 120.w, fit: BoxFit.fill),
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                              AppAssets.image,
+                              width: 120.w,
+                              fit: BoxFit.fill,
+                            ),
                       )
-                    : Image.asset(AppAssets.image, width: 120.w, fit: BoxFit.fill),
+                    : Image.asset(
+                        AppAssets.image,
+                        width: 120.w,
+                        fit: BoxFit.fill,
+                      ),
               ),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     AutoSizeText(
                       apartment.name ?? "No Name",
@@ -54,26 +64,23 @@ class FeaturedEstatesCard extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Image.asset(AppAssets.star,
-                            width: 14.w),
+                        Image.asset(AppAssets.star, width: 14.w),
                         SizedBox(width: 4.w),
-                        Text("4.9",
-                            style:
-                            theme.textTheme.displaySmall),
+                        Text(
+                          apartment.ratingLabel,
+                          style: theme.textTheme.displaySmall,
+                        ),
                       ],
                     ),
                     Row(
                       children: [
-                        Image.asset(
-                            AppAssets.locationIcon,
-                            width: 14.w),
+                        Image.asset(AppAssets.locationIcon, width: 14.w),
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
-                            apartment.address ?? "No Address",
+                            apartment.displayLocationLabel,
                             maxLines: 1,
-                            overflow:
-                            TextOverflow.ellipsis,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.displaySmall,
                           ),
                         ),
@@ -88,8 +95,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                           ),
                           TextSpan(
                             text: "month",
-                            style:
-                            theme.textTheme.displaySmall,
+                            style: theme.textTheme.displaySmall,
                           ),
                         ],
                       ),

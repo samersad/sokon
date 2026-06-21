@@ -174,6 +174,36 @@ class _EditApartmentState extends State<EditApartment> {
                       },
                     ),
                     SizedBox(height: 15.h),
+                    Text("City:", style: theme.textTheme.labelMedium),
+                    SizedBox(height: 5.h),
+                    CustomTextFormField(
+                      controller: viewModel.cityCRl,
+                      readOnly: true,
+                      hintText: "City",
+                      borderSideColor: AppColors.grayColor.withOpacity(0.3),
+                    ),
+                    SizedBox(height: 15.h),
+                    Text("District:", style: theme.textTheme.labelMedium),
+                    SizedBox(height: 5.h),
+                    CustomTextFormField(
+                      controller: viewModel.districtCRl,
+                      readOnly: true,
+                      onTap: () => _showDistrictPicker(context),
+                      hintText: "Select district",
+                      suffixIconName: const Icon(Icons.keyboard_arrow_down_rounded),
+                      borderSideColor: AppColors.grayColor.withOpacity(0.3),
+                    ),
+                    SizedBox(height: 15.h),
+                    Text("Floor:", style: theme.textTheme.labelMedium),
+                    SizedBox(height: 5.h),
+                    CustomTextFormField(
+                      controller: viewModel.floorCRl,
+                      hintText: "Enter floor number",
+                      keyboardType: TextInputType.number,
+                      borderSideColor: AppColors.grayColor.withOpacity(0.3),
+                      onChanged: viewModel.setFloor,
+                    ),
+                    SizedBox(height: 15.h),
                     Row(
                       children: [
                         Expanded(
@@ -391,6 +421,55 @@ class _EditApartmentState extends State<EditApartment> {
         },
       ),
     );
+  }
+
+  Future<void> _showDistrictPicker(BuildContext context) async {
+    final selectedDistrict = await showModalBottomSheet<String>(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text("Select District", style: Theme.of(sheetContext).textTheme.titleMedium),
+                SizedBox(height: 12.h),
+                ...AddApartmentViewModel.districtOptions.map(
+                  (district) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(district),
+                    trailing: viewModel.districtCRl.text.trim() == district.trim()
+                        ? Icon(Icons.check_circle, color: AppColors.primaryColor, size: 22.sp)
+                        : null,
+                    onTap: () => Navigator.pop(sheetContext, district),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedDistrict != null) {
+      viewModel.setDistrict(selectedDistrict);
+    }
   }
 
   Widget _buildVideoPickerSection() {

@@ -63,218 +63,64 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                   bool canRent = viewModel.canUserRent(userViewModel.user?.id, userViewModel.user?.role);
 
                   return SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 10.h),
-                        buildVideoPlayer(apartment),
-                        SizedBox(height: 20.h),
-                        Text(
-                          apartment.name ?? "Apartment",
-                          style: theme.textTheme.headlineMedium,
-                        ),
-                        SizedBox(height: 10.h),
-                        SizedBox(height: 12.h),
-                        _buildCapacityBanner(apartment, theme),
-                        SizedBox(height: 16.h),
-                        _buildLocationSection(apartment),
-                        SizedBox(height: 20.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            propertyDetailsColumn(
-                              name: "Bedrooms",
-                              imageName: AppAssets.bedroomsIcon,
-                              value: "${apartment.bedrooms ?? 0}",
-                            ),
-                            propertyDetailsColumn(
-                              name: "Bathrooms",
-                              imageName: AppAssets.bathroomsIcon,
-                              value: "${apartment.bathrooms ?? 0}",
-                            ),
-                            propertyDetailsColumn(
-                              name: "Floor",
-                              imageName: AppAssets.livingRoomsIcon,
-                              value: "${apartment.floor ?? 1}",
-                            ),
-                            propertyDetailsColumn(
-                              name: "Living Rooms",
-                              imageName: AppAssets.livingRoomsIcon,
-                              value: "${apartment.livingRooms ?? 0}",
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20.h),
-                        Row(
-                          children: [
-                            Text("Description", style: theme.textTheme.headlineMedium),
-                            const Spacer(),
-                            Image.asset(
-                              apartment.verified == true ? AppAssets.yesIcon : AppAssets.imageC,
-                              width: 18.w,
-                              color: apartment.verified == true ? AppColors.primaryColor : AppColors.grayColor,
-                            ),
-                            SizedBox(width: 5.w),
-                            Text(
-                              apartment.verified == true ? "Verified" : "Not verified",
-                              style: theme.textTheme.displaySmall,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10.h),
-                        ReadMoreText(
-                          apartment.description ?? "No description available.",
-                          trimLength: 150,
-                          style: theme.textTheme.bodyMedium,
-                          trimMode: TrimMode.Length,
-                          colorClickableText: AppColors.redColor,
-                          trimCollapsedText: 'Read more',
-                          trimExpandedText: '  Read less',
-                          moreStyle: AppStyles.bold12Primary,
-                        ),
-                        SizedBox(height: 20.h),
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: theme.disabledColor,
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
+                        _buildHeroMedia(apartment),
+                        Transform.translate(
+                          offset: Offset(0, -42.h),
                           child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12.w,
-                              vertical: 12.h,
-                            ),
-                            child: Row(
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CircleAvatar(
-                                  radius: 25.r,
-                                  backgroundColor: Colors.grey.shade200,
-                                  backgroundImage: (apartment.ownerPhotoUrl != null &&
-                                          apartment.ownerPhotoUrl!.isNotEmpty)
-                                      ? NetworkImage(apartment.ownerPhotoUrl!)
-                                      : AssetImage(AppAssets.profileImage) as ImageProvider,
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        apartment.ownerName ?? "Owner",
-                                        style: theme.textTheme.labelMedium,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 2.h),
-                                      Text("Professional Owner",
-                                          style: theme.textTheme.displaySmall),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(width: 10.w),
+                                _buildTitleInfoCard(apartment, theme),
+                                SizedBox(height: 18.h),
+                                _buildRatingRow(apartment, theme),
+                                SizedBox(height: 18.h),
+                                _buildCapacityBanner(apartment, theme),
+                                SizedBox(height: 18.h),
+                                _buildDescriptionSection(apartment, theme),
+                                SizedBox(height: 22.h),
+                                _buildLocationSection(apartment),
+                                SizedBox(height: 22.h),
+                                _buildOwnerCard(apartment, canRent, theme),
+                                SizedBox(height: 22.h),
+                                _buildGallerySection(apartment, theme),
+                                SizedBox(height: 30.h),
                                 if (canRent)
-                                  InkWell(
-                                    onTap: () {
-                                      if (apartment.ownerId != null) {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.chatRoute,
-                                          arguments: {
-                                            'receiverId': apartment.ownerId,
-                                            'receiverName': apartment.ownerName ?? "Owner",
-                                            'receiverPhotoUrl': apartment.ownerPhotoUrl,
+                                  CustomElevatedButtom(
+                                    onPressed: apartment.availablePeople == 0
+                                        ? () {}
+                                        : () {
+                                            Navigator.of(context).pushNamed(
+                                              AppRoutes.bookingRoute,
+                                              arguments: apartment,
+                                            );
                                           },
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  "Owner contact information not available")),
-                                        );
-                                      }
-                                    },
-                                    child: Image.asset(AppAssets.messageIcon, width: 32.w),
+                                    text: apartment.availablePeople == 0
+                                        ? "Fully Booked"
+                                        : "Rent Now",
+                                    width: 500.w,
+                                    customPadding: 16.h,
+                                    borderRadius: 19.r,
+                                    backgroundColorElevated: apartment.availablePeople == 0
+                                        ? AppColors.grayColor
+                                        : theme.brightness == Brightness.dark
+                                            ? AppColors.detailsVerifiedBlue
+                                            : AppColors.darkBlueColor,
+                                    textStyle: AppStyles.semiBold20White.copyWith(
+                                      color: theme.brightness == Brightness.dark
+                                          ? AppColors.darkPrimaryColor
+                                          : AppColors.whiteColor,
+                                      fontSize: 16.sp,
+                                    ),
                                   ),
+                                SizedBox(height: 30.h),
                               ],
                             ),
                           ),
                         ),
-                        SizedBox(height: 20.h),
-                        Text("Gallery", style: theme.textTheme.headlineMedium),
-                        Text("Take a look inside", style: theme.textTheme.bodyMedium),
-                        SizedBox(height: 10.h),
-                        SizedBox(
-                          height: 110.h,
-                          child: (apartment.images == null || apartment.images!.isEmpty)
-                              ? const Center(child: Text("No images available"))
-                              : ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: apartment.images!.length > 3
-                                      ? 3
-                                      : apartment.images!.length,
-                                  separatorBuilder: (context, index) =>
-                                      SizedBox(width: 15.w),
-                                  itemBuilder: (context, index) {
-                                    final bool isLast =
-                                        index == 2 && apartment.images!.length > 3;
-
-                                    return InkWell(
-                                      onTap: () => openFullScreenGallery(apartment, index),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12.r),
-                                        child: Stack(
-                                          children: [
-                                            Image.network(
-                                              apartment.images![index],
-                                              width: 100.w,
-                                              height: 110.h,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) =>
-                                                  Image.asset(AppAssets.imageC,
-                                                      width: 100.w,
-                                                      height: 110.h,
-                                                      fit: BoxFit.cover),
-                                          ),
-                                            if (isLast)
-                                              Container(
-                                                width: 100.w,
-                                                height: 110.h,
-                                                color: Colors.black.withOpacity(0.5),
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  "+${apartment.images!.length - 2}",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20.sp,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-                        SizedBox(height: 30.h),
-                        if (canRent)
-                          CustomElevatedButtom(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed(AppRoutes.bookingRoute, arguments: apartment);
-                            },
-                            text: apartment.availablePeople == 0
-                                ? "Fully Booked"
-                                : "Rent Now",
-                            width: 500.w,
-                            customPadding: 16.h,
-                            borderRadius: 12.r,
-                            backgroundColorElevated: AppColors.darkBlueColor,
-                            textStyle: AppStyles.semiBold20White,
-                          ),
-                        SizedBox(height: 30.h),
                       ],
                     ),
                   );
@@ -285,6 +131,502 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeroMedia(Apartment apartment) {
+    return SizedBox(
+      height: 330.h,
+      width: double.infinity,
+      child: Stack(
+        children: [
+          Positioned.fill(child: buildVideoPlayer(apartment)),
+          Positioned(
+            top: 16.h,
+            left: 16.w,
+            child: Material(
+              color: AppColors.darkGrayColor,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => Navigator.of(context).maybePop(),
+                child: Padding(
+                  padding: EdgeInsets.all(10.r),
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: AppColors.whiteColor,
+                    size: 18.sp,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitleInfoCard(Apartment apartment, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor =
+        isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor;
+    final surfaceColor = isDark ? AppColors.darkPrimaryColor : AppColors.whiteColor;
+    final borderColor = AppColors.detailsBorder.withOpacity(0.3);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(22.r),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryColor.withOpacity(isDark ? 0 : 0.05),
+            blurRadius: 10.r,
+            offset: Offset(0, 4.h),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  apartment.name ?? "Apartment",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: titleColor,
+                    fontFamily: AppStyles.inter,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              _buildRatingChip(apartment, isDark),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                color: isDark ? AppColors.grayColor : AppColors.detailsMutedLight,
+                size: 17.sp,
+              ),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  apartment.cityDistrictLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark ? AppColors.grayColor : AppColors.detailsMutedLight,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 17.h),
+          Divider(color: AppColors.detailsBorder.withOpacity(0.2), height: 1),
+          SizedBox(height: 17.h),
+          Row(
+            children: [
+              _buildInfoItem(
+                icon: Icons.bed_rounded,
+                value: "${apartment.bedrooms ?? 0}",
+                label: "Bedrooms",
+                theme: theme,
+              ),
+              SizedBox(width: 12.w),
+              _buildInfoItem(
+                icon: Icons.bathtub_rounded,
+                value: "${apartment.bathrooms ?? 0}",
+                label: "Bathrooms",
+                theme: theme,
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              _buildInfoItem(
+                icon: Icons.meeting_room_rounded,
+                value: "${apartment.livingRooms ?? 0}",
+                label: "Living rooms",
+                theme: theme,
+              ),
+              SizedBox(width: 12.w),
+              _buildInfoItem(
+                icon: Icons.layers_rounded,
+                value: "${apartment.floor ?? 1}",
+                label: apartment.floorLabel,
+                theme: theme,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingChip(Apartment apartment, bool isDark) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.detailsDarkAccentStrong : AppColors.detailsLightAccentSurface,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.star_rounded,
+            color: isDark ? AppColors.detailsAccentTextDark : AppColors.detailsLightAccentText,
+            size: 15.sp,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            apartment.ratingLabel,
+            style: TextStyle(
+              color: isDark ? AppColors.detailsAccentTextDark : AppColors.detailsLightAccentText,
+              fontFamily: AppStyles.inter,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String value,
+    required String label,
+    required ThemeData theme,
+  }) {
+    final isDark = theme.brightness == Brightness.dark;
+    return Expanded(
+      child: Row(
+        children: [
+          Container(
+            width: 32.w,
+            height: 32.w,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkPrimaryColor : AppColors.detailsLightBlueSurface,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              icon,
+              color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+              size: 18.sp,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: isDark ? AppColors.detailsBodyDark : AppColors.detailsBodyLight,
+                    fontFamily: AppStyles.inter,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                AutoSizeText(
+                  label,
+                  maxLines: 1,
+                  minFontSize: 8,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppColors.grayColor,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingRow(Apartment apartment, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    final rating = apartment.ratingAverage ?? 0;
+    final fullStars = rating.floor().clamp(0, 5);
+    final hasHalfStar = rating - fullStars >= 0.5 && fullStars < 5;
+    final reviewCount = apartment.ratingCount ?? 0;
+
+    return Row(
+      children: [
+        Text(
+          apartment.ratingLabel,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: isDark ? AppColors.detailsBodyDark : AppColors.detailsBodyLight,
+            fontFamily: AppStyles.inter,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Row(
+          children: List.generate(5, (index) {
+            final icon = index < fullStars
+                ? Icons.star_rounded
+                : index == fullStars && hasHalfStar
+                    ? Icons.star_half_rounded
+                    : Icons.star_border_rounded;
+            return Icon(icon, size: 18.sp, color: AppColors.starColor);
+          }),
+        ),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: Text(
+            "($reviewCount ${reviewCount == 1 ? 'review' : 'reviews'})",
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.grayColor,
+              fontFamily: AppStyles.inter,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionSection(Apartment apartment, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: [
+            _buildVerificationBadge(apartment, theme),
+            _buildPriceChip(apartment, theme),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Text(
+          "About this apartment",
+          style: theme.textTheme.headlineMedium?.copyWith(
+            color: isDark ? AppColors.detailsBodyDark : AppColors.detailsBodyLight,
+            fontFamily: AppStyles.inter,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        ReadMoreText(
+          apartment.description ?? "No description available.",
+          trimLength: 180,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: isDark ? AppColors.detailsMutedDark : AppColors.detailsMutedLight,
+            fontFamily: AppStyles.inter,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w400,
+            height: 1.6,
+          ),
+          trimMode: TrimMode.Length,
+          colorClickableText: AppColors.redColor,
+          trimCollapsedText: ' Read more',
+          trimExpandedText: ' Read less',
+          moreStyle: AppStyles.bold12Primary.copyWith(
+            color: isDark ? AppColors.whiteBlue : AppColors.primaryColor,
+          ),
+          lessStyle: AppStyles.bold12Primary.copyWith(
+            color: isDark ? AppColors.whiteBlue : AppColors.primaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceChip(Apartment apartment, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.detailsChipDark : AppColors.offWhiteColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        "EG ${apartment.price?.toStringAsFixed(0) ?? '0'}/month",
+        style: TextStyle(
+          color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+          fontFamily: AppStyles.inter,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOwnerCard(Apartment apartment, bool canRent, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.detailsChipDark : AppColors.offWhiteColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(26.r),
+          topRight: Radius.circular(39.r),
+          bottomLeft: Radius.circular(39.r),
+          bottomRight: Radius.circular(39.r),
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 27.r,
+            backgroundColor: AppColors.disabledGrayColor,
+            backgroundImage:
+                (apartment.ownerPhotoUrl != null && apartment.ownerPhotoUrl!.isNotEmpty)
+                    ? NetworkImage(apartment.ownerPhotoUrl!)
+                    : AssetImage(AppAssets.profileImage) as ImageProvider,
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  apartment.ownerName ?? "Owner",
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  "Owner",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (canRent)
+            IconButton(
+              onPressed: () => _openChat(apartment),
+              icon: Image.asset(AppAssets.messageIcon, width: 28.w),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGallerySection(Apartment apartment, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    final images = apartment.images ?? [];
+    final visibleCount = images.length > 4 ? 4 : images.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Gallery",
+          style: theme.textTheme.headlineMedium?.copyWith(
+            color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          "Take a look inside",
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: AppColors.grayColor,
+            fontSize: 12.sp,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        SizedBox(
+          height: 82.h,
+          child: images.isEmpty
+              ? Center(
+                  child: Text(
+                    "No images available",
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.grayColor,
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: visibleCount,
+                  separatorBuilder: (context, index) => SizedBox(width: 14.w),
+                  itemBuilder: (context, index) {
+                    final isLast = index == visibleCount - 1 && images.length > visibleCount;
+                    return InkWell(
+                      onTap: () => openFullScreenGallery(apartment, index),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.r),
+                        child: Stack(
+                          children: [
+                            Image.network(
+                              images[index],
+                              width: 82.w,
+                              height: 82.h,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                AppAssets.imageC,
+                                width: 82.w,
+                                height: 82.h,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            if (isLast)
+                              Container(
+                                width: 82.w,
+                                height: 82.h,
+                                color: AppColors.darkGrayColor,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "+${images.length - visibleCount + 1}",
+                                  style: TextStyle(
+                                    color: AppColors.whiteColor,
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -321,10 +663,10 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       context,
       MaterialPageRoute(
         builder: (_) => Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: AppColors.pureBlack,
           appBar: AppBar(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.pureBlack,
+            foregroundColor: AppColors.whiteColor,
             title: Text("${initialIndex + 1} / ${apartment.images!.length}"),
           ),
           body: PhotoViewGallery.builder(
@@ -337,7 +679,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               );
             },
             scrollPhysics: const BouncingScrollPhysics(),
-            backgroundDecoration: const BoxDecoration(color: Colors.black),
+            backgroundDecoration: const BoxDecoration(color: AppColors.pureBlack),
           ),
         ),
       ),
@@ -347,11 +689,14 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   Widget buildVideoPlayer(Apartment apartment) {
     if (apartment.videoUrl == null || apartment.videoUrl!.isEmpty) {
       return Container(
-        height: 220.h,
+        height: 330.h,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(24.r),
+          color: AppColors.disabledGrayColor,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(24.r),
+            bottomRight: Radius.circular(24.r),
+          ),
         ),
         child: const Center(child: Text("No video available")),
       );
@@ -359,8 +704,11 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
 
     return AppVideoPlayer.network(
       apartment.videoUrl!,
-      height: 220.h,
-      borderRadius: BorderRadius.circular(24.r),
+      height: 330.h,
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(24.r),
+        bottomRight: Radius.circular(24.r),
+      ),
     );
   }
 
@@ -464,10 +812,6 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           ),
         ],
         SizedBox(height: 10.h),
-        Align(
-          alignment: Alignment.centerRight,
-          child: _buildPriceText(apartment),
-        ),
       ],
     );
   }
@@ -490,51 +834,91 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   Widget _buildCapacityBanner(Apartment apartment, ThemeData theme) {
     final maxPeople = apartment.maxPeople ?? 1;
     final availablePeople = apartment.availablePeople ?? maxPeople;
-    final occupiedPeople = maxPeople - availablePeople;
+    final normalizedAvailable = availablePeople.clamp(0, maxPeople);
+    final occupiedPeople = (maxPeople - normalizedAvailable).clamp(0, maxPeople);
+    final progress = maxPeople == 0 ? 0.0 : normalizedAvailable / maxPeople;
     final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.addApartmentDarkField : AppColors.detailsChipLight;
+    final trackColor = isDark ? AppColors.darkPrimaryColor : AppColors.whiteColor;
+    final fillColor = isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor;
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(18.r),
+      padding: EdgeInsets.all(21.r),
       decoration: BoxDecoration(
-
-        borderRadius: BorderRadius.circular(22.r),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
-          color: theme.primaryColor.withOpacity(isDark ? 0.32 : 0.16),
+          color: AppColors.detailsBorder.withOpacity(0.2),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 50.w,
-            height: 50.w,
-            decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Icon(Icons.groups_rounded, color: theme.primaryColor, size: 28.sp),
-          ),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Living Capacity", style: theme.textTheme.labelMedium),
-                SizedBox(height: 4.h),
-                Text(
-                  "$availablePeople of $maxPeople people available",
-                  style: theme.textTheme.bodyMedium,
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Living Capacity",
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: isDark ? AppColors.detailsBodyDark : AppColors.detailsBodyLight,
+                        fontFamily: AppStyles.inter,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      "$normalizedAvailable of $maxPeople people available",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: isDark ? AppColors.detailsMutedDark : AppColors.detailsMutedLight,
+                        fontFamily: AppStyles.inter,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
                 ),
-                if (occupiedPeople > 0) ...[
-                  SizedBox(height: 4.h),
-                  Text(
-                    "$occupiedPeople ${occupiedPeople == 1 ? 'person is' : 'people are'} already renting here",
-                    style: theme.textTheme.displaySmall,
-                  ),
-                ],
-              ],
+              ),
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.detailsAccentTextDark.withOpacity(0.1)
+                      : AppColors.detailsLightAccentText.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.groups_rounded, color: fillColor, size: 26.sp),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 12.h,
+              backgroundColor: trackColor,
+              valueColor: AlwaysStoppedAnimation<Color>(fillColor),
             ),
           ),
+          if (occupiedPeople > 0) ...[
+            SizedBox(height: 12.h),
+            Text(
+              "$occupiedPeople ${occupiedPeople == 1 ? 'person is' : 'people are'} already renting here",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.detailsMutedDark : AppColors.detailsMutedLight,
+                fontFamily: AppStyles.inter,
+                fontSize: 14.sp,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -548,30 +932,53 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     final textColor = isVerified ? AppColors.primaryColor : AppColors.grayColor;
     final icon = isVerified ? Icons.verified_rounded : Icons.verified_outlined;
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18.sp, color: textColor),
-            SizedBox(width: 6.w),
-            Text(
-              isVerified ? "Verified" : "Not verified",
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: isVerified && theme.brightness == Brightness.dark
+              ? AppColors.whiteColor
+              : AppColors.transparentColor,
         ),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16.sp, color: textColor),
+          SizedBox(width: 6.w),
+          Text(
+            isVerified ? "Verified" : "Not verified",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: textColor,
+              fontFamily: AppStyles.inter,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  void _openChat(Apartment apartment) {
+    if (apartment.ownerId != null) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.chatRoute,
+        arguments: {
+          'receiverId': apartment.ownerId,
+          'receiverName': apartment.ownerName ?? "Owner",
+          'receiverPhotoUrl': apartment.ownerPhotoUrl,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Owner contact information not available")),
+      );
+    }
   }
 
   Future<void> _openInGoogleMaps({
@@ -597,3 +1004,5 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     }
   }
 }
+
+

@@ -8,6 +8,7 @@ class HomeTabStates {
   final bool isLoadingEstates;
   final LatLng? userLocation;
   final String? userAddress;
+  final List<Apartment> allApartments;
   final List<Apartment> featuredApartments;
   final List<Apartment> nearbyApartments;
   final List<DistrictSummary> topDistricts;
@@ -18,6 +19,7 @@ class HomeTabStates {
     this.isLoadingEstates = false,
     this.userLocation,
     this.userAddress,
+    this.allApartments = const [],
     this.featuredApartments = const [],
     this.nearbyApartments = const [],
     this.topDistricts = const [],
@@ -33,6 +35,7 @@ class HomeTabStates {
     bool clearUserLocation = false,
     String? userAddress,
     bool clearUserAddress = false,
+    List<Apartment>? allApartments,
     List<Apartment>? featuredApartments,
     List<Apartment>? nearbyApartments,
     List<DistrictSummary>? topDistricts,
@@ -44,6 +47,7 @@ class HomeTabStates {
       isLoadingEstates: isLoadingEstates ?? this.isLoadingEstates,
       userLocation: clearUserLocation ? null : (userLocation ?? this.userLocation),
       userAddress: clearUserAddress ? null : (userAddress ?? this.userAddress),
+      allApartments: allApartments ?? this.allApartments,
       featuredApartments: featuredApartments ?? this.featuredApartments,
       nearbyApartments: nearbyApartments ?? this.nearbyApartments,
       topDistricts: topDistricts ?? this.topDistricts,

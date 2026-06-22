@@ -4,21 +4,59 @@ import 'app_styles.dart';
 
 class AppTheme {
   static final ThemeData lightTheme = ThemeData(
-
-    scaffoldBackgroundColor: AppColors.whiteColor,
+    useMaterial3: false,
+    colorScheme: const ColorScheme.light(
+      primary: AppColors.primaryLight,
+      secondary: AppColors.blueColor,
+      surface: AppColors.whiteColor,
+      error: AppColors.redColor,
+    ),
+    scaffoldBackgroundColor: AppColors.addApartmentLightBackground,
     focusColor: AppColors.whiteColor,
     canvasColor: AppColors.whiteColor,
     primaryColor: AppColors.primaryLight,
     cardColor: AppColors.whiteColor,
     dividerColor: AppColors.grayColor,
     highlightColor: AppColors.grayColor,
-    disabledColor: AppColors.offWhiteColor,
+    disabledColor: AppColors.addApartmentLightField,
     splashColor: AppColors.redColor,
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.whiteColor,
       foregroundColor: AppColors.blackColor,
       elevation: 0,
       centerTitle: true,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.addApartmentLightField,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.primaryLight),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.redColor),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.redColor),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.whiteBlue,
+        foregroundColor: AppColors.whiteColor,
+        shadowColor: AppColors.primaryColor.withOpacity(0.3),
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+        ),
+      ),
     ),
     textTheme: TextTheme(
       headlineLarge: AppStyles.bold20black
@@ -58,21 +96,59 @@ class AppTheme {
   );
 
   static final ThemeData darkTheme = ThemeData(
-
+    useMaterial3: false,
+    colorScheme: const ColorScheme.dark(
+      primary: AppColors.whiteBlue,
+      secondary: AppColors.whiteBlue,
+      surface: AppColors.addApartmentDarkSurface,
+      error: AppColors.redColor,
+    ),
     splashColor: AppColors.whiteColor,
-    primaryColor: AppColors.whiteColor,
-    scaffoldBackgroundColor: AppColors.primaryDark,
+    primaryColor: AppColors.whiteBlue,
+    scaffoldBackgroundColor: AppColors.addApartmentDarkBackground,
     focusColor: AppColors.primaryLight,
     canvasColor: AppColors.transparentColor,
-    cardColor: AppColors.darkPrimaryColor,
+    cardColor: AppColors.addApartmentDarkSurface,
     dividerColor: AppColors.primaryLight,
     highlightColor: AppColors.whiteColor,
-    disabledColor: AppColors.darkPrimaryColor,
+    disabledColor: AppColors.addApartmentDarkField,
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.primaryDark,
+      backgroundColor: AppColors.addApartmentDarkBackground,
       foregroundColor: AppColors.whiteColor,
       elevation: 0,
       centerTitle: true,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.addApartmentDarkField,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.whiteBlue),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.redColor),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.redColor),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.whiteBlue,
+        foregroundColor: AppColors.whiteColor,
+        shadowColor: AppColors.whiteBlue.withOpacity(0.3),
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+        ),
+      ),
     ),
     textTheme: TextTheme(
       headlineLarge: AppStyles.bold20black.copyWith(color: AppColors.whiteColor),

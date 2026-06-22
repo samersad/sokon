@@ -161,7 +161,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
       height: widget.height,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: AppColors.pureBlack,
         borderRadius: widget.borderRadius ?? BorderRadius.circular(20),
       ),
       child: child,

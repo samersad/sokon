@@ -11,6 +11,7 @@ import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_st
 import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_view_model.dart';
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_states.dart';
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/home_map_screen.dart';
 
 import '../../../../../core/utils/app_styles.dart';
 import '../../../widgets/district_location_card.dart';
@@ -58,6 +59,26 @@ class _HomeTabState extends State<HomeTab> {
     await controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(target: location, zoom: 15),
+      ),
+    );
+  }
+
+  Future<void> _openHomeMap({
+    required HomeTabStates state,
+    required String? userPhotoUrl,
+  }) async {
+    if (state.userLocation == null && !state.isLoadingLocation) {
+      await viewModel.getUserLocationData();
+    }
+    if (!mounted) return;
+
+    final latestState = viewModel.state;
+    Navigator.of(context).pushNamed(
+      AppRoutes.homeMapRoute,
+      arguments: HomeMapArguments(
+        apartments: latestState.allApartments,
+        userLocation: latestState.userLocation,
+        userPhotoUrl: userPhotoUrl,
       ),
     );
   }
@@ -234,10 +255,6 @@ class _HomeTabState extends State<HomeTab> {
                     ],
                   ),
                   SizedBox(height: 20.h),
-                  SearchWidget(
-                    hintText: "Search House, Apartment, etc",
-                  ),
-                  SizedBox(height: 20.h),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: SizedBox(
@@ -263,6 +280,28 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               }
                             : {},
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton.icon(
+                      onPressed: state.isLoadingEstates
+                          ? null
+                          : () => _openHomeMap(
+                                state: state,
+                                userPhotoUrl: user?.photoUrl,
+                              ),
+                      icon: const Icon(Icons.map_outlined),
+                      label: const Text("View all apartments on map"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: AppColors.whiteColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.r),
+                        ),
                       ),
                     ),
                   ),

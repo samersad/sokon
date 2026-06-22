@@ -210,7 +210,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         Text(
                           "Select date",
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.red,
+                            color: AppColors.redMaterial,
                           ),
                         ),
                       ],
@@ -369,8 +369,14 @@ class _BookingScreenState extends State<BookingScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [const Color(0xFF132238), const Color(0xFF0F172A)]
-              : [const Color(0xFFF7FAFD), const Color(0xFFE7F0F8)],
+              ? [
+                  AppColors.addApartmentDarkGradientStart,
+                  AppColors.addApartmentDarkGradientEnd,
+                ]
+              : [
+                  AppColors.bookingLightGradientStart,
+                  AppColors.bookingLightGradientEnd,
+                ],
         ),
         borderRadius: BorderRadius.circular(18.r),
         border: Border.all(

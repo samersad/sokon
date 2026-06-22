@@ -24,6 +24,7 @@ import 'package:sokon/features/ui/pages/booking_screen/booking_screen.dart';
 import 'package:sokon/features/ui/pages/district_apartments_screen/district_apartments_screen.dart';
 import 'package:sokon/features/ui/pages/home_screen/home_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/chat_screen.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/home_map_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/my_bookings_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/owner_booking_requests/owner_booking_requests_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
@@ -178,6 +179,12 @@ class MyApp extends StatelessWidget {
               initialRoute: routeName,
               routes: {
                 AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
+                AppRoutes.homeMapRoute: (context) {
+                  final arguments =
+                      ModalRoute.of(context)!.settings.arguments
+                          as HomeMapArguments;
+                  return HomeMapScreen(arguments: arguments);
+                },
                 AppRoutes.loginRoute: (context) => const LoginScreen(),
                 AppRoutes.registerRoute: (context) => const RegisterScreen(),
                 AppRoutes.forgetPasswordRoute: (context) =>

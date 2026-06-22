@@ -62,7 +62,7 @@ class LocationViewModel extends Cubit<LocationState> {
       );
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        return "${place.name},${place.street} ,${place.subLocality}, ${place.locality}, ${place.locality}";
+        return "${place.name},${place.street} ,${place.subLocality}, ${place.locality}, ${place.country}";
       }
     } catch (e) {
       debugPrint("Error getting address: $e");

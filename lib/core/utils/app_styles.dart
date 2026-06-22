@@ -192,14 +192,14 @@ class AppStyles {
     fontFamily: poppins,
     fontSize: 13.sp,
     fontWeight: FontWeight.w700,
-    color: const Color(0xFF8C8C8C),
+    color: AppColors.grayColor,
   );
 
   static TextStyle medium13GrayWithOpacity = TextStyle(
     fontFamily: poppins,
     fontSize: 13.sp,
     fontWeight: FontWeight.w700,
-    color: const Color(0xFF1E1E1E).withOpacity(0.5),
+    color: AppColors.blackColor.withOpacity(0.5),
   );
 
   // White Styles

@@ -57,12 +57,12 @@ class _VerificationScreenState extends State<VerificationScreen>
       textStyle: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF0A3D62),
+        color: AppColors.primaryColor,
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFFB9C7D9),
+          color: AppColors.verificationBorder,
           width: 1.2,
         ),
       ),
@@ -77,7 +77,7 @@ class _VerificationScreenState extends State<VerificationScreen>
 
     submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration!.copyWith(
-        color: const Color(0xFFEAEFF3),
+        color: AppColors.verificationField,
       ),
     );
 
@@ -222,7 +222,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                         borderRadius: 30.r,
                         backgroundColorElevated: theme.primaryColor,
                         textStyle: theme.textTheme.titleLarge,
-                        borderColor: Colors.transparent,
+                        borderColor: AppColors.transparentColor,
                         customPadding: 16.h,
                       ),
                       SizedBox(height: 30.h),

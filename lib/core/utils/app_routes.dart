@@ -1,5 +1,6 @@
 class AppRoutes {
   static String homeScreenRoute = "home";
+  static String homeMapRoute = "home_map";
   static String loginRoute = "login";
   static String registerRoute = "register";
   static String forgetPasswordRoute = "forget_Password";

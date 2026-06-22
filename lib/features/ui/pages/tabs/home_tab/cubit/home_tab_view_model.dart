@@ -104,6 +104,7 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     if (isClosed) return;
     emit(state.copyWith(
       isLoadingEstates: false,
+      allApartments: allApartments,
       featuredApartments: _buildFeaturedApartments(allApartments),
       nearbyApartments: _buildNearbyApartments(
         apartments: allApartments,

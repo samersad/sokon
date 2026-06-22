@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/app_assets.dart';
+import '../../../core/utils/app_colors.dart';
 class BackContainer extends StatelessWidget {
   const BackContainer({super.key});
 
@@ -13,7 +14,7 @@ class BackContainer extends StatelessWidget {
         height: 50.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(60),
-          color: Colors.grey.shade200,
+          color: AppColors.disabledGrayColor,
         ),
         child: Image.asset(AppAssets.backArrow),
       ),

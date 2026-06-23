@@ -5,7 +5,7 @@ import '../../../../../core/model/my_user.dart';
 import '../../data_sources/remote/auth_remote_data_source.dart';
 import '../auth_repository.dart';
 
-@Injectable(as: AuthRepository)
+@LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   AuthRepositoryImpl(this.remoteDataSource);

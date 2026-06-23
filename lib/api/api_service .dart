@@ -187,6 +187,28 @@ class ApiService {
     }
   }
 
+  Future<String> verifyResetOTP({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final response = await dio.post(
+        EndPoints.passwordResetVerifyOtpApi,
+        data: {'email': email, 'otp': otp},
+      );
+      final data = response.data;
+      if (data is Map && data['resetToken'] != null) {
+        return data['resetToken'].toString();
+      }
+      throw Exception("Invalid response from server");
+    } on DioException catch (e) {
+      final serverMessage = e.response?.data?['message'];
+      throw Exception(serverMessage ?? "OTP verification failed");
+    } catch (e) {
+      throw Exception("Unexpected error: $e");
+    }
+  }
+
   Future<RegisterResponse> confirmPasswordReset({
     required String token,
     required String password,

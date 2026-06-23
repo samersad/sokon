@@ -17,7 +17,7 @@ class NearbyEstateCard extends StatelessWidget {
         context,
       ).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
       child: Container(
-        width: 168.w,
+        width: 190.w,
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
           color: theme.disabledColor,
@@ -80,6 +80,7 @@ class NearbyEstateCard extends StatelessWidget {
                         TextSpan(
                           text: "EG ${apartment.price ?? 0}/",
                           style: theme.textTheme.displaySmall,
+                          // color: theme.highlightColor
                         ),
                         TextSpan(
                           text: "month",

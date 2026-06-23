@@ -52,10 +52,10 @@ class _VerificationScreenState extends State<VerificationScreen>
     super.initState();
 
     defaultPinTheme = PinTheme(
-      width: 38.w, // Reduced width to accommodate 8 digits
-      height: 45.w,
+      width: 48.w,
+      height: 48.w,
       textStyle: const TextStyle(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.primaryColor,
       ),
@@ -163,11 +163,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                 ),
                 SizedBox(height: 12.h),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w), // Reduced padding for 8 digits
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "Enter the 8-digit code sent to:",
+                        "Enter the 6-digit code sent to:",
                         style: theme.textTheme.bodyMedium,
                       ),
                       SizedBox(height: 10.h),
@@ -185,12 +186,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                           );
                         },
                         child: Pinput(
-                          length: 8, // Set to 8 digits
+                          length: 6,
                           controller: _pinController,
                           defaultPinTheme: defaultPinTheme,
                           focusedPinTheme: focusedPinTheme,
                           submittedPinTheme: submittedPinTheme,
-                          separatorBuilder: (index) => SizedBox(width: 5.w), // Smaller separator
+                          separatorBuilder: (index) => SizedBox(width: 8.w),
                           onCompleted: (pin) => viewModel.verifyOTP(pin),
                         ),
                       ),
@@ -213,7 +214,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                       SizedBox(height: 40.h),
                       CustomElevatedButtom(
                         onPressed: () {
-                          if (_pinController.text.length == 8) {
+                          if (_pinController.text.length == 6) {
                             viewModel.verifyOTP(_pinController.text);
                           }
                         },

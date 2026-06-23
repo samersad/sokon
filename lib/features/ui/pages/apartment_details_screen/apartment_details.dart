@@ -111,9 +111,10 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                             padding: EdgeInsets.symmetric(horizontal: 20.w),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                                children: [
                                 _buildTitleInfoCard(apartment, theme),
                                 SizedBox(height: 18.h),
+                                _buildUnverifiedWarning(apartment, theme),
                                 _buildRatingRow(apartment, theme),
                                 SizedBox(height: 18.h),
                                 _buildCapacityBanner(apartment, theme),
@@ -1040,5 +1041,63 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         const SnackBar(content: Text('Could not open Google Maps')),
       );
     }
+  }
+
+  Widget _buildUnverifiedWarning(ApartmentResponse apartment, ThemeData theme) {
+    if (apartment.verified == true) {
+      return const SizedBox.shrink();
+    }
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 18.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: isDark 
+            ? AppColors.warningColor.withOpacity(0.15) 
+            : AppColors.warningColor.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: AppColors.warningColor.withOpacity(0.4),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: isDark ? AppColors.warningColor : const Color(0xFFD48D00),
+            size: 24.sp,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Not Verified",
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: isDark ? AppColors.warningColor : const Color(0xFFB57800),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "This apartment is not verified yet by Sokon administrator.",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark ? AppColors.detailsBodyDark : AppColors.detailsMutedLight,
+                    fontSize: 12.sp,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

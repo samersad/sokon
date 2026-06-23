@@ -19,6 +19,7 @@ import 'package:sokon/features/ui/pages/add_apartment/cubit/add_apartment_view_m
 import 'package:sokon/features/ui/widgets/alert_dialog_utils.dart';
 import 'package:sokon/features/ui/widgets/app_video_player.dart';
 import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
+import 'package:sokon/features/ui/widgets/labeled_info_field.dart';
 
 class EditApartment extends StatefulWidget {
   final ApartmentResponse apartment;
@@ -319,16 +320,18 @@ class _EditApartmentState extends State<EditApartment> {
       title: "Basic Information",
       child: Column(
         children: [
-          _LabeledField(
+          LabeledInfoField(
             label: "Apartment Name",
+            explanation: "Provide a clear, brief name for the apartment (e.g. 'Cozy Private Studio near Faculty of Engineering'). This will be shown in listings.",
             child: _designField(
               controller: viewModel.nameCRl,
               hintText: "e.g. Modern Studio in Downtown",
             ),
           ),
           SizedBox(height: 18.h),
-          _LabeledField(
+          LabeledInfoField(
             label: "Monthly Price (EGP)",
+            explanation: "Enter the rent price per month in Egyptian Pounds (EGP). Be precise about the price.",
             child: _designField(
               controller: viewModel.priceCRl,
               hintText: "0.00",
@@ -348,8 +351,9 @@ class _EditApartmentState extends State<EditApartment> {
             ),
           ),
           SizedBox(height: 18.h),
-          _LabeledField(
+          LabeledInfoField(
             label: "Description",
+            explanation: "Describe the property details. Mention utilities included, rules, roommate details, security deposit, and distance to universities.",
             child: _designField(
               controller: viewModel.descriptionCRl,
               hintText: "Describe the property features, view, and utilities...",
@@ -371,6 +375,7 @@ class _EditApartmentState extends State<EditApartment> {
           _StepperRow(
             icon: Icons.bed_outlined,
             label: "Bedrooms",
+            explanation: "Select the total number of private/shared bedrooms in this apartment.",
             value: viewModel.bedrooms,
             onIncrease: viewModel.increaseBedrooms,
             onDecrease: viewModel.decreaseBedrooms,
@@ -378,6 +383,7 @@ class _EditApartmentState extends State<EditApartment> {
           _StepperRow(
             icon: Icons.bathtub_outlined,
             label: "Bathrooms",
+            explanation: "Select the number of fully functional bathrooms.",
             value: viewModel.bathrooms,
             onIncrease: viewModel.increaseBathrooms,
             onDecrease: viewModel.decreaseBathrooms,
@@ -385,6 +391,7 @@ class _EditApartmentState extends State<EditApartment> {
           _StepperRow(
             icon: Icons.chair_outlined,
             label: "Living Rooms",
+            explanation: "Select the number of common/living areas.",
             value: viewModel.livingRooms,
             onIncrease: viewModel.increaseLivingRooms,
             onDecrease: viewModel.decreaseLivingRooms,
@@ -392,6 +399,7 @@ class _EditApartmentState extends State<EditApartment> {
           _StepperRow(
             icon: Icons.groups_outlined,
             label: "Living Capacity",
+            explanation: "Select the maximum number of people allowed to rent and live in this apartment together.",
             value: viewModel.maxPeople,
             onIncrease: viewModel.increaseMaxPeople,
             onDecrease: viewModel.decreaseMaxPeople,
@@ -399,6 +407,7 @@ class _EditApartmentState extends State<EditApartment> {
           _StepperRow(
             icon: Icons.stairs_outlined,
             label: "Floor",
+            explanation: "Select which floor the apartment is located on (e.g. Ground Floor = 0, First Floor = 1, etc.).",
             value: viewModel.floor,
             onIncrease: () => _setFloor(viewModel.floor + 1),
             onDecrease: () {
@@ -421,8 +430,9 @@ class _EditApartmentState extends State<EditApartment> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _LabeledField(
+              LabeledInfoField(
                 label: "Address",
+                explanation: "Enter the detailed street address, building number, and apartment number so clients can find it easily.",
                 child: _designField(
                   controller: viewModel.addressCRl,
                   hintText: "Street number and name",
@@ -466,8 +476,9 @@ class _EditApartmentState extends State<EditApartment> {
               Row(
                 children: [
                   Expanded(
-                    child: _LabeledField(
+                    child: LabeledInfoField(
                       label: "City",
+                      explanation: "Select the city where the apartment is located.",
                       child: _designField(
                         controller: viewModel.cityCRl,
                         readOnly: true,
@@ -477,8 +488,9 @@ class _EditApartmentState extends State<EditApartment> {
                   ),
                   SizedBox(width: 16.w),
                   Expanded(
-                    child: _LabeledField(
+                    child: LabeledInfoField(
                       label: "District",
+                      explanation: "Select the district or neighborhood of the apartment to help users search by proximity.",
                       child: _designField(
                         controller: viewModel.districtCRl,
                         readOnly: true,
@@ -898,40 +910,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _LabeledField extends StatelessWidget {
-  const _LabeledField({
-    required this.label,
-    required this.child,
-  });
-
-  final String label;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
-          child: Text(
-            label,
-            style: (theme.textTheme.bodyMedium ?? AppStyles.regular15black)
-                .copyWith(
-              color: theme.highlightColor,
-              fontWeight: FontWeight.w500,
-              fontSize: 16.sp,
-            ),
-          ),
-        ),
-        child,
-      ],
-    );
-  }
-}
-
 class _StepperRow extends StatelessWidget {
   const _StepperRow({
     required this.icon,
@@ -939,6 +917,7 @@ class _StepperRow extends StatelessWidget {
     required this.value,
     required this.onIncrease,
     required this.onDecrease,
+    this.explanation,
     this.isLast = false,
   });
 
@@ -947,6 +926,7 @@ class _StepperRow extends StatelessWidget {
   final int value;
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
+  final String? explanation;
   final bool isLast;
 
   @override
@@ -959,15 +939,40 @@ class _StepperRow extends StatelessWidget {
       padding: EdgeInsets.only(bottom: isLast ? 0 : 16.h),
       child: Row(
         children: [
-          Icon(icon, color: theme.highlightColor, size: 23.sp),
+          Icon(
+            icon,
+            color: theme.highlightColor,
+            size: 23.sp,
+          ),
           SizedBox(width: 12.w),
           Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: (theme.textTheme.bodyMedium ?? AppStyles.regular15black)
-                  .copyWith(fontSize: 16.sp),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: (theme.textTheme.bodyMedium ?? AppStyles.regular15black)
+                        .copyWith(
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                ),
+                if (explanation != null && explanation!.isNotEmpty) ...[
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    onTap: () => _showExplanationDialog(context),
+                    child: Icon(
+                      Icons.info_outline,
+                      color: isDark ? AppColors.whiteColor.withOpacity(0.6) : AppColors.primaryColor,
+                      size: 16.sp,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           Container(
@@ -978,9 +983,10 @@ class _StepperRow extends StatelessWidget {
                   isDark ? theme.disabledColor : AppColors.addApartmentLightField,
               borderRadius: BorderRadius.circular(22.r),
               border: Border.all(
-                color: isDark
-                    ? theme.highlightColor
-                    : AppColors.addApartmentSoftBorder,
+                color:
+                    isDark
+                        ? theme.highlightColor
+                        : AppColors.addApartmentSoftBorder,
               ),
             ),
             child: Row(
@@ -1002,6 +1008,55 @@ class _StepperRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showExplanationDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          backgroundColor: theme.cardColor,
+          title: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: AppColors.primaryColor,
+                size: 24.sp,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  label,
+                  style: (theme.textTheme.titleMedium ?? AppStyles.medium16black)
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            explanation!,
+            style: (theme.textTheme.bodyMedium ?? AppStyles.regular14gray).copyWith(
+              color: theme.highlightColor.withOpacity(0.8),
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                "Got it",
+                style: AppStyles.bold14Primary,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

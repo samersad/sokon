@@ -68,7 +68,7 @@ import 'package:sokon/features/ui/pages/home_screen/cubit/home_screen_view_model
 import 'package:sokon/features/ui/pages/nearby_estate_screen/cubit/nearby_estate_view_model.dart'
     as _i1039;
 import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_view_model.dart'
-    as _i730;
+    as _i739;
 import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart'
     as _i244;
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/chat_view_model.dart'
@@ -79,6 +79,8 @@ import 'package:sokon/features/ui/pages/tabs/profile_tab/cubit/profile_view_mode
     as _i951;
 import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/cubit/my_bookings_view_model.dart'
     as _i442;
+import 'package:sokon/features/ui/pages/tabs/profile_tab/owner_booking_requests/cubit/owner_booking_requests_view_model.dart'
+    as _i543;
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/cubit/settings_view_model.dart'
     as _i954;
 import 'package:sokon/features/ui/pages/tabs/search_tab/cubit/search_view_model.dart'
@@ -96,11 +98,15 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i964.ApartmentDetailsViewModel(),
     );
     gh.factory<_i286.HomeScreenViewModel>(() => _i286.HomeScreenViewModel());
-    gh.lazySingleton<_i71.LocationViewModel>(() => _i71.LocationViewModel());
-    gh.lazySingleton<_i730.NotificationViewModel>(
-      () => _i730.NotificationViewModel(),
+    gh.factory<_i442.MyBookingsViewModel>(() => _i442.MyBookingsViewModel());
+    gh.factory<_i543.OwnerBookingRequestsViewModel>(
+      () => _i543.OwnerBookingRequestsViewModel(),
     );
+    gh.lazySingleton<_i71.LocationViewModel>(() => _i71.LocationViewModel());
     gh.lazySingleton<_i910.UserViewModel>(() => _i910.UserViewModel());
+    gh.lazySingleton<_i739.NotificationViewModel>(
+      () => _i739.NotificationViewModel(),
+    );
     gh.factory<_i309.ApartmentRemoteDataSource>(
       () => _i268.ApartmentRemoteDataImpl(),
     );
@@ -111,8 +117,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i916.BookingRepositoryImpl(gh<_i7.BookingRemoteDataSource>()),
     );
     gh.factory<_i1008.ChatRemoteDataSource>(() => _i138.ChatRemoteDataImpl());
-    gh.factory<_i437.AuthRemoteDataSource>(() => _i691.AuthRemoteDataImpl());
-    gh.factory<_i977.AuthRepository>(
+    gh.lazySingleton<_i437.AuthRemoteDataSource>(
+      () => _i691.AuthRemoteDataImpl(),
+    );
+    gh.lazySingleton<_i977.AuthRepository>(
       () => _i841.AuthRepositoryImpl(gh<_i437.AuthRemoteDataSource>()),
     );
     gh.factory<_i186.BookingViewModel>(
@@ -132,9 +140,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i139.ApartmentRepository>(
       () => _i57.ApartmentRepositoryImpl(gh<_i309.ApartmentRemoteDataSource>()),
-    );
-    gh.factory<_i442.MyBookingsViewModel>(
-      () => _i442.MyBookingsViewModel(),
     );
     gh.factory<_i951.ProfileViewModel>(
       () => _i951.ProfileViewModel(

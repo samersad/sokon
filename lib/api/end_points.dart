@@ -5,6 +5,7 @@ class EndPoints {
   static const String meApi = "/auth/me";
   static const String logoutApi = "/auth/logout";
   static const String passwordResetApi = "/auth/password-reset";
+  static const String passwordResetVerifyOtpApi = "/auth/password-reset/verify-otp";
   static const String passwordResetConfirmApi = "/auth/password-reset/confirm";
   static const String passwordApi = "/auth/password";
   static const String deleteAccountApi = "/auth/account";

@@ -12,7 +12,7 @@ import 'package:sokon/core/services/firebase_cloud_messaging.dart';
 import '../../../../../../core/model/my_user.dart';
 import '../auth_remote_data_source.dart';
 
-@Injectable(as: AuthRemoteDataSource)
+@LazySingleton(as: AuthRemoteDataSource)
 class AuthRemoteDataImpl implements AuthRemoteDataSource {
   SupabaseClient get _client => Supabase.instance.client;
   final ApiService _apiService = ApiService();
@@ -261,7 +261,10 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> verifyOTP(String email, String token) async {
-    _passwordResetToken = token;
+    _passwordResetToken = await _apiService.verifyResetOTP(
+      email: email,
+      otp: token,
+    );
   }
 
   @override

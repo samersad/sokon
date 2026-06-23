@@ -19,9 +19,9 @@ class FeaturedEstatesCard extends StatelessWidget {
       ).pushNamed(AppRoutes.apartmentDetailsRoute, arguments: apartment),
 
       child: SizedBox(
-        height: 150.h,
+        height: 175.h,
         child: Container(
-          width: 270.w,
+          width: 310.w,
           padding: EdgeInsets.all(10.w),
           decoration: BoxDecoration(
             color: theme.disabledColor,
@@ -34,20 +34,22 @@ class FeaturedEstatesCard extends StatelessWidget {
                 child: apartment.images != null && apartment.images!.isNotEmpty
                     ? Image.network(
                         apartment.images![0],
-                        width: 120.w,
-                        height: 130.h,
+                        width: 140.w,
+                        height: 155.h,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
                             Image.asset(
                               AppAssets.image,
-                              width: 120.w,
-                              fit: BoxFit.fill,
+                              width: 140.w,
+                              height: 155.h,
+                              fit: BoxFit.cover,
                             ),
                       )
                     : Image.asset(
                         AppAssets.image,
-                        width: 120.w,
-                        fit: BoxFit.fill,
+                        width: 140.w,
+                        height: 155.h,
+                        fit: BoxFit.cover,
                       ),
               ),
               SizedBox(width: 10.w),

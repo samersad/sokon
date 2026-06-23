@@ -62,18 +62,17 @@ class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
                           if (state.apartments.isEmpty) {
                             return const Center(child: Text("No featured apartments found"));
                           }
-                          return SizedBox(
-                            height: 859.h,
-                            child: ListView.separated(
-                              itemCount: state.apartments.length,
-                              separatorBuilder: (context, index) =>
-                                  SizedBox(height: 10.h),
-                              itemBuilder: (context, index) {
-                                return FeaturedEstatesCard(
-                                  apartment: state.apartments[index],
-                                );
-                              },
-                            ),
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: state.apartments.length,
+                            separatorBuilder: (context, index) =>
+                                SizedBox(height: 10.h),
+                            itemBuilder: (context, index) {
+                              return FeaturedEstatesCard(
+                                apartment: state.apartments[index],
+                              );
+                            },
                           );
                         }
                         return const SizedBox.shrink();

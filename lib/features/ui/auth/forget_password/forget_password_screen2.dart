@@ -34,19 +34,30 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
       child: BlocConsumer<ForgetPasswordViewModel, ForgetPasswordState>(
         listener: (context, state) {
           if (state is ForgetPasswordLoading) {
-            AlertDialogUtils.showLoading(context: context, msg: "Updating password...");
+            AlertDialogUtils.showLoading(
+              context: context,
+              msg: "Updating password...",
+            );
           } else if (state is ForgetPasswordError) {
             AlertDialogUtils.hideLoading(context: context);
-            AlertDialogUtils.showMessage(context: context, msg: state.message, title: "Error");
+            AlertDialogUtils.showMessage(
+              context: context,
+              msg: state.message,
+              title: "Error",
+            );
           } else if (state is ResetPasswordSuccess) {
             AlertDialogUtils.hideLoading(context: context);
             AlertDialogUtils.showMessage(
               context: context,
-              msg: "Password reset successfully. Please login with your new password.",
+              msg:
+                  "Password reset successfully. Please login with your new password.",
               title: "Success",
               pos: Text("Login", style: AppStyles.bold12PrimaryColor),
               posAction: () {
-                Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.loginRoute, (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.loginRoute,
+                  (route) => false,
+                );
               },
             );
           }
@@ -62,8 +73,14 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                     children: [
                       Image.asset(AppAssets.forgetBg),
                       Padding(
-                        padding: EdgeInsets.symmetric(vertical: 70.h, horizontal: 15.w),
-                        child: Text("New Password", style: theme.textTheme.headlineMedium),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 70.h,
+                          horizontal: 15.w,
+                        ),
+                        child: Text(
+                          "New Password",
+                          style: theme.textTheme.headlineMedium,
+                        ),
                       ),
                     ],
                   ),
@@ -78,7 +95,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                           SizedBox(height: 20.h),
                           CustomTextFormField(
                             controller: passwordCtrl,
-                            hintStyle: theme.textTheme.titleLarge,
+                            hintStyle: theme.textTheme.bodyMedium,
                             hintText: "New Password",
                             obscureText: viewModel.hidePassword,
                             suffixIconName: IconButton(
@@ -93,7 +110,8 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                             ),
                             fillColor: theme.disabledColor,
                             borderSideColor: theme.highlightColor,
-                            validator: (val) => AppValidators.validatePassword(val),
+                            validator: (val) =>
+                                AppValidators.validatePassword(val),
                           ),
                           SizedBox(height: 20.h),
                           CustomTextFormField(
@@ -113,7 +131,11 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                             ),
                             fillColor: theme.disabledColor,
                             borderSideColor: theme.highlightColor,
-                            validator: (val) => AppValidators.validateConfirmPassword(val, passwordCtrl.text),
+                            validator: (val) =>
+                                AppValidators.validateConfirmPassword(
+                                  val,
+                                  passwordCtrl.text,
+                                ),
                           ),
                           SizedBox(height: 70.h),
                           CustomElevatedButtom(

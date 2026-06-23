@@ -251,7 +251,7 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                   SizedBox(height: 10.h),
                   SizedBox(
-                    height: 185.h,
+                    height: 210.h,
                     child: _buildFeaturedSection(
                       isLoading: state.isLoadingEstates,
                       apartments: featuredApartments,
@@ -326,7 +326,7 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                   SizedBox(height: 10.h),
                   SizedBox(
-                    height: 285.h,
+                    height: 315.h,
                     child: _buildNearbySection(
                       isLoading: state.isLoadingEstates,
                       apartments: nearbyApartments,
@@ -364,8 +364,8 @@ class _HomeTabState extends State<HomeTab> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                     child: Text(
-                      "Select University",
-                      style: theme.textTheme.headlineSmall,
+                      "Select your University to get the apartment near by your University ",
+                      style: theme.textTheme.bodyMedium,
                     ),
                   ),
                   ...UniversityLocations.all.map((university) {

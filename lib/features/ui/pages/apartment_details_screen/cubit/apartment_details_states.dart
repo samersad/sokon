@@ -1,4 +1,4 @@
-import '../../../../../core/model/apartment.dart';
+import '../../../../../core/model/ApartmentResponse.dart';
 
 abstract class ApartmentDetailsStates {}
 
@@ -7,7 +7,7 @@ class ApartmentDetailsInitial extends ApartmentDetailsStates {}
 class ApartmentDetailsLoading extends ApartmentDetailsStates {}
 
 class ApartmentDetailsSuccess extends ApartmentDetailsStates {
-  final Apartment apartment;
+  final ApartmentResponse apartment;
   ApartmentDetailsSuccess(this.apartment);
 }
 

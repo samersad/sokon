@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/model/booking.dart';
 import '../../../../../data/repository/booking/repository/booking_repository.dart';
 import 'booking_states.dart';
@@ -55,7 +55,7 @@ class BookingViewModel extends Cubit<BookingStates> {
     return "${format.format(state.selectedDate!.start)} - ${format.format(state.selectedDate!.end)}";
   }
 
-  Future<void> confirmBooking(Apartment apartment) async {
+  Future<void> confirmBooking(ApartmentResponse apartment) async {
     if (state.selectedDate == null) {
       emit(
         state.copyWith(

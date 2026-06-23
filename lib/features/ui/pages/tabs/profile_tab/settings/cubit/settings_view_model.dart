@@ -45,7 +45,7 @@ class SettingsViewModel extends Cubit<SettingsState> {
 
     emit(SettingsLoading());
     try {
-      final updatedUser = await authRepository.updateProfile(
+      final updatedUser = await authRepository.updateProfileWithBackend(
         user,
         name,
         phoneNumber,

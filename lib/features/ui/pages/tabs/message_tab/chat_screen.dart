@@ -29,10 +29,13 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   late String receiverId;
   late String receiverName;
+  late String chatId;
   String? receiverPhotoUrl;
   late ChatViewModel viewModel;
   bool isInitialized = false;
   bool _isSendingPhoto = false;
+  bool _shouldUpsertChat = false;
+  List<Map<String, dynamic>> _lastMessages = [];
 
   @override
   void didChangeDependencies() {
@@ -44,11 +47,39 @@ class _ChatScreenState extends State<ChatScreen> {
       receiverPhotoUrl = args['receiverPhotoUrl'];
 
       final senderId = context.read<UserViewModel>().user?.id ?? '';
-      String chatId = getChatId(senderId, receiverId);
+      final providedChatId = args['chatId'] as String?;
+      _shouldUpsertChat = providedChatId?.trim().isNotEmpty != true;
+      chatId = providedChatId?.trim().isNotEmpty == true
+          ? providedChatId!
+          : getChatId(senderId, receiverId);
 
       viewModel = getIt<ChatViewModel>();
-      viewModel.getMessages(chatId);
+      _initializeChat(senderId);
       isInitialized = true;
+    }
+  }
+
+  Future<void> _initializeChat(String senderId) async {
+    final userViewModel = context.read<UserViewModel>();
+    final senderName = userViewModel.user?.name ?? 'User';
+    final senderPhotoUrl = userViewModel.user?.photoUrl;
+
+    try {
+      if (_shouldUpsertChat) {
+        await viewModel.upsertChat(
+          chatId: chatId,
+          senderId: senderId,
+          senderName: senderName,
+          senderPhotoUrl: senderPhotoUrl,
+          receiverId: receiverId,
+          receiverName: receiverName,
+          receiverPhotoUrl: receiverPhotoUrl,
+        );
+      }
+      if (!mounted) return;
+      viewModel.getMessages(chatId);
+    } catch (_) {
+      // The cubit already emits the API error.
     }
   }
 
@@ -69,11 +100,27 @@ class _ChatScreenState extends State<ChatScreen> {
     final senderId = userViewModel.user?.id ?? '';
     final senderName = userViewModel.user?.name ?? 'User';
     final senderPhotoUrl = userViewModel.user?.photoUrl;
-    String chatId = getChatId(senderId, receiverId);
 
-    return BlocBuilder<ChatViewModel, ChatState>(
+    return BlocConsumer<ChatViewModel, ChatState>(
       bloc: viewModel,
+      listener: (context, state) {
+        if (state is ChatError) {
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                duration: const Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+        }
+      },
       builder: (context, state) {
+        if (state is ChatMessagesLoaded) {
+          _lastMessages = state.messages;
+        }
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(onPressed: (){
@@ -105,35 +152,32 @@ class _ChatScreenState extends State<ChatScreen> {
                   builder: (context) {
                     if (state is ChatLoading) {
                       return const Center(child: CircularProgressIndicator());
-                    } else if (state is ChatError) {
-                      return Center(child: Text("Error: ${state.message}", style: theme.textTheme.bodyMedium));
-                    } else if (state is ChatMessagesLoaded) {
-                      final messages = state.messages;
-                      if (messages.isEmpty) {
-                        return Center(
-                          child: Text(
-                            "Start the conversation",
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                        );
-                      }
+                    }
 
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _scrollToBottom();
-                      });
-
-                      return ListView.builder(
-                        controller: _scrollController,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final data = messages[index];
-                          final isMe = data['senderId'] == senderId;
-                          return _buildMessageItem(data, isMe);
-                        },
+                    final messages = _lastMessages;
+                    if (messages.isEmpty) {
+                      return Center(
+                        child: Text(
+                          "Start the conversation",
+                          style: theme.textTheme.bodyMedium,
+                        ),
                       );
                     }
-                    return const SizedBox.shrink();
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _scrollToBottom();
+                    });
+
+                    return ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final data = messages[index];
+                        final isMe = data['senderId'] == senderId;
+                        return _buildMessageItem(data, isMe);
+                      },
+                    );
                   }
                 ),
               ),

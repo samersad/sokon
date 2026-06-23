@@ -1,15 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../../core/model/apartment.dart';
+import '../../../../../core/model/ApartmentResponse.dart';
 import 'apartment_details_states.dart';
 
 @injectable
 class ApartmentDetailsViewModel extends Cubit<ApartmentDetailsStates> {
   ApartmentDetailsViewModel() : super(ApartmentDetailsInitial());
 
-  Apartment? apartment;
+  ApartmentResponse? apartment;
 
-  void initApartment(Apartment apartment) {
+  void initApartment(ApartmentResponse apartment) {
     this.apartment = apartment;
     emit(ApartmentDetailsLoading());
     try {

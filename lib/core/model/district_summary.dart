@@ -1,8 +1,8 @@
-import 'apartment.dart';
+import 'ApartmentResponse.dart';
 
 class DistrictSummary {
   final String district;
-  final List<Apartment> apartments;
+  final List<ApartmentResponse> apartments;
 
   const DistrictSummary({
     required this.district,
@@ -12,19 +12,19 @@ class DistrictSummary {
   int get apartmentCount => apartments.length;
 }
 
-List<DistrictSummary> buildDistrictSummaries(List<Apartment> apartments) {
-  final Map<String, List<Apartment>> groupedApartments = {};
+List<DistrictSummary> buildDistrictSummaries(List<ApartmentResponse> apartments) {
+  final Map<String, List<ApartmentResponse>> groupedApartments = {};
 
   for (final apartment in apartments) {
     final district = _resolveDistrictName(apartment.district);
-    groupedApartments.putIfAbsent(district, () => <Apartment>[]).add(apartment);
+    groupedApartments.putIfAbsent(district, () => <ApartmentResponse>[]).add(apartment);
   }
 
   final summaries = groupedApartments.entries
       .map(
         (entry) => DistrictSummary(
           district: entry.key,
-          apartments: List<Apartment>.unmodifiable(entry.value),
+          apartments: List<ApartmentResponse>.unmodifiable(entry.value),
         ),
       )
       .toList();

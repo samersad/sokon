@@ -1,10 +1,10 @@
-import '../../model/apartment.dart';
+import '../../model/ApartmentResponse.dart';
 
 abstract class ApartmentState {}
 class ApartmentInitial extends ApartmentState {}
 class ApartmentLoading extends ApartmentState {}
 class ApartmentLoaded extends ApartmentState {
-  final List<Apartment> apartments;
+  final List<ApartmentResponse> apartments;
   ApartmentLoaded(this.apartments);
 }
 class ApartmentError extends ApartmentState {

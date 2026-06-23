@@ -1,5 +1,5 @@
 import 'dart:io';
-import '../../../../../../../core/model/my_user.dart';
+import '../../../../../../../core/model/RegisterResponse.dart';
 
 abstract class SettingsState {}
 
@@ -13,7 +13,7 @@ class SettingsImagePicked extends SettingsState {
 }
 
 class SettingsSuccess extends SettingsState {
-  final MyUser user;
+  final RegisterUser user;
   SettingsSuccess(this.user);
 }
 

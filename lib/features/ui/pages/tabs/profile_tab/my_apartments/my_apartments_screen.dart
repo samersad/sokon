@@ -23,8 +23,9 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<UserViewModel>().user;
-      if (user != null) {
-        context.read<ApartmentViewModel>().getAllApartmentForOwner(user.id);
+      final userId = user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        context.read<ApartmentViewModel>().getAllApartmentForOwner(userId);
       }
     });
   }
@@ -435,11 +436,12 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
           ElevatedButton(
             onPressed: () {
               final user = context.read<UserViewModel>().user;
-              if (user != null) {
+              final userId = user?.id;
+              if (userId != null && userId.isNotEmpty) {
                 context.read<ApartmentViewModel>().deleteApartment(
-                  apartmentId,
-                  user.id,
-                );
+                      apartmentId,
+                      userId,
+                    );
               }
               Navigator.pop(context);
             },

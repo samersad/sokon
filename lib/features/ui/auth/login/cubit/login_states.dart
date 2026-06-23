@@ -1,4 +1,4 @@
-import '../../../../../core/model/my_user.dart';
+import '../../../../../core/model/RegisterResponse.dart';
 
 abstract class LoginStates {}
 
@@ -12,12 +12,12 @@ class LoginErrorStates extends LoginStates {
 }
 
 class LoginSuccessStates extends LoginStates {
-  final MyUser user;
+  final RegisterUser user;
   LoginSuccessStates(this.user);
 }
 
 class LoginNeedsRoleStates extends LoginStates {
-  final MyUser user;
+  final RegisterUser user;
   LoginNeedsRoleStates(this.user);
 }
 

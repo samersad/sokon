@@ -6,6 +6,8 @@ class ProfileLoading extends ProfileStates {}
 
 class ProfileLogoutSuccess extends ProfileStates {}
 
+class ProfileDeleteAccountSuccess extends ProfileStates {}
+
 class ProfileError extends ProfileStates {
   final String message;
   ProfileError(this.message);

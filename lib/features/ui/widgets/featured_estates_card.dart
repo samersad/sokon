@@ -1,13 +1,13 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 
 import '../../../core/utils/app_assets.dart';
 import '../../../core/utils/app_routes.dart';
 
 class FeaturedEstatesCard extends StatelessWidget {
-  final Apartment apartment;
+  final ApartmentResponse apartment;
   const FeaturedEstatesCard({super.key, required this.apartment});
 
   @override

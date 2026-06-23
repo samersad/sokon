@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
@@ -19,7 +19,7 @@ class HomeMapArguments {
     required this.userPhotoUrl,
   });
 
-  final List<Apartment> apartments;
+  final List<ApartmentResponse> apartments;
   final LatLng? userLocation;
   final String? userPhotoUrl;
 }
@@ -40,7 +40,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
   Set<Marker> _markers = const {};
   bool _isLoadingMarkers = true;
 
-  List<Apartment> get _apartmentsWithLocation {
+  List<ApartmentResponse> get _apartmentsWithLocation {
     return widget.arguments.apartments
         .where((apartment) => apartment.lat != null && apartment.lng != null)
         .toList();

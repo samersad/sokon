@@ -5,7 +5,8 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../../core/cache/cubit_manger/apartment_view_model.dart';
 import '../../../../../../core/cache/cubit_manger/location_view_model.dart';
-import '../../../../../../core/model/apartment.dart';
+import '../../../../../../core/constants/university_locations.dart';
+import '../../../../../../core/model/ApartmentResponse.dart';
 import '../../../../../../core/model/district_summary.dart';
 import 'home_tab_states.dart';
 
@@ -20,81 +21,36 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
   Future<void> loadHomeData() async {
     if (isClosed) return;
     emit(state.copyWith(
-      isLoadingLocation: true,
       isLoadingEstates: true,
       clearErrorMessage: true,
     ));
 
     try {
-      await Future.wait([
-        _loadUserLocation(),
-        _loadApartments(),
-      ]);
+      await _loadApartments();
     } catch (e) {
       if (isClosed) return;
       emit(state.copyWith(
-        isLoadingLocation: false,
         isLoadingEstates: false,
         errorMessage: e.toString(),
       ));
     }
   }
 
-  Future<void> getUserLocationData() async {
+  /// Called when the user selects a different university from the selector.
+  void selectUniversity(University university) {
     if (isClosed) return;
     emit(state.copyWith(
-      isLoadingLocation: true,
-      clearErrorMessage: true,
-    ));
-
-    try {
-      await _loadUserLocation();
-    } catch (e) {
-      if (isClosed) return;
-      emit(state.copyWith(
-        isLoadingLocation: false,
-        errorMessage: e.toString(),
-      ));
-    }
-  }
-
-  void refreshUserLocation() {
-    final userLocation = locationViewModel.userLocation;
-    final userAddress = locationViewModel.userAddress;
-
-    if (isClosed) return;
-    emit(state.copyWith(
-      isLoadingLocation: false,
-      userLocation: userLocation,
-      userAddress: userAddress,
+      selectedUniversity: university,
       nearbyApartments: _buildNearbyApartments(
-        apartments: apartmentViewModel.apartmentList,
-        userLocation: userLocation,
+        apartments: state.allApartments,
+        referenceLocation: university.location,
       ),
-      clearErrorMessage: true,
     ));
   }
 
   void clearErrorMessage() {
     if (isClosed) return;
     emit(state.copyWith(clearErrorMessage: true));
-  }
-
-  Future<void> _loadUserLocation() async {
-    await locationViewModel.getCurrentLocation();
-    final userLocation = locationViewModel.userLocation;
-    final userAddress = locationViewModel.userAddress;
-
-    if (isClosed) return;
-    emit(state.copyWith(
-      isLoadingLocation: false,
-      userLocation: userLocation,
-      userAddress: userAddress,
-      nearbyApartments: _buildNearbyApartments(
-        apartments: apartmentViewModel.apartmentList,
-        userLocation: userLocation,
-      ),
-    ));
   }
 
   Future<void> _loadApartments() async {
@@ -108,14 +64,14 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
       featuredApartments: _buildFeaturedApartments(allApartments),
       nearbyApartments: _buildNearbyApartments(
         apartments: allApartments,
-        userLocation: state.userLocation,
+        referenceLocation: state.selectedUniversity.location,
       ),
       topDistricts: _buildTopDistricts(allApartments),
     ));
   }
 
-  List<Apartment> _buildFeaturedApartments(List<Apartment> apartments) {
-    final featured = List<Apartment>.from(apartments);
+  List<ApartmentResponse> _buildFeaturedApartments(List<ApartmentResponse> apartments) {
+    final featured = List<ApartmentResponse>.from(apartments);
     featured.sort((a, b) {
       final aDate = a.createdAt;
       final bDate = b.createdAt;
@@ -127,32 +83,28 @@ class HomeTabViewModel extends Cubit<HomeTabStates> {
     return featured.take(5).toList();
   }
 
-  List<DistrictSummary> _buildTopDistricts(List<Apartment> apartments) {
+  List<DistrictSummary> _buildTopDistricts(List<ApartmentResponse> apartments) {
     return buildDistrictSummaries(apartments).take(5).toList();
   }
 
-  List<Apartment> _buildNearbyApartments({
-    required List<Apartment> apartments,
-    required LatLng? userLocation,
+  List<ApartmentResponse> _buildNearbyApartments({
+    required List<ApartmentResponse> apartments,
+    required LatLng referenceLocation,
   }) {
-    if (userLocation == null) {
-      return apartments.take(5).toList();
-    }
-
     final nearby = apartments
         .where((apartment) => apartment.lat != null && apartment.lng != null)
         .toList();
 
     nearby.sort((a, b) {
       final distanceA = Geolocator.distanceBetween(
-        userLocation.latitude,
-        userLocation.longitude,
+        referenceLocation.latitude,
+        referenceLocation.longitude,
         a.lat!,
         a.lng!,
       );
       final distanceB = Geolocator.distanceBetween(
-        userLocation.latitude,
-        userLocation.longitude,
+        referenceLocation.latitude,
+        referenceLocation.longitude,
         b.lat!,
         b.lng!,
       );

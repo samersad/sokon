@@ -1,24 +1,24 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../../../../../core/model/apartment.dart';
+import '../../../../../../core/constants/university_locations.dart';
+import '../../../../../../core/model/ApartmentResponse.dart';
 import '../../../../../../core/model/district_summary.dart';
 
 class HomeTabStates {
-  final bool isLoadingLocation;
   final bool isLoadingEstates;
-  final LatLng? userLocation;
-  final String? userAddress;
-  final List<Apartment> allApartments;
-  final List<Apartment> featuredApartments;
-  final List<Apartment> nearbyApartments;
+  final University selectedUniversity;
+  final List<ApartmentResponse> allApartments;
+  final List<ApartmentResponse> featuredApartments;
+  final List<ApartmentResponse> nearbyApartments;
   final List<DistrictSummary> topDistricts;
   final String? errorMessage;
 
   const HomeTabStates({
-    this.isLoadingLocation = false,
     this.isLoadingEstates = false,
-    this.userLocation,
-    this.userAddress,
+    this.selectedUniversity = const University(
+      name: 'Assiut University',
+      location: LatLng(27.187452436450204, 31.170279713778406),
+    ),
     this.allApartments = const [],
     this.featuredApartments = const [],
     this.nearbyApartments = const [],
@@ -26,27 +26,23 @@ class HomeTabStates {
     this.errorMessage,
   });
 
-  factory HomeTabStates.initial() => const HomeTabStates();
+  factory HomeTabStates.initial() => HomeTabStates(
+        selectedUniversity: UniversityLocations.defaultUniversity,
+      );
 
   HomeTabStates copyWith({
-    bool? isLoadingLocation,
     bool? isLoadingEstates,
-    LatLng? userLocation,
-    bool clearUserLocation = false,
-    String? userAddress,
-    bool clearUserAddress = false,
-    List<Apartment>? allApartments,
-    List<Apartment>? featuredApartments,
-    List<Apartment>? nearbyApartments,
+    University? selectedUniversity,
+    List<ApartmentResponse>? allApartments,
+    List<ApartmentResponse>? featuredApartments,
+    List<ApartmentResponse>? nearbyApartments,
     List<DistrictSummary>? topDistricts,
     String? errorMessage,
     bool clearErrorMessage = false,
   }) {
     return HomeTabStates(
-      isLoadingLocation: isLoadingLocation ?? this.isLoadingLocation,
       isLoadingEstates: isLoadingEstates ?? this.isLoadingEstates,
-      userLocation: clearUserLocation ? null : (userLocation ?? this.userLocation),
-      userAddress: clearUserAddress ? null : (userAddress ?? this.userAddress),
+      selectedUniversity: selectedUniversity ?? this.selectedUniversity,
       allApartments: allApartments ?? this.allApartments,
       featuredApartments: featuredApartments ?? this.featuredApartments,
       nearbyApartments: nearbyApartments ?? this.nearbyApartments,

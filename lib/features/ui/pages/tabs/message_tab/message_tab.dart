@@ -7,7 +7,6 @@ import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/message_states.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/message_view_model.dart';
 import 'package:sokon/features/ui/widgets/search_widget.dart';
-import 'package:sokon/supabase_utils.dart';
 
 import '../../../../../core/utils/app_assets.dart';
 import '../../../../../core/utils/app_colors.dart';
@@ -27,8 +26,9 @@ class _MessageTabState extends State<MessageTab> {
   void initState() {
     super.initState();
     final user = context.read<UserViewModel>().user;
-    if (user != null) {
-      viewModel.getChats(user.id);
+    final userId = user?.id;
+    if (userId != null && userId.isNotEmpty) {
+      viewModel.getChats(userId);
     }
   }
 
@@ -57,11 +57,13 @@ class _MessageTabState extends State<MessageTab> {
                     child: Builder(
                       builder: (context) {
                         if (state is MessageLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
                         if (state is MessageError) {
                           return Center(
-                              child: Text("Error loading chats: ${state.message}"));
+                              child:
+                                  Text("Error loading chats: ${state.message}"));
                         }
                         if (state is MessageLoaded) {
                           if (state.chats.isEmpty) {
@@ -76,56 +78,45 @@ class _MessageTabState extends State<MessageTab> {
                                 SizedBox(height: 10.h),
                             itemBuilder: (context, index) {
                               var chatData = chats[index];
+                              final chatId = chatData['id']?.toString() ?? '';
                               List users = chatData['users'] ?? [];
                               String receiverId = users.firstWhere(
-                                  (id) => id != userId,
-                                  orElse: () => '');
+                                (id) => id != userId,
+                                orElse: () => userId,
+                              );
 
-                              return FutureBuilder(
-                                  future: SupabaseUtils.readUserFromSupabase(receiverId),
-                                  builder: (context, userSnapshot) {
-                                    String displayName = "User";
-                                    String? photoUrl;
+                              final displayNames =
+                                  chatData['displayNames'] as Map?;
+                              final displayPhotos =
+                                  chatData['displayPhotos'] as Map?;
+                              final displayName = displayNames?[receiverId] ??
+                                  (receiverId == userId ? "Saved chat" : "User");
+                              final photoUrl = displayPhotos?[receiverId];
+                              final lastMessage =
+                                  (chatData['lastMessage'] as String? ?? "")
+                                      .trim();
+                              final lastMessageType =
+                                  chatData['lastMessageType'] as String?;
+                              final previewText = lastMessage.isNotEmpty
+                                  ? lastMessage
+                                  : (lastMessageType == 'image' ||
+                                          lastMessageType == 'mixed'
+                                      ? "Photo"
+                                      : "");
 
-                                    if (userSnapshot.hasData && userSnapshot.data != null) {
-                                      var data = userSnapshot.data!;
-                                      displayName = data.name ?? "User";
-                                      photoUrl = data.photoUrl;
-                                    } else {
-                                      Map? displayNames =
-                                          chatData['displayNames']
-                                              as Map?;
-                                      Map? displayPhotos =
-                                          chatData['displayPhotos']
-                                              as Map?;
-                                      displayName = displayNames?[receiverId] ??
-                                          (userSnapshot.connectionState ==
-                                                  ConnectionState.waiting
-                                              ? "Loading..."
-                                              : "User");
-                                      photoUrl = displayPhotos?[receiverId];
-                                    }
-
-                                    final lastMessage =
-                                        (chatData['lastMessage'] as String? ?? "").trim();
-                                    final lastMessageType =
-                                        chatData['lastMessageType'] as String?;
-                                    final previewText = lastMessage.isNotEmpty
-                                        ? lastMessage
-                                        : (lastMessageType == 'image' ||
-                                                lastMessageType == 'mixed'
-                                            ? "Photo"
-                                            : "");
-
-                                    return buildChatItem(context, receiverId,
-                                        displayName, previewText,
-                                        photoUrl);
-                                  });
+                              return buildChatItem(
+                                context,
+                                chatId,
+                                receiverId,
+                                displayName,
+                                previewText,
+                                photoUrl,
+                              );
                             },
                           );
                         }
                         return const SizedBox.shrink();
-                      }
+                      },
                     ),
                   ),
                 ],
@@ -137,84 +128,93 @@ class _MessageTabState extends State<MessageTab> {
     );
   }
 
-  Widget buildChatItem(BuildContext context, String receiverId, String displayName,
-      String lastMessage, String? photoUrl) {
+  Widget buildChatItem(
+    BuildContext context,
+    String chatId,
+    String receiverId,
+    String displayName,
+    String lastMessage,
+    String? photoUrl,
+  ) {
     return InkWell(
       onTap: () {
         Navigator.pushNamed(
           context,
           AppRoutes.chatRoute,
           arguments: {
+            'chatId': chatId,
             'receiverId': receiverId,
             'receiverName': displayName,
             'receiverPhotoUrl': photoUrl,
           },
         );
       },
-        child: Builder(builder: (context) {
+      child: Builder(builder: (context) {
         final theme = Theme.of(context);
         return Container(
           padding: EdgeInsets.all(15.sp),
           decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(15.r),
-          border: Border.all(color: theme.brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.2)
-              : theme.dividerColor.withOpacity(0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(28.r),
-              child: photoUrl != null && photoUrl.isNotEmpty
-                  ? Image.network(
-                      photoUrl,
-                      width: 56.r,
-                      height: 56.r,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => CircleAvatar(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(15.r),
+            border: Border.all(
+                color: theme.brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.2)
+                    : theme.dividerColor.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              )
+            ],
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(28.r),
+                child: photoUrl != null && photoUrl.isNotEmpty
+                    ? Image.network(
+                        photoUrl,
+                        width: 56.r,
+                        height: 56.r,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            CircleAvatar(
+                          radius: 28.r,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: AssetImage(AppAssets.profileImage),
+                        ),
+                      )
+                    : CircleAvatar(
                         radius: 28.r,
                         backgroundColor: Colors.grey.shade200,
-                        backgroundImage: AssetImage(AppAssets.profileImage),
+                        backgroundImage: AssetImage(AppAssets.avatar),
                       ),
-                    )
-                  : CircleAvatar(
-                      radius: 28.r,
-                      backgroundColor: Colors.grey.shade200,
-                      backgroundImage: AssetImage(AppAssets.avatar),
-                    ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayName,
-                    style: theme.textTheme.labelMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    lastMessage,
-                    style: theme.textTheme.bodyMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
               ),
-            ),
-          ],
-        ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      style: theme.textTheme.labelMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      lastMessage,
+                      style: theme.textTheme.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       }),
     );

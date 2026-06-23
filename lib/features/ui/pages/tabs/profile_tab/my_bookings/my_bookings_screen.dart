@@ -4,9 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
-import 'package:sokon/core/model/booking.dart';
+import 'package:sokon/core/model/BookingResponse.dart';
 import 'package:sokon/core/utils/app_assets.dart';
-import 'package:sokon/supabase_utils.dart';
 
 import '../../../../widgets/back_container.dart';
 import 'cubit/my_bookings_states.dart';
@@ -29,8 +28,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     super.didChangeDependencies();
     if (!isInitialized) {
       final user = context.read<UserViewModel>().user;
-      if (user != null) {
-        viewModel.getMyBookings(user.id);
+      final userId = user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        viewModel.getMyBookings(userId);
       }
       isInitialized = true;
     }
@@ -108,7 +108,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
-  Widget buildBookingCard(BuildContext context, Booking booking) {
+  Widget buildBookingCard(BuildContext context, BookingResponse booking) {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('dd MMM yyyy');
     return Container(
@@ -260,7 +260,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
-  Widget _buildRatingBox(BuildContext context, Booking booking) {
+  Widget _buildRatingBox(BuildContext context, BookingResponse booking) {
     final theme = Theme.of(context);
     final isSaving = _ratingBookingId == booking.id;
     final selectedRating = booking.rating ?? 0;
@@ -351,33 +351,40 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     return normalized;
   }
 
-  bool _canCancel(Booking booking) {
+  bool _canCancel(BookingResponse booking) {
     final status = normalizeStatus(booking.status);
     return status == 'pending' || status == 'accepted' || status == 'confirmed';
   }
 
-  bool _canRate(Booking booking) {
+  bool _canRate(BookingResponse booking) {
     final status = normalizeStatus(booking.status);
     return booking.id != null &&
         (status == 'accepted' || status == 'confirmed');
   }
 
-  Future<void> _rateBooking(Booking booking, int rating) async {
-    if (booking.id == null) {
+  Future<void> _rateBooking(BookingResponse booking, int rating) async {
+    final bookingId = booking.id;
+    if (bookingId == null || bookingId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking id is required')),
+      );
       return;
     }
 
     setState(() {
-      _ratingBookingId = booking.id;
+      _ratingBookingId = bookingId;
     });
 
     try {
-      await SupabaseUtils.rateBooking(booking: booking, rating: rating);
+      await viewModel.rateBooking(bookingId: bookingId, rating: rating);
       if (!mounted) return;
       setState(() {
-        booking.rating = rating;
         _ratingBookingId = null;
       });
+      final userId = context.read<UserViewModel>().user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        await viewModel.getMyBookings(userId);
+      }
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Rating saved')));
@@ -392,12 +399,15 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     }
   }
 
-  Future<void> _cancelBooking(Booking booking) async {
-    if (booking.id == null) {
+  Future<void> _cancelBooking(BookingResponse booking) async {
+    final bookingId = booking.id;
+    if (bookingId == null || bookingId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking id is required')),
+      );
       return;
     }
 
-    final userName = context.read<UserViewModel>().user?.name;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -421,12 +431,15 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     }
 
     try {
-      await SupabaseUtils.updateBookingStatus(
-        booking: booking,
+      await viewModel.updateBookingStatus(
+        bookingId: bookingId,
         status: 'cancelled',
-        changedByName: userName,
       );
       if (!mounted) return;
+      final userId = context.read<UserViewModel>().user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        await viewModel.getMyBookings(userId);
+      }
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Booking cancelled')));

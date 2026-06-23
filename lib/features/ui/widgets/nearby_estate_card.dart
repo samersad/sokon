@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 
 import '../../../core/utils/app_assets.dart';
 
 class NearbyEstateCard extends StatelessWidget {
-  final Apartment apartment;
+  final ApartmentResponse apartment;
   const NearbyEstateCard({super.key, required this.apartment});
 
   @override

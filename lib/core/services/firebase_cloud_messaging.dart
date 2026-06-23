@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -6,7 +7,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
-import 'package:sokon/supabase_utils.dart';
+import 'package:sokon/api/api_service .dart';
+import 'package:sokon/core/cache/shared_prefs_helper.dart';
+import 'package:sokon/core/model/RegisterResponse.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -21,6 +24,7 @@ class FirebaseCloudMessaging {
   static bool _isInitialized = false;
   static StreamSubscription<String>? _tokenRefreshSubscription;
   static String? _activeUserId;
+  static final ApiService _apiService = ApiService();
 
   static Future<void> requestPermission() async {
     final NotificationSettings settings = await messaging.requestPermission(
@@ -61,7 +65,7 @@ class FirebaseCloudMessaging {
     _activeUserId = userId;
     final token = await getToken();
     if (token != null && token.isNotEmpty) {
-      await SupabaseUtils.updateUserFcmToken(userId, token);
+      await _saveFcmToken(userId, token);
     }
 
     await _tokenRefreshSubscription?.cancel();
@@ -70,7 +74,7 @@ class FirebaseCloudMessaging {
         return;
       }
 
-      await SupabaseUtils.updateUserFcmToken(_activeUserId!, newToken);
+      await _saveFcmToken(_activeUserId!, newToken);
     });
   }
 
@@ -79,7 +83,7 @@ class FirebaseCloudMessaging {
     _tokenRefreshSubscription = null;
 
     if (userId != null && userId.isNotEmpty) {
-      await SupabaseUtils.clearUserFcmToken(userId);
+      await _saveFcmToken(userId, null);
     }
 
     _activeUserId = null;
@@ -178,5 +182,37 @@ class FirebaseCloudMessaging {
     } catch (_) {
       return null;
     }
+  }
+
+  static Future<void> _saveFcmToken(String userId, String? token) async {
+    try {
+      final cachedUser = SharedPrefsHelper.getData(key: "cached_user");
+      if (cachedUser is! String || cachedUser.isEmpty) {
+        return;
+      }
+
+      final decoded = RegisterUser.fromJson(
+        Map<String, dynamic>.from(jsonDecode(cachedUser) as Map),
+      );
+      if (decoded.id != userId) {
+        return;
+      }
+
+      final updatedUser = await _apiService.updateUser(
+        userId: userId,
+        name: decoded.name ?? "",
+        email: decoded.email ?? "",
+        phoneNumber: decoded.phoneNumber ?? "",
+        college: decoded.college,
+        gender: decoded.gender,
+        role: decoded.role ?? "client",
+        photoUrl: decoded.photoUrl,
+        fcmToken: token,
+      );
+      await SharedPrefsHelper.saveData(
+        key: "cached_user",
+        value: jsonEncode(updatedUser.toSupaBase()),
+      );
+    } catch (_) {}
   }
 }

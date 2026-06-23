@@ -11,6 +11,42 @@ class ChatViewModel extends Cubit<ChatState> {
 
   StreamSubscription? _messagesSubscription;
 
+  Future<void> upsertChat({
+    required String chatId,
+    required String senderId,
+    required String senderName,
+    required String? senderPhotoUrl,
+    required String receiverId,
+    required String receiverName,
+    required String? receiverPhotoUrl,
+  }) async {
+    if (chatId.isEmpty || senderId.isEmpty || receiverId.isEmpty) {
+      return;
+    }
+
+    try {
+      await chatRepository.upsertChat({
+        'id': chatId,
+        'lastMessage': '',
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
+        'users': [senderId, receiverId],
+        'displayNames': {
+          senderId: senderName,
+          receiverId: receiverName,
+        },
+        'displayPhotos': {
+          senderId: senderPhotoUrl,
+          receiverId: receiverPhotoUrl,
+        },
+      });
+    } catch (e) {
+      if (!isClosed) {
+        emit(ChatError(e.toString()));
+      }
+      rethrow;
+    }
+  }
+
   void getMessages(String chatId) {
     emit(ChatLoading());
     try {

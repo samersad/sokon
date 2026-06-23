@@ -31,9 +31,16 @@ class _ProfileTabState extends State<ProfileTab> {
       bloc: viewModel,
       listener: (context, state) {
         if (state is ProfileLoading) {
-          AlertDialogUtils.showLoading(context: context, msg: "Logging out...");
+          AlertDialogUtils.showLoading(context: context, msg: "Please wait...");
         } else if (state is ProfileLogoutSuccess) {
           AlertDialogUtils.hideLoading(context: context);
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutes.loginRoute, (route) => false);
+        } else if (state is ProfileDeleteAccountSuccess) {
+          AlertDialogUtils.hideLoading(context: context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Account deleted successfully")),
+          );
           Navigator.of(context).pushNamedAndRemoveUntil(
               AppRoutes.loginRoute, (route) => false);
         } else if (state is ProfileError) {
@@ -162,7 +169,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             icon: Icons.notifications_none_outlined,
                             title: "Notification",
                             color: Colors.purple,
-                            onTap: () {},
+                            onTap: () {Navigator.of(context).pushNamed(AppRoutes.notificationRoute);},
                           ),
                           SizedBox(height: 20.h),
                           buildRowTile(
@@ -189,28 +196,7 @@ class _ProfileTabState extends State<ProfileTab> {
                           SizedBox(height: 10.h),
                           TextButton(
                             onPressed: () {
-                              AlertDialogUtils.showMessage(
-                                context: context,
-                                title: "Delete Your Account?",
-                                msg:
-                                    "Once you submit your deletion request, you will receive an email to verify your identity. We will retain required data and delete the rest within 30 days. You will not be able to retrieve your information once this process has completed.",
-                                pos: CustomElevatedButtom(
-                                  onPressed: () => Navigator.pop(context),
-                                  text: "Confirm Delete",
-                                  textStyle: AppStyles.semiBold14White,
-                                  borderRadius: 10,
-                                  width: 120.w,
-                                  backgroundColorElevated: AppColors.redColor,
-                                ),
-                                nav: CustomElevatedButtom(
-                                  onPressed: () => Navigator.pop(context),
-                                  borderRadius: 10,
-                                  text: "Cancel",
-                                  textStyle: AppStyles.semiBold14White,
-                                  width: 120.w,
-                                  backgroundColorElevated: AppColors.grayColor,
-                                ),
-                              );
+                              _showDeleteAccountDialog(context);
                             },
                             child: Text(
                               "Delete account",
@@ -317,5 +303,108 @@ class _ProfileTabState extends State<ProfileTab> {
       return "No Role";
     }
     return value[0].toUpperCase() + value.substring(1);
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    final passwordController = TextEditingController();
+    final theme = Theme.of(context);
+    final user = context.read<UserViewModel>().user;
+    final requiresPassword = user?.authProvider != 'google';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          title: Text("Delete Your Account?", style: AppStyles.bold20blackIner),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "This action is permanent. All your data including apartments, bookings, chats, and notifications will be deleted forever.",
+                style: AppStyles.medium16black,
+              ),
+              if (requiresPassword) ...[
+                SizedBox(height: 20.h),
+                Text(
+                  "Enter your password to confirm:",
+                  style: theme.textTheme.bodyMedium,
+                ),
+                SizedBox(height: 10.h),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: "Password",
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(
+                        color: AppColors.redColor,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actionsPadding:
+              EdgeInsets.symmetric(horizontal: 10.w, vertical: 15.h),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: CustomElevatedButtom(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    borderRadius: 10,
+                    text: "Cancel",
+                    textStyle: AppStyles.semiBold14White,
+                    width: 120.w,
+                    backgroundColorElevated: AppColors.grayColor,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: CustomElevatedButtom(
+                    onPressed: () {
+                      final password = requiresPassword
+                          ? passwordController.text.trim()
+                          : null;
+                      if (requiresPassword &&
+                          (password == null || password.isEmpty)) {
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please enter your password"),
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.pop(dialogContext);
+                      viewModel.deleteAccount(password);
+                    },
+                    text: "Delete",
+                    textStyle: AppStyles.semiBold14White,
+                    borderRadius: 10,
+                    width: 120.w,
+                    backgroundColorElevated: AppColors.redColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 }

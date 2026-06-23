@@ -1,4 +1,4 @@
-import '../../../../../core/model/apartment.dart';
+import '../../../../../core/model/ApartmentResponse.dart';
 
 abstract class FeaturedEstateStates {}
 
@@ -7,7 +7,7 @@ class FeaturedEstateInitial extends FeaturedEstateStates {}
 class FeaturedEstateLoading extends FeaturedEstateStates {}
 
 class FeaturedEstateSuccess extends FeaturedEstateStates {
-  final List<Apartment> apartments;
+  final List<ApartmentResponse> apartments;
   FeaturedEstateSuccess(this.apartments);
 }
 

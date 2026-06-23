@@ -10,7 +10,7 @@ import 'package:sokon/core/cache/cubit_manger/location_states.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_routes.dart';
 import 'package:sokon/core/utils/app_styles.dart';
@@ -21,7 +21,7 @@ import 'package:sokon/features/ui/widgets/app_video_player.dart';
 import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
 
 class EditApartment extends StatefulWidget {
-  final Apartment apartment;
+  final ApartmentResponse apartment;
 
   const EditApartment({super.key, required this.apartment});
 

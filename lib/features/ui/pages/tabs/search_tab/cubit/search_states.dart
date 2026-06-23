@@ -1,4 +1,4 @@
-import '../../../../../../core/model/apartment.dart';
+import '../../../../../../core/model/ApartmentResponse.dart';
 
 abstract class SearchStates {}
 
@@ -10,7 +10,7 @@ class SearchInitial extends SearchStates {
 class SearchLoading extends SearchStates {}
 
 class SearchLoaded extends SearchStates {
-  final List<Apartment> results;
+  final List<ApartmentResponse> results;
   SearchLoaded(this.results);
 }
 

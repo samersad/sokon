@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/di/di.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/features/ui/pages/booking_screen/cubit/booking_states.dart';
 import 'package:sokon/features/ui/pages/booking_screen/cubit/booking_view_model.dart';
@@ -23,7 +23,7 @@ class BookingScreen extends StatefulWidget {
 
 class _BookingScreenState extends State<BookingScreen> {
   final BookingViewModel viewModel = getIt<BookingViewModel>();
-  late Apartment apartment;
+  late ApartmentResponse apartment;
   bool isInitialized = false;
   bool isLoadingShown = false;
 
@@ -31,7 +31,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!isInitialized) {
-      apartment = ModalRoute.of(context)!.settings.arguments as Apartment;
+      apartment = ModalRoute.of(context)!.settings.arguments as ApartmentResponse;
       isInitialized = true;
     }
   }

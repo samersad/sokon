@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/constants/university_locations.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
@@ -27,8 +28,6 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  static const LatLng _defaultLocation = LatLng(30.0444, 31.2357);
-
   final HomeTabViewModel viewModel = getIt<HomeTabViewModel>();
   final NotificationViewModel notificationViewModel = getIt<NotificationViewModel>();
   GoogleMapController? _mapController;
@@ -67,17 +66,13 @@ class _HomeTabState extends State<HomeTab> {
     required HomeTabStates state,
     required String? userPhotoUrl,
   }) async {
-    if (state.userLocation == null && !state.isLoadingLocation) {
-      await viewModel.getUserLocationData();
-    }
     if (!mounted) return;
 
-    final latestState = viewModel.state;
     Navigator.of(context).pushNamed(
       AppRoutes.homeMapRoute,
       arguments: HomeMapArguments(
-        apartments: latestState.allApartments,
-        userLocation: latestState.userLocation,
+        apartments: state.allApartments,
+        userLocation: state.selectedUniversity.location,
         userPhotoUrl: userPhotoUrl,
       ),
     );
@@ -92,14 +87,11 @@ class _HomeTabState extends State<HomeTab> {
     return BlocConsumer<HomeTabViewModel, HomeTabStates>(
       bloc: viewModel,
       listenWhen: (previous, current) {
-        return previous.userLocation != current.userLocation ||
+        return previous.selectedUniversity != current.selectedUniversity ||
             previous.errorMessage != current.errorMessage;
       },
       listener: (context, state) {
-        final location = state.userLocation;
-        if (location != null) {
-          _moveCameraToLocation(location);
-        }
+        _moveCameraToLocation(state.selectedUniversity.location);
 
         final errorMessage = state.errorMessage;
         if (errorMessage != null && errorMessage.isNotEmpty) {
@@ -110,8 +102,7 @@ class _HomeTabState extends State<HomeTab> {
         }
       },
       builder: (context, state) {
-        final address = state.userAddress ?? "Select Location";
-        final location = state.userLocation ?? _defaultLocation;
+        final universityLocation = state.selectedUniversity.location;
         final featuredApartments = state.featuredApartments;
         final nearbyApartments = state.nearbyApartments;
         final topDistricts = state.topDistricts;
@@ -126,70 +117,9 @@ class _HomeTabState extends State<HomeTab> {
                   Row(
                     children: [
                       Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                              backgroundColor: Colors.white,
-                              context: context,
-                              builder: (_) => SafeArea(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Icons.my_location),
-                                      title: const Text("Use Current Location"),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        viewModel.getUserLocationData();
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.map),
-                                      title: const Text("Pick on Map"),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.userLocationPickerRoute,
-                                        ).then((_) => viewModel.refreshUserLocation());
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            height: 50.h,
-                            padding: EdgeInsets.symmetric(horizontal: 10.w),
-                            decoration: BoxDecoration(
-                              color: theme.cardColor,
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(color: theme.highlightColor),
-                            ),
-                            child: Row(
-                              children: [
-                                Image.asset(AppAssets.locationIcon, width: 16.w),
-                                SizedBox(width: 6.w),
-                                Expanded(
-                                  child: Text(
-                                    address,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                ),
-                                if (state.isLoadingLocation)
-                                  SizedBox(
-                                    width: 16.w,
-                                    height: 16.w,
-                                    child: const CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                else
-                                  Image.asset(AppAssets.downIcon, width: 14.w),
-                              ],
-                            ),
-                          ),
+                        child: _buildUniversitySelector(
+                          theme: theme,
+                          selectedUniversity: state.selectedUniversity,
                         ),
                       ),
                       SizedBox(width: 10.w),
@@ -261,25 +191,26 @@ class _HomeTabState extends State<HomeTab> {
                       height: 170.h,
                       child: GoogleMap(
                         initialCameraPosition: CameraPosition(
-                          target: location,
+                          target: universityLocation,
                           zoom: 15,
                         ),
                         onMapCreated: (controller) {
                           _mapController = controller;
-                          _moveCameraToLocation(location);
+                          _moveCameraToLocation(universityLocation);
                         },
                         zoomControlsEnabled: true,
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: true,
+                        myLocationEnabled: false,
+                        myLocationButtonEnabled: false,
                         scrollGesturesEnabled: true,
-                        markers: state.userLocation != null
-                            ? {
-                                Marker(
-                                  markerId: const MarkerId("Current Location"),
-                                  position: state.userLocation!,
-                                ),
-                              }
-                            : {},
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId("university_location"),
+                            position: universityLocation,
+                            infoWindow: InfoWindow(
+                              title: state.selectedUniversity.name,
+                            ),
+                          ),
+                        },
                       ),
                     ),
                   ),
@@ -408,6 +339,90 @@ class _HomeTabState extends State<HomeTab> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildUniversitySelector({
+    required ThemeData theme,
+    required University selectedUniversity,
+  }) {
+    return InkWell(
+      onTap: () {
+        showModalBottomSheet(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          context: context,
+          builder: (_) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                    child: Text(
+                      "Select University",
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                  ),
+                  ...UniversityLocations.all.map((university) {
+                    final isSelected = university.name == selectedUniversity.name;
+                    return ListTile(
+                      leading: Icon(
+                        Icons.school_rounded,
+                        color: isSelected
+                            ? AppColors.primaryColor
+                            : theme.iconTheme.color,
+                      ),
+                      title: Text(
+                        university.name,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected ? AppColors.primaryColor : null,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle, color: AppColors.primaryColor)
+                          : null,
+                      onTap: () {
+                        Navigator.pop(context);
+                        viewModel.selectUniversity(university);
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        height: 50.h,
+        padding: EdgeInsets.symmetric(horizontal: 10.w),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: theme.highlightColor),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.school_rounded, size: 18.w, color: AppColors.primaryColor),
+            SizedBox(width: 6.w),
+            Expanded(
+              child: Text(
+                selectedUniversity.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            Image.asset(AppAssets.downIcon, width: 14.w),
+          ],
+        ),
+      ),
     );
   }
 

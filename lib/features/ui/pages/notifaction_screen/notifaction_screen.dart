@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:sokon/api/api_service .dart';
 import 'package:sokon/core/model/my_user.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/model/notification.dart';
 import 'package:sokon/core/utils/app_routes.dart';
-import 'package:sokon/supabase_utils.dart';
 
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -26,6 +26,7 @@ class NotifactionScreen extends StatefulWidget {
 
 class _NotifactionScreenState extends State<NotifactionScreen> {
   final NotificationViewModel viewModel = getIt<NotificationViewModel>();
+  final ApiService _apiService = ApiService();
   final Map<String, Future<MyUser?>> _senderFutures = {};
   bool isInitialized = false;
 
@@ -276,7 +277,23 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
   Future<MyUser?> _getSenderFuture(String senderId) {
     return _senderFutures.putIfAbsent(
       senderId,
-      () => SupabaseUtils.readUserFromSupabase(senderId),
+      () async {
+        final user = await _apiService.getUser(senderId);
+        return MyUser(
+          id: user.id ?? senderId,
+          name: user.name ?? 'User',
+          email: user.email ?? '',
+          college: user.college,
+          phoneNumber: user.phoneNumber,
+          gender: user.gender,
+          role: user.role,
+          photoUrl: user.photoUrl?.toString(),
+          fcmToken: user.fcmToken?.toString(),
+          createdAt: user.createdAt != null
+              ? DateTime.tryParse(user.createdAt!)
+              : null,
+        );
+      },
     );
   }
 

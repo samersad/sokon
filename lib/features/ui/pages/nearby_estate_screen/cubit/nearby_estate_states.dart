@@ -1,4 +1,4 @@
-import '../../../../../core/model/apartment.dart';
+import '../../../../../core/model/ApartmentResponse.dart';
 
 abstract class NearbyEstateStates {}
 
@@ -7,7 +7,7 @@ class NearbyEstateInitial extends NearbyEstateStates {}
 class NearbyEstateLoading extends NearbyEstateStates {}
 
 class NearbyEstateSuccess extends NearbyEstateStates {
-  final List<Apartment> apartments;
+  final List<ApartmentResponse> apartments;
   NearbyEstateSuccess(this.apartments);
 }
 

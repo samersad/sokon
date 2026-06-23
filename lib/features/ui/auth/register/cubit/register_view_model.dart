@@ -2,7 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../../core/cache/cubit_manger/user_view_model.dart';
+import '../../../../../core/model/RegisterResponse.dart';
 import '../../../../../core/model/my_user.dart';
+import '../../../../../core/utils/app_styles.dart';
 import '../../../../../data/repository/auth/repository/auth_repository.dart';
 import 'register_states.dart';
 
@@ -24,7 +26,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
 
   String selectedGender = genderOptions.first;
   String? selectedRole;
-  MyUser? pendingGoogleUser;
+  RegisterUser? pendingGoogleUser;
   bool hidePassword = true;
 
   void changePasswordVisibility() {
@@ -63,7 +65,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
       }
       emit(RegisterLoadingStates());
       try {
-        final user = await authRepository.register(
+        final user = await authRepository.registerWithBackend(
           emailCtrl.text,
           passwordCtrl.text,
           userCtrl.text,
@@ -83,21 +85,18 @@ class RegisterViewModel extends Cubit<RegisterStates> {
   Future<void> signInWithGoogle(UserViewModel userCubit) async {
     try {
       emit(RegisterLoadingStates());
-      final user = await authRepository.signInWithGoogle();
+      final user = _fromMyUser(await authRepository.signInWithGoogle());
 
       if (user.gender == null || user.gender!.trim().isEmpty) {
         user.gender = selectedGender;
-        await authRepository.updateProfile(
-          user,
-          user.name,
-          user.phoneNumber ?? '',
-          user.college,
-          user.gender,
-          null,
-        );
       }
 
-      if (user.role == null) {
+      final role = selectedRole?.trim().toLowerCase();
+      if ((user.role == null || user.role!.trim().isEmpty) &&
+          role != null &&
+          role.isNotEmpty) {
+        await updateUserRole(user, role, userCubit);
+      } else if (user.role == null || user.role!.trim().isEmpty) {
         pendingGoogleUser = user;
         emit(RegisterNeedsRoleStates(user));
       } else {
@@ -110,10 +109,12 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     }
   }
 
-  Future<void> updateUserRole(MyUser user, String role, UserViewModel userCubit) async {
+  Future<void> updateUserRole(RegisterUser user, String role, UserViewModel userCubit) async {
     try {
       emit(RegisterLoadingStates());
-      await authRepository.updateUserRole(user, role);
+      final normalizedRole = role.trim().toLowerCase();
+      await authRepository.updateUserRole(_toMyUser(user), normalizedRole);
+      user.role = normalizedRole;
       pendingGoogleUser = null;
       userCubit.updateUser(user);
       emit(RegisterSuccessStates(user));
@@ -134,7 +135,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
 
   void showRoleSelectionDialog(
     BuildContext context,
-    MyUser user,
+    RegisterUser user,
     UserViewModel userCubit,
   ) {
     String? selectedDialogRole;
@@ -145,7 +146,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
-              title: const Text("Select your role"),
+              title:  Text("Select your role",style: AppStyles.bold20blackIner),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -179,6 +180,38 @@ class RegisterViewModel extends Cubit<RegisterStates> {
           },
         );
       },
+    );
+  }
+
+  RegisterUser _fromMyUser(MyUser user) {
+    return RegisterUser(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      college: user.college,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+      role: user.role,
+      photoUrl: user.photoUrl,
+      fcmToken: user.fcmToken,
+      createdAt: user.createdAt?.toIso8601String(),
+    );
+  }
+
+  MyUser _toMyUser(RegisterUser user) {
+    return MyUser(
+      id: user.id ?? "",
+      name: user.name ?? "",
+      email: user.email ?? "",
+      college: user.college,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+      role: user.role,
+      photoUrl: user.photoUrl?.toString(),
+      fcmToken: user.fcmToken?.toString(),
+      createdAt: user.createdAt != null
+          ? DateTime.tryParse(user.createdAt!)
+          : null,
     );
   }
 }

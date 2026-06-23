@@ -3,11 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
-import 'package:sokon/core/model/booking.dart';
+import 'package:sokon/core/model/BookingResponse.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
-import 'package:sokon/supabase_utils.dart';
 
 import '../../../../widgets/back_container.dart';
 import 'cubit/owner_booking_requests_states.dart';
@@ -33,8 +32,9 @@ class _OwnerBookingRequestsScreenState
     super.didChangeDependencies();
     if (!isInitialized) {
       final user = context.read<UserViewModel>().user;
-      if (user != null) {
-        viewModel.getOwnerBookings(user.id);
+      final userId = user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        viewModel.getOwnerBookings(userId);
       }
       isInitialized = true;
     }
@@ -145,7 +145,7 @@ class _OwnerBookingRequestsScreenState
     return const SizedBox.shrink();
   }
 
-  Widget _buildBookingCard(Booking booking) {
+  Widget _buildBookingCard(BookingResponse booking) {
     final theme = Theme.of(context);
     final periodFormat = DateFormat('dd MMM yyyy');
     final createdAtFormat = DateFormat('dd MMM yyyy, hh:mm a');
@@ -325,7 +325,7 @@ class _OwnerBookingRequestsScreenState
     );
   }
 
-  Widget _buildActions(Booking booking, String status, bool isUpdating) {
+  Widget _buildActions(BookingResponse booking, String status, bool isUpdating) {
    var theme=Theme.of(context);
     if (status == 'pending') {
       return Row(
@@ -451,13 +451,17 @@ class _OwnerBookingRequestsScreenState
   }
 
   Future<void> _updateBookingStatus({
-    required Booking booking,
+    required BookingResponse booking,
     required String nextStatus,
     required String dialogTitle,
     required String dialogMessage,
     required String successMessage,
   }) async {
-    if (booking.id == null) {
+    final bookingId = booking.id;
+    if (bookingId == null || bookingId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking id is required')),
+      );
       return;
     }
 
@@ -484,18 +488,19 @@ class _OwnerBookingRequestsScreenState
     }
 
     setState(() {
-      _updatingBookingId = booking.id;
+      _updatingBookingId = bookingId;
     });
 
-    final user = context.read<UserViewModel>().user;
-
     try {
-      await SupabaseUtils.updateBookingStatus(
-        booking: booking,
+      await viewModel.updateBookingStatus(
+        bookingId: bookingId,
         status: nextStatus,
-        changedByName: user?.name,
       );
       if (!mounted) return;
+      final userId = context.read<UserViewModel>().user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        await viewModel.getOwnerBookings(userId);
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(successMessage)),
       );

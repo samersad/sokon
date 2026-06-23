@@ -9,8 +9,9 @@ import 'package:readmore/readmore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
-import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/data/repository/booking/repository/booking_repository.dart';
 import 'package:sokon/features/ui/pages/apartment_details_screen/cubit/apartment_details_states.dart';
 import 'package:sokon/features/ui/pages/apartment_details_screen/cubit/apartment_details_view_model.dart';
 import 'package:sokon/features/ui/widgets/app_video_player.dart';
@@ -30,15 +31,52 @@ class ApartmentDetails extends StatefulWidget {
 
 class _ApartmentDetailsState extends State<ApartmentDetails> {
   final ApartmentDetailsViewModel viewModel = getIt<ApartmentDetailsViewModel>();
+  final BookingRepository bookingRepository = getIt<BookingRepository>();
   bool isInitialized = false;
+  bool canChat = false;
+  bool isCheckingChatAccess = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!isInitialized) {
-      final apartment = ModalRoute.of(context)!.settings.arguments as Apartment;
+      final apartment = ModalRoute.of(context)!.settings.arguments as ApartmentResponse;
       viewModel.initApartment(apartment);
+      _loadChatAccess(apartment);
       isInitialized = true;
+    }
+  }
+
+  Future<void> _loadChatAccess(ApartmentResponse apartment) async {
+    final userId = context.read<UserViewModel>().user?.id;
+    if (userId == null || userId.isEmpty || apartment.id == null || apartment.id!.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      isCheckingChatAccess = true;
+    });
+
+    try {
+      final hasActiveBooking = await bookingRepository.hasActiveBookingForApartment(
+        userId: userId,
+        apartmentId: apartment.id!,
+      );
+      if (!mounted) return;
+      setState(() {
+        canChat = hasActiveBooking;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        canChat = false;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isCheckingChatAccess = false;
+        });
+      }
     }
   }
 
@@ -134,7 +172,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildHeroMedia(Apartment apartment) {
+  Widget _buildHeroMedia(ApartmentResponse apartment) {
     return SizedBox(
       height: 330.h,
       width: double.infinity,
@@ -166,7 +204,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildTitleInfoCard(Apartment apartment, ThemeData theme) {
+  Widget _buildTitleInfoCard(ApartmentResponse apartment, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     final titleColor =
         isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor;
@@ -278,7 +316,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildRatingChip(Apartment apartment, bool isDark) {
+  Widget _buildRatingChip(ApartmentResponse apartment, bool isDark) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
       decoration: BoxDecoration(
@@ -366,7 +404,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildRatingRow(Apartment apartment, ThemeData theme) {
+  Widget _buildRatingRow(ApartmentResponse apartment, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     final rating = apartment.ratingAverage ?? 0;
     final fullStars = rating.floor().clamp(0, 5);
@@ -412,7 +450,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildDescriptionSection(Apartment apartment, ThemeData theme) {
+  Widget _buildDescriptionSection(ApartmentResponse apartment, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
 
     return Column(
@@ -462,7 +500,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildPriceChip(Apartment apartment, ThemeData theme) {
+  Widget _buildPriceChip(ApartmentResponse apartment, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -483,7 +521,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildOwnerCard(Apartment apartment, bool canRent, ThemeData theme) {
+  Widget _buildOwnerCard(ApartmentResponse apartment, bool canRent, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
@@ -535,7 +573,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               ],
             ),
           ),
-          if (canRent)
+          if (canRent && canChat && !isCheckingChatAccess)
             IconButton(
               onPressed: () => _openChat(apartment),
               icon: Image.asset(AppAssets.messageIcon, width: 28.w),
@@ -545,7 +583,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildGallerySection(Apartment apartment, ThemeData theme) {
+  Widget _buildGallerySection(ApartmentResponse apartment, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     final images = apartment.images ?? [];
     final visibleCount = images.length > 4 ? 4 : images.length;
@@ -657,7 +695,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  void openFullScreenGallery(Apartment apartment, int initialIndex) {
+  void openFullScreenGallery(ApartmentResponse apartment, int initialIndex) {
     if (apartment.images == null) return;
     Navigator.push(
       context,
@@ -686,7 +724,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget buildVideoPlayer(Apartment apartment) {
+  Widget buildVideoPlayer(ApartmentResponse apartment) {
     if (apartment.videoUrl == null || apartment.videoUrl!.isEmpty) {
       return Container(
         height: 330.h,
@@ -712,7 +750,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildLocationSection(Apartment apartment) {
+  Widget _buildLocationSection(ApartmentResponse apartment) {
     final theme = Theme.of(context);
     final hasManualAddress =
         apartment.address != null && apartment.address!.trim().isNotEmpty;
@@ -816,7 +854,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildPriceText(Apartment apartment) {
+  Widget _buildPriceText(ApartmentResponse apartment) {
     final theme = Theme.of(context);
     return RichText(
       text: TextSpan(
@@ -831,7 +869,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildCapacityBanner(Apartment apartment, ThemeData theme) {
+  Widget _buildCapacityBanner(ApartmentResponse apartment, ThemeData theme) {
     final maxPeople = apartment.maxPeople ?? 1;
     final availablePeople = apartment.availablePeople ?? maxPeople;
     final normalizedAvailable = availablePeople.clamp(0, maxPeople);
@@ -924,7 +962,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildVerificationBadge(Apartment apartment, ThemeData theme) {
+  Widget _buildVerificationBadge(ApartmentResponse apartment, ThemeData theme) {
     final isVerified = apartment.verified == true;
     final backgroundColor = isVerified
         ? AppColors.primaryColor.withOpacity(0.10)
@@ -963,7 +1001,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  void _openChat(Apartment apartment) {
+  void _openChat(ApartmentResponse apartment) {
     if (apartment.ownerId != null) {
       Navigator.pushNamed(
         context,
@@ -1004,5 +1042,3 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     }
   }
 }
-
-

@@ -11,8 +11,8 @@ import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/theme_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_states.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
-import 'package:sokon/core/model/apartment.dart';
-import 'package:sokon/core/model/my_user.dart';
+import 'package:sokon/core/model/RegisterResponse.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen.dart';
 import 'package:sokon/features/ui/auth/forget_password/forget_password_screen2.dart';
 import 'package:sokon/features/ui/auth/register/register_screen.dart';
@@ -32,7 +32,6 @@ import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.
 import 'core/cache/shared_prefs_helper.dart';
 import 'core/di/di.dart';
 import 'core/services/firebase_cloud_messaging.dart';
-import 'supabase_utils.dart';
 import 'core/utils/app_routes.dart';
 import 'core/utils/app_theme.dart';
 import 'features/ui/auth/login/login_screen.dart';
@@ -61,31 +60,18 @@ Future<void> main() async {
   final locationViewModel = getIt<LocationViewModel>();
   final apartmentViewModel = getIt<ApartmentViewModel>();
   final themeViewModel = ThemeViewModel();
-  final supabaseClient = Supabase.instance.client;
-  await _refreshSupabaseSessionIfNeeded(supabaseClient);
-  await _syncRealtimeAuth(supabaseClient);
-  final session = supabaseClient.auth.currentSession;
-  final currentUserId = supabaseClient.auth.currentUser?.id;
   String routeName;
-  MyUser? restoredUser;
+  RegisterUser? restoredUser;
   final cachedUser = SharedPrefsHelper.getData(key: "cached_user");
+  final cachedToken = SharedPrefsHelper.getData(key: "token");
 
-  if (session != null && currentUserId != null) {
-    if (cachedUser is String && cachedUser.isNotEmpty) {
-      final decodedUser = jsonDecode(cachedUser);
-      if (decodedUser is Map<String, dynamic>) {
-        restoredUser = MyUser.fromSupaBase(decodedUser);
-      }
-    }
-
-    if (restoredUser == null) {
-      restoredUser = await SupabaseUtils.readUserFromSupabase(currentUserId);
-      if (restoredUser != null) {
-        await SharedPrefsHelper.saveData(
-          key: "cached_user",
-          value: jsonEncode(restoredUser.toSupaBase()),
-        );
-      }
+  if (cachedToken is String &&
+      cachedToken.isNotEmpty &&
+      cachedUser is String &&
+      cachedUser.isNotEmpty) {
+    final decodedUser = jsonDecode(cachedUser);
+    if (decodedUser is Map<String, dynamic>) {
+      restoredUser = RegisterUser.fromJson(decodedUser);
     }
   }
 
@@ -101,24 +87,18 @@ Future<void> main() async {
   });
   await FirebaseCloudMessaging.syncTokenForUser(restoredUser?.id);
 
-  if (session == null || restoredUser == null) {
+  final restoredRole = restoredUser?.role?.trim();
+  if (cachedToken is! String ||
+      cachedToken.isEmpty ||
+      restoredUser == null ||
+      restoredRole == null ||
+      restoredRole.isEmpty) {
     await SharedPrefsHelper.removeData(key: "token");
     await SharedPrefsHelper.removeData(key: "cached_user");
     routeName = AppRoutes.loginRoute;
   } else {
     routeName = AppRoutes.homeScreenRoute;
   }
-
-  supabaseClient.auth.onAuthStateChange.listen((data) async {
-    await supabaseClient.realtime.setAuth(data.session?.accessToken);
-
-    if (data.event == AuthChangeEvent.signedOut) {
-      await FirebaseCloudMessaging.clearTokenForUser(userViewModel.user?.id);
-      await SharedPrefsHelper.removeData(key: "token");
-      await SharedPrefsHelper.removeData(key: "cached_user");
-      userViewModel.updateUser(null);
-    }
-  });
 
   runApp(
     MultiBlocProvider(
@@ -131,34 +111,6 @@ Future<void> main() async {
       child: MyApp(routeName: routeName),
     ),
   );
-}
-
-Future<void> _refreshSupabaseSessionIfNeeded(SupabaseClient client) async {
-  final session = client.auth.currentSession;
-  if (session == null) {
-    return;
-  }
-
-  final expiresAt = session.expiresAt;
-  final isExpired =
-      expiresAt != null &&
-      DateTime.fromMillisecondsSinceEpoch(
-        expiresAt * 1000,
-      ).isBefore(DateTime.now().add(const Duration(minutes: 1)));
-
-  if (!isExpired || (session.refreshToken ?? '').isEmpty) {
-    return;
-  }
-
-  try {
-    await client.auth.refreshSession();
-  } catch (_) {
-    await client.auth.signOut();
-  }
-}
-
-Future<void> _syncRealtimeAuth(SupabaseClient client) async {
-  await client.realtime.setAuth(client.auth.currentSession?.accessToken);
 }
 
 class MyApp extends StatelessWidget {
@@ -196,7 +148,7 @@ class MyApp extends StatelessWidget {
                 AppRoutes.addApartmentRoute: (context) => const AddApartment(),
                 AppRoutes.editApartmentRoute: (context) {
                   final apartment =
-                      ModalRoute.of(context)!.settings.arguments as Apartment;
+                      ModalRoute.of(context)!.settings.arguments as ApartmentResponse;
                   return EditApartment(apartment: apartment);
                 },
                 AppRoutes.apartmentDetailsRoute: (context) =>

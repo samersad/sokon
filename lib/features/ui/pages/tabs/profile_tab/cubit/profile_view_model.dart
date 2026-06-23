@@ -22,4 +22,15 @@ class ProfileViewModel extends Cubit<ProfileStates> {
       emit(ProfileError(e.toString()));
     }
   }
+
+  Future<void> deleteAccount(String? password) async {
+    emit(ProfileLoading());
+    try {
+      await authRepository.deleteAccount(password);
+      userViewModel.updateUser(null);
+      emit(ProfileDeleteAccountSuccess());
+    } catch (e) {
+      emit(ProfileError(e.toString()));
+    }
+  }
 }

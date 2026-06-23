@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../../../core/model/apartment.dart';
+import '../../../../../../core/model/ApartmentResponse.dart';
 import '../../../../../../data/repository/apartment/repository/apartment_repository.dart';
 import 'search_states.dart';
 
@@ -9,7 +9,7 @@ class SearchViewModel extends Cubit<SearchStates> {
   final ApartmentRepository apartmentRepository;
   SearchViewModel(this.apartmentRepository) : super(SearchInitial());
 
-  List<Apartment> _allApartments = [];
+  List<ApartmentResponse> _allApartments = [];
   List<String> _recentSearches = [];
 
   void getAllApartments() async {
@@ -30,26 +30,7 @@ class SearchViewModel extends Cubit<SearchStates> {
 
     emit(SearchLoading());
     try {
-      if (_allApartments.isEmpty) {
-        _allApartments = await apartmentRepository.getAllApartments();
-      }
-
-      final results = _allApartments.where((apartment) {
-        final name = apartment.name?.toLowerCase() ?? "";
-        final description = apartment.description?.toLowerCase() ?? "";
-        final address = apartment.address?.toLowerCase() ?? "";
-        final city = apartment.city?.toLowerCase() ?? "";
-        final district = apartment.district?.toLowerCase() ?? "";
-        final floor = apartment.floor?.toString() ?? "";
-        final searchLower = query.toLowerCase();
-
-        return name.contains(searchLower) ||
-            description.contains(searchLower) ||
-            address.contains(searchLower) ||
-            city.contains(searchLower) ||
-            district.contains(searchLower) ||
-            floor.contains(searchLower);
-      }).toList();
+      final results = await apartmentRepository.searchApartments(query);
 
       if (results.isNotEmpty && !_recentSearches.contains(query)) {
         _recentSearches.insert(0, query);

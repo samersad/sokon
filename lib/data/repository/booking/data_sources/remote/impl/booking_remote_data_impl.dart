@@ -1,23 +1,27 @@
 import 'package:injectable/injectable.dart';
+import 'package:sokon/api/api_service .dart';
+import '../../../../../../core/model/BookingResponse.dart';
 import '../../../../../../core/model/booking.dart';
-import '../../../../../../supabase_utils.dart';
 
 import '../booking_remote_data_source.dart';
 
 @Injectable(as: BookingRemoteDataSource)
 class BookingRemoteDataImpl implements BookingRemoteDataSource {
+  final ApiService _apiService = ApiService();
+
   @override
-  Future<void> addBooking(Booking booking) async {
-    return SupabaseUtils.addBookingToSupabase(booking);
+  Future<BookingResponse> addBooking(Booking booking) async {
+    return _apiService.addBooking(booking);
   }
 
   @override
-  Future<List<Booking>> getBookings(String userId) async {
-    final List<dynamic> response = await SupabaseUtils.client
-        .from('bookings')
-        .select()
-        .eq('clientId', userId);
-    return response.map((e) => Booking.fromSupaBase(e as Map<String, dynamic>)).toList();
+  Future<List<BookingResponse>> getBookings(String userId) async {
+    return _apiService.getBookingsByClient(userId);
+  }
+
+  @override
+  Future<List<BookingResponse>> getOwnerBookings(String ownerId) async {
+    return _apiService.getBookingsByOwner(ownerId);
   }
 
   @override
@@ -25,30 +29,42 @@ class BookingRemoteDataImpl implements BookingRemoteDataSource {
     required String userId,
     required String apartmentId,
   }) async {
-    final List<dynamic> response = await SupabaseUtils.client
-        .from('bookings')
-        .select('id,status')
-        .eq('clientId', userId)
-        .eq('apartmentId', apartmentId)
-        .gte('endDate', DateTime.now().toIso8601String())
-        .limit(20);
-
-    return response.any((item) {
-      final status = (item['status'] as String?)?.toLowerCase().trim();
-      return status != 'cancelled' && status != 'rejected';
-    });
+    return _apiService.hasActiveBookingForApartment(
+      userId: userId,
+      apartmentId: apartmentId,
+    );
   }
 
   @override
-  Future<void> updateBookingStatus({
-    required Booking booking,
+  Future<BookingResponse> updateBookingStatus({
+    required String bookingId,
     required String status,
-    String? changedByName,
   }) async {
-    await SupabaseUtils.updateBookingStatus(
-      booking: booking,
+    return _apiService.updateBookingStatus(
+      bookingId: bookingId,
       status: status,
-      changedByName: changedByName,
+    );
+  }
+
+  @override
+  Future<BookingResponse> updateBookingStatusWithCapacity({
+    required String bookingId,
+    required String status,
+  }) {
+    return _apiService.updateBookingStatusWithCapacity(
+      bookingId: bookingId,
+      status: status,
+    );
+  }
+
+  @override
+  Future<BookingResponse> rateBooking({
+    required String bookingId,
+    required int rating,
+  }) {
+    return _apiService.rateBooking(
+      bookingId: bookingId,
+      rating: rating,
     );
   }
 }

@@ -26,16 +26,18 @@ class MyUser {
 
   factory MyUser.fromSupaBase(Map<String, dynamic> data) {
     return MyUser(
-      id: data["id"],
-      name: data["name"],
-      email: data["email"],
-      college: data["college"],
-      phoneNumber: data["phoneNumber"],
-      gender: data["gender"],
-      role: data["role"],
-      photoUrl: data["photoUrl"],
-      fcmToken: data["fcmToken"],
-      createdAt: data["createdAt"] != null ? DateTime.parse(data["createdAt"]) : null,
+      id: data["id"]?.toString() ?? "",
+      name: data["name"]?.toString() ?? "",
+      email: data["email"]?.toString() ?? "",
+      college: data["college"]?.toString(),
+      phoneNumber: data["phoneNumber"]?.toString(),
+      gender: data["gender"]?.toString(),
+      role: data["role"]?.toString(),
+      photoUrl: data["photoUrl"]?.toString(),
+      fcmToken: data["fcmToken"]?.toString(),
+      createdAt: data["createdAt"] != null
+          ? DateTime.tryParse(data["createdAt"].toString())
+          : null,
     );
   }
 

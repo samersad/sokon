@@ -1,4 +1,4 @@
-import 'package:sokon/core/model/booking.dart';
+import 'package:sokon/core/model/BookingResponse.dart';
 
 abstract class OwnerBookingRequestsStates {}
 
@@ -7,7 +7,7 @@ class OwnerBookingRequestsInitial extends OwnerBookingRequestsStates {}
 class OwnerBookingRequestsLoading extends OwnerBookingRequestsStates {}
 
 class OwnerBookingRequestsSuccess extends OwnerBookingRequestsStates {
-  final List<Booking> bookings;
+  final List<BookingResponse> bookings;
   OwnerBookingRequestsSuccess(this.bookings);
 }
 

@@ -2,7 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../../core/cache/cubit_manger/user_view_model.dart';
+import '../../../../../core/model/RegisterResponse.dart';
 import '../../../../../core/model/my_user.dart';
+import '../../../../../core/utils/app_styles.dart';
 import '../../../../../data/repository/auth/repository/auth_repository.dart';
 import 'login_states.dart';
 
@@ -26,7 +28,7 @@ class LoginViewModel extends Cubit<LoginStates> {
     if (formKey.currentState?.validate() ?? false) {
       emit(LoginLoadingStates());
       try {
-        final user = await authRepository.login(
+        final user = await authRepository.loginWithBackend(
           emailCtrl.text,
           passwordCtrl.text,
         );
@@ -41,9 +43,11 @@ class LoginViewModel extends Cubit<LoginStates> {
   Future<void> signInWithGoogle(UserViewModel userCubit) async {
     try {
       emit(LoginLoadingStates());
-      final user = await authRepository.signInWithGoogle();
+      final myUser = await authRepository.signInWithGoogle();
+      final user = _fromMyUser(myUser);
 
-      if (user.role == null) {
+      final role = user.role?.trim();
+      if (role == null || role.isEmpty) {
         emit(LoginNeedsRoleStates(user));
       } else {
         userCubit.updateUser(user);
@@ -54,10 +58,12 @@ class LoginViewModel extends Cubit<LoginStates> {
     }
   }
 
-  Future<void> updateUserRole(MyUser user, String role, UserViewModel userCubit) async {
+  Future<void> updateUserRole(RegisterUser user, String role, UserViewModel userCubit) async {
     try {
       emit(LoginLoadingStates());
-      await authRepository.updateUserRole(user, role);
+      final normalizedRole = role.trim().toLowerCase();
+      await authRepository.updateUserRole(_toMyUser(user), normalizedRole);
+      user.role = normalizedRole;
       userCubit.updateUser(user);
       emit(LoginSuccessStates(user));
     } catch (e) {
@@ -67,7 +73,7 @@ class LoginViewModel extends Cubit<LoginStates> {
 
   void showRoleSelectionDialog(
     BuildContext context,
-    MyUser user,
+    RegisterUser user,
     UserViewModel userCubit,
   ) {
     String? selectedDialogRole;
@@ -78,7 +84,7 @@ class LoginViewModel extends Cubit<LoginStates> {
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
-              title: const Text("Select your role"),
+              title:  Text("Select your role",style: AppStyles.bold20blackIner),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -112,6 +118,38 @@ class LoginViewModel extends Cubit<LoginStates> {
           },
         );
       },
+    );
+  }
+
+  RegisterUser _fromMyUser(MyUser user) {
+    return RegisterUser(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      college: user.college,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+      role: user.role,
+      photoUrl: user.photoUrl,
+      fcmToken: user.fcmToken,
+      createdAt: user.createdAt?.toIso8601String(),
+    );
+  }
+
+  MyUser _toMyUser(RegisterUser user) {
+    return MyUser(
+      id: user.id ?? "",
+      name: user.name ?? "",
+      email: user.email ?? "",
+      college: user.college,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+      role: user.role,
+      photoUrl: user.photoUrl?.toString(),
+      fcmToken: user.fcmToken?.toString(),
+      createdAt: user.createdAt != null
+          ? DateTime.tryParse(user.createdAt!)
+          : null,
     );
   }
 }

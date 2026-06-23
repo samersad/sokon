@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/cache/shared_prefs_helper.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/model/apartment.dart';
 import 'package:sokon/cloudinary_service.dart';
 import '../../../../../data/repository/apartment/repository/apartment_repository.dart';
@@ -75,7 +77,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     emit(AddApartmentInitial());
   }
 
-  void initEdit(Apartment apartment, LocationViewModel locationViewModel) {
+  void initEdit(ApartmentResponse apartment, LocationViewModel locationViewModel) {
     nameCRl.text = apartment.name ?? "";
     descriptionCRl.text = apartment.description ?? "";
     priceCRl.text = apartment.price?.toString() ?? "";
@@ -246,6 +248,12 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     emit(AddApartmentLoading());
 
     try {
+      final token = SharedPrefsHelper.getData(key: "token")?.toString();
+      if (token == null || token.isEmpty) {
+        emit(AddApartmentError("Please login again before adding an apartment."));
+        return;
+      }
+
       List<String> imageUrls = [];
       String? videoUrl;
 
@@ -328,6 +336,12 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     emit(AddApartmentLoading());
 
     try {
+      final token = SharedPrefsHelper.getData(key: "token")?.toString();
+      if (token == null || token.isEmpty) {
+        emit(AddApartmentError("Please login again before updating this apartment."));
+        return;
+      }
+
       List<String> imageUrls = List.from(existingImageUrls ?? []);
       String? videoUrl = existingVideoUrl;
 

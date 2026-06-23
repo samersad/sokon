@@ -3,10 +3,10 @@ flutter_native_splash:
   color_dark: "#10161C"
 
   #background_image: assets/images/splash_bg.png
-  background_image_dark: assets/images/splash_dark_full.png
+  background_image_dark: assets/images/splash_dark_bg.png
 
   image: assets/images/Logo.png
-  image_dark: assets/images/transparent.png
+  image_dark: assets/images/Logo.png
 
   fullscreen: true
 

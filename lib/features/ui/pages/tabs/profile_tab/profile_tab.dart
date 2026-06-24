@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_states.dart';
@@ -11,6 +12,7 @@ import 'package:sokon/features/ui/pages/tabs/profile_tab/cubit/profile_states.da
 import 'package:sokon/features/ui/pages/tabs/profile_tab/cubit/profile_view_model.dart';
 import 'package:sokon/features/ui/widgets/alert_dialog_utils.dart';
 import 'package:sokon/features/ui/widgets/custom_elevated_buttom.dart';
+import 'package:sokon/features/ui/widgets/language_toggle.dart';
 
 import '../../../../../core/utils/app_assets.dart';
 import '../../../../../core/utils/app_colors.dart';
@@ -27,11 +29,12 @@ class _ProfileTabState extends State<ProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return BlocListener<ProfileViewModel, ProfileStates>(
       bloc: viewModel,
       listener: (context, state) {
         if (state is ProfileLoading) {
-          AlertDialogUtils.showLoading(context: context, msg: "Please wait...");
+          AlertDialogUtils.showLoading(context: context, msg: l10n.pleaseWait);
         } else if (state is ProfileLogoutSuccess) {
           AlertDialogUtils.hideLoading(context: context);
           Navigator.of(context).pushNamedAndRemoveUntil(
@@ -39,7 +42,7 @@ class _ProfileTabState extends State<ProfileTab> {
         } else if (state is ProfileDeleteAccountSuccess) {
           AlertDialogUtils.hideLoading(context: context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Account deleted successfully")),
+            SnackBar(content: Text(l10n.accountDeletedSuccess)),
           );
           Navigator.of(context).pushNamedAndRemoveUntil(
               AppRoutes.loginRoute, (route) => false);
@@ -95,19 +98,19 @@ class _ProfileTabState extends State<ProfileTab> {
                             ),
                           ),
                           SizedBox(height: 15.h),
-                          Text(user?.name ?? "No Name",
+                          Text(user?.name ?? l10n.noName,
                               style: theme.textTheme.bodyMedium),
                           SizedBox(height: 5.h),
                           Text(_formatRole(user?.role), style: theme.textTheme.bodyMedium),
                           SizedBox(height: 5.h),
-                          Text(user?.email ?? "No Email",
+                          Text(user?.email ?? l10n.noEmail,
                               style: theme.textTheme.bodyMedium),
                           SizedBox(height: 40.h),
-                          Divider(color: theme.dividerColor.withOpacity(0.3), thickness: 1.h),
+                          Divider(color: theme.dividerColor.withValues(alpha: 0.3), thickness: 1.h),
                           SizedBox(height: 20.h),
                           buildRowTile(
                             icon: Icons.settings_outlined,
-                            title: "Settings",
+                            title: l10n.settings,
                             color: Colors.blue,
                             onTap: () => Navigator.of(context)
                                 .pushNamed(AppRoutes.settingsScreenRoute),
@@ -124,7 +127,7 @@ class _ProfileTabState extends State<ProfileTab> {
                           SizedBox(height: 20.h),
                           buildRowTile(
                             icon: Icons.payment_outlined,
-                            title: "Payment",
+                            title: l10n.payment,
                             color: Colors.orange,
                             onTap: () => Navigator.of(context)
                                 .pushNamed(AppRoutes.addCardRoute),
@@ -133,7 +136,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             SizedBox(height: 20.h),
                             buildRowTile(
                               icon: Icons.bookmark_border_outlined,
-                              title: "My Bookings",
+                              title: l10n.myBookings,
                               color: Colors.pink,
                               onTap: () {
                                 Navigator.of(context)
@@ -145,7 +148,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             SizedBox(height: 20.h),
                             buildRowTile(
                               icon: Icons.assignment_outlined,
-                              title: "Booking Requests",
+                              title: l10n.bookingRequests,
                               color: Colors.indigo,
                               onTap: () {
                                 Navigator.of(context).pushNamed(
@@ -156,7 +159,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             SizedBox(height: 20.h),
                             buildRowTile(
                               icon: Icons.apartment_outlined,
-                              title: "My Apartments",
+                              title: l10n.myApartments,
                               color: Colors.green,
                               onTap: () {
                                 Navigator.of(context)
@@ -167,17 +170,19 @@ class _ProfileTabState extends State<ProfileTab> {
                           SizedBox(height: 20.h),
                           buildRowTile(
                             icon: Icons.notifications_none_outlined,
-                            title: "Notification",
+                            title: l10n.notification,
                             color: Colors.purple,
                             onTap: () {Navigator.of(context).pushNamed(AppRoutes.notificationRoute);},
                           ),
                           SizedBox(height: 20.h),
                           buildRowTile(
                             icon: Icons.info_outline,
-                            title: "About",
+                            title: l10n.about,
                             color: Colors.teal,
                             onTap: () {},
                           ),
+                          SizedBox(height: 30.h),
+                          const LanguageToggle(),
                           SizedBox(height: 40.h),
                           TextButton(
                               onPressed: () => viewModel.logout(),
@@ -188,7 +193,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                       color: AppColors.redColor, size: 20.sp),
                                   SizedBox(width: 5.w),
                                   Text(
-                                    "Logout",
+                                    l10n.logout,
                                     style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.redColor),
                                   ),
                                 ],
@@ -196,10 +201,10 @@ class _ProfileTabState extends State<ProfileTab> {
                           SizedBox(height: 10.h),
                           TextButton(
                             onPressed: () {
-                              _showDeleteAccountDialog(context);
+                              _showDeleteAccountDialog(context, l10n);
                             },
                             child: Text(
-                              "Delete account",
+                              l10n.deleteAccount,
                               style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.redColor),
                             ),
                           ),
@@ -233,7 +238,7 @@ class _ProfileTabState extends State<ProfileTab> {
             Container(
               padding: EdgeInsets.all(8.sp),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(icon, color: color, size: 24.sp),
@@ -305,7 +310,7 @@ class _ProfileTabState extends State<ProfileTab> {
     return value[0].toUpperCase() + value.substring(1);
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
+  void _showDeleteAccountDialog(BuildContext context, AppLocalizations l10n) {
     final passwordController = TextEditingController();
     final theme = Theme.of(context);
     final user = context.read<UserViewModel>().user;
@@ -318,19 +323,19 @@ class _ProfileTabState extends State<ProfileTab> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.r),
           ),
-          title: Text("Delete Your Account?", style: AppStyles.bold20blackIner),
+          title: Text(l10n.deleteAccountTitle, style: AppStyles.bold20blackIner),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "This action is permanent. All your data including apartments, bookings, chats, and notifications will be deleted forever.",
+                l10n.deleteAccountWarning,
                 style: AppStyles.medium16black,
               ),
               if (requiresPassword) ...[
                 SizedBox(height: 20.h),
                 Text(
-                  "Enter your password to confirm:",
+                  l10n.enterPasswordToConfirm,
                   style: theme.textTheme.bodyMedium,
                 ),
                 SizedBox(height: 10.h),
@@ -338,7 +343,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    hintText: "Password",
+                    hintText: l10n.password,
                     prefixIcon: const Icon(Icons.lock_outline),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -368,7 +373,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   child: CustomElevatedButtom(
                     onPressed: () => Navigator.pop(dialogContext),
                     borderRadius: 10,
-                    text: "Cancel",
+                    text: l10n.cancel,
                     textStyle: AppStyles.semiBold14White,
                     width: 120.w,
                     backgroundColorElevated: AppColors.grayColor,
@@ -384,8 +389,8 @@ class _ProfileTabState extends State<ProfileTab> {
                       if (requiresPassword &&
                           (password == null || password.isEmpty)) {
                         ScaffoldMessenger.of(dialogContext).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please enter your password"),
+                          SnackBar(
+                            content: Text(l10n.pleaseEnterPassword),
                           ),
                         );
                         return;
@@ -393,7 +398,7 @@ class _ProfileTabState extends State<ProfileTab> {
                       Navigator.pop(dialogContext);
                       viewModel.deleteAccount(password);
                     },
-                    text: "Delete",
+                    text: l10n.delete,
                     textStyle: AppStyles.semiBold14White,
                     borderRadius: 10,
                     width: 120.w,

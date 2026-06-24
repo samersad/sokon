@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/model/district_summary.dart';
 
@@ -10,6 +11,7 @@ class DistrictApartmentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final districtSummary = ModalRoute.of(context)!.settings.arguments as DistrictSummary;
 
@@ -32,7 +34,7 @@ class DistrictApartmentsScreen extends StatelessWidget {
               SizedBox(height: 16.h),
               Expanded(
                 child: districtSummary.apartments.isEmpty
-                    ? const Center(child: Text("No apartments found in this district"))
+                    ?  Center(child: Text(l10n.noApartmentsInDistrict))
                     : ListView.separated(
                         itemCount: districtSummary.apartments.length,
                         separatorBuilder: (context, index) => SizedBox(height: 10.h),

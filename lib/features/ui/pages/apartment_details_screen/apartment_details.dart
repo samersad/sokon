@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -82,6 +83,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userViewModel = context.read<UserViewModel>();
     final theme = Theme.of(context);
 
@@ -112,20 +114,20 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                _buildTitleInfoCard(apartment, theme),
+                                _buildTitleInfoCard(apartment, theme, l10n),
                                 SizedBox(height: 18.h),
-                                _buildUnverifiedWarning(apartment, theme),
+                                _buildUnverifiedWarning(apartment, theme, l10n),
                                 _buildRatingRow(apartment, theme),
                                 SizedBox(height: 18.h),
-                                _buildCapacityBanner(apartment, theme),
+                                _buildCapacityBanner(apartment, theme, l10n),
                                 SizedBox(height: 18.h),
-                                _buildDescriptionSection(apartment, theme),
+                                _buildDescriptionSection(apartment, theme, l10n),
                                 SizedBox(height: 22.h),
-                                _buildLocationSection(apartment),
+                                _buildLocationSection(apartment, l10n),
                                 SizedBox(height: 22.h),
-                                _buildOwnerCard(apartment, canRent, theme),
+                                _buildOwnerCard(apartment, canRent, theme, l10n),
                                 SizedBox(height: 22.h),
-                                _buildGallerySection(apartment, theme),
+                                _buildGallerySection(apartment, theme, l10n),
                                 SizedBox(height: 30.h),
                                 if (canRent)
                                   CustomElevatedButtom(
@@ -138,8 +140,8 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                                             );
                                           },
                                     text: apartment.availablePeople == 0
-                                        ? "Fully Booked"
-                                        : "Rent Now",
+                                        ? l10n.fullyBooked
+                                        : l10n.rentNow,
                                     width: 500.w,
                                     customPadding: 16.h,
                                     borderRadius: 19.r,
@@ -205,12 +207,12 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildTitleInfoCard(ApartmentResponse apartment, ThemeData theme) {
+  Widget _buildTitleInfoCard(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
     final isDark = theme.brightness == Brightness.dark;
     final titleColor =
         isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor;
     final surfaceColor = isDark ? AppColors.darkPrimaryColor : AppColors.whiteColor;
-    final borderColor = AppColors.detailsBorder.withOpacity(0.3);
+    final borderColor = AppColors.detailsBorder.withValues(alpha: 0.3);
 
     return Container(
       width: double.infinity,
@@ -221,7 +223,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryColor.withOpacity(isDark ? 0 : 0.05),
+            color: AppColors.primaryColor.withValues(alpha: isDark ? 0 : 0.05),
             blurRadius: 10.r,
             offset: Offset(0, 4.h),
           ),
@@ -275,21 +277,21 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
             ],
           ),
           SizedBox(height: 17.h),
-          Divider(color: AppColors.detailsBorder.withOpacity(0.2), height: 1),
+          Divider(color: AppColors.detailsBorder.withValues(alpha: 0.2), height: 1),
           SizedBox(height: 17.h),
           Row(
             children: [
               _buildInfoItem(
                 icon: Icons.bed_rounded,
                 value: "${apartment.bedrooms ?? 0}",
-                label: "Bedrooms",
+                label: l10n.bedrooms,
                 theme: theme,
               ),
               SizedBox(width: 12.w),
               _buildInfoItem(
                 icon: Icons.bathtub_rounded,
                 value: "${apartment.bathrooms ?? 0}",
-                label: "Bathrooms",
+                label: l10n.bathrooms,
                 theme: theme,
               ),
             ],
@@ -300,7 +302,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               _buildInfoItem(
                 icon: Icons.meeting_room_rounded,
                 value: "${apartment.livingRooms ?? 0}",
-                label: "Living rooms",
+                label: l10n.livingRooms,
                 theme: theme,
               ),
               SizedBox(width: 12.w),
@@ -451,7 +453,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildDescriptionSection(ApartmentResponse apartment, ThemeData theme) {
+  Widget _buildDescriptionSection(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
     final isDark = theme.brightness == Brightness.dark;
 
     return Column(
@@ -461,13 +463,13 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           spacing: 8.w,
           runSpacing: 8.h,
           children: [
-            _buildVerificationBadge(apartment, theme),
+            _buildVerificationBadge(apartment, theme, l10n),
             _buildPriceChip(apartment, theme),
           ],
         ),
         SizedBox(height: 16.h),
         Text(
-          "About this apartment",
+          l10n.aboutThisApartment,
           style: theme.textTheme.headlineMedium?.copyWith(
             color: isDark ? AppColors.detailsBodyDark : AppColors.detailsBodyLight,
             fontFamily: AppStyles.inter,
@@ -477,7 +479,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         ),
         SizedBox(height: 8.h),
         ReadMoreText(
-          apartment.description ?? "No description available.",
+          apartment.description ?? l10n.noDescription,
           trimLength: 180,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: isDark ? AppColors.detailsMutedDark : AppColors.detailsMutedLight,
@@ -522,7 +524,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildOwnerCard(ApartmentResponse apartment, bool canRent, ThemeData theme) {
+  Widget _buildOwnerCard(ApartmentResponse apartment, bool canRent, ThemeData theme, AppLocalizations l10n) {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
@@ -553,7 +555,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  apartment.ownerName ?? "Owner",
+                  apartment.ownerName ?? l10n.owner,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
                     fontSize: 14.sp,
@@ -564,7 +566,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  "Owner",
+                  l10n.owner,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
                     fontSize: 11.sp,
@@ -584,7 +586,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildGallerySection(ApartmentResponse apartment, ThemeData theme) {
+  Widget _buildGallerySection(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
     final isDark = theme.brightness == Brightness.dark;
     final images = apartment.images ?? [];
     final visibleCount = images.length > 4 ? 4 : images.length;
@@ -593,14 +595,14 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Gallery",
+          l10n.gallery,
           style: theme.textTheme.headlineMedium?.copyWith(
             color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
           ),
         ),
         SizedBox(height: 4.h),
         Text(
-          "Take a look inside",
+          l10n.takeLookInside,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: AppColors.grayColor,
             fontSize: 12.sp,
@@ -726,6 +728,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   }
 
   Widget buildVideoPlayer(ApartmentResponse apartment) {
+    final l10n = AppLocalizations.of(context)!;
     if (apartment.videoUrl == null || apartment.videoUrl!.isEmpty) {
       return Container(
         height: 330.h,
@@ -737,7 +740,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
             bottomRight: Radius.circular(24.r),
           ),
         ),
-        child: const Center(child: Text("No video available")),
+        child: Center(child: Text(l10n.noVideoAvailable)),
       );
     }
 
@@ -751,7 +754,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildLocationSection(ApartmentResponse apartment) {
+  Widget _buildLocationSection(ApartmentResponse apartment, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final hasManualAddress =
         apartment.address != null && apartment.address!.trim().isNotEmpty;
@@ -782,7 +785,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: AppColors.grayColor.withOpacity(0.2),
+                  color: AppColors.grayColor.withValues(alpha: 0.2),
                 ),
               ),
               child: GoogleMap(
@@ -809,7 +812,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           ),
           SizedBox(height: 12.h),
         ],
-        Text("Address", style: theme.textTheme.headlineMedium),
+        Text(l10n.address, style: theme.textTheme.headlineMedium),
         SizedBox(height: 6.h),
         Text(
           displayedAddress,
@@ -818,7 +821,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         if (displayedAddress == 'No detailed address provided') ...[
           SizedBox(height: 4.h),
           Text(
-            "Owner did not add an address yet.",
+            l10n.ownerNoAddress,
             style: theme.textTheme.bodyMedium,
           ),
         ],
@@ -835,7 +838,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primaryColor,
                 side: BorderSide(
-                  color: AppColors.primaryColor.withOpacity(0.25),
+                  color: AppColors.primaryColor.withValues(alpha: 0.25),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -844,7 +847,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               ),
               icon: Icon(Icons.map_outlined, size: 18.sp),
               label: Text(
-                "Open in Map",
+                l10n.openInMap,
                 style: theme.textTheme.displaySmall,
               ),
             ),
@@ -855,22 +858,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildPriceText(ApartmentResponse apartment) {
-    final theme = Theme.of(context);
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: "EG ${apartment.price ?? 0}/",
-            style: theme.textTheme.labelMedium,
-          ),
-          TextSpan(text: "month", style: theme.textTheme.bodyMedium),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCapacityBanner(ApartmentResponse apartment, ThemeData theme) {
+  Widget _buildCapacityBanner(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
     final maxPeople = apartment.maxPeople ?? 1;
     final availablePeople = apartment.availablePeople ?? maxPeople;
     final normalizedAvailable = availablePeople.clamp(0, maxPeople);
@@ -888,7 +876,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         color: cardColor,
         borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
-          color: AppColors.detailsBorder.withOpacity(0.2),
+          color: AppColors.detailsBorder.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -901,7 +889,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Living Capacity",
+                      l10n.livingCapacity,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: isDark ? AppColors.detailsBodyDark : AppColors.detailsBodyLight,
                         fontFamily: AppStyles.inter,
@@ -927,8 +915,8 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 height: 48.w,
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppColors.detailsAccentTextDark.withOpacity(0.1)
-                      : AppColors.detailsLightAccentText.withOpacity(0.1),
+                      ? AppColors.detailsAccentTextDark.withValues(alpha: 0.1)
+                      : AppColors.detailsLightAccentText.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.groups_rounded, color: fillColor, size: 26.sp),
@@ -963,11 +951,11 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     );
   }
 
-  Widget _buildVerificationBadge(ApartmentResponse apartment, ThemeData theme) {
+  Widget _buildVerificationBadge(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
     final isVerified = apartment.verified == true;
     final backgroundColor = isVerified
-        ? AppColors.primaryColor.withOpacity(0.10)
-        : AppColors.grayColor.withOpacity(0.10);
+        ? AppColors.primaryColor.withValues(alpha: 0.10)
+        : AppColors.grayColor.withValues(alpha: 0.10);
     final textColor = isVerified ? AppColors.primaryColor : AppColors.grayColor;
     final icon = isVerified ? Icons.verified_rounded : Icons.verified_outlined;
 
@@ -988,7 +976,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           Icon(icon, size: 16.sp, color: textColor),
           SizedBox(width: 6.w),
           Text(
-            isVerified ? "Verified" : "Not verified",
+            isVerified ? l10n.verified : "Not verified",
             style: theme.textTheme.bodyMedium?.copyWith(
               color: textColor,
               fontFamily: AppStyles.inter,
@@ -1003,19 +991,20 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
   }
 
   void _openChat(ApartmentResponse apartment) {
+    final l10n = AppLocalizations.of(context)!;
     if (apartment.ownerId != null) {
       Navigator.pushNamed(
         context,
         AppRoutes.chatRoute,
         arguments: {
           'receiverId': apartment.ownerId,
-          'receiverName': apartment.ownerName ?? "Owner",
+          'receiverName': apartment.ownerName ?? l10n.owner,
           'receiverPhotoUrl': apartment.ownerPhotoUrl,
         },
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Owner contact information not available")),
+        SnackBar(content: Text(l10n.ownerContactNotAvailable)),
       );
     }
   }
@@ -1024,7 +1013,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     required double lat,
     required double lng,
     required String address,
+
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final hasAddress =
         address.trim().isNotEmpty && address != 'No detailed address provided';
     final target = hasAddress
@@ -1038,12 +1029,12 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
     if (!await launchUrl(target, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open Google Maps')),
+        SnackBar(content: Text(l10n.couldNotOpenGoogleMaps)),
       );
     }
   }
 
-  Widget _buildUnverifiedWarning(ApartmentResponse apartment, ThemeData theme) {
+  Widget _buildUnverifiedWarning(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
     if (apartment.verified == true) {
       return const SizedBox.shrink();
     }
@@ -1055,11 +1046,11 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isDark 
-            ? AppColors.warningColor.withOpacity(0.15) 
-            : AppColors.warningColor.withOpacity(0.10),
+            ? AppColors.warningColor.withValues(alpha: 0.15) 
+            : AppColors.warningColor.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: AppColors.warningColor.withOpacity(0.4),
+          color: AppColors.warningColor.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),
@@ -1077,7 +1068,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Not Verified",
+                  l10n.notVerified,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: isDark ? AppColors.warningColor : const Color(0xFFB57800),
                     fontSize: 14.sp,
@@ -1086,7 +1077,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  "This apartment is not verified yet by Sokon administrator.",
+                  l10n.notVerifiedBanner,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: isDark ? AppColors.detailsBodyDark : AppColors.detailsMutedLight,
                     fontSize: 12.sp,

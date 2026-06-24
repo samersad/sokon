@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -80,6 +81,7 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final user = userViewModel.user;
@@ -120,6 +122,7 @@ class _HomeTabState extends State<HomeTab> {
                         child: _buildUniversitySelector(
                           theme: theme,
                           selectedUniversity: state.selectedUniversity,
+                          l10n: l10n,
                         ),
                       ),
                       SizedBox(width: 10.w),
@@ -226,7 +229,7 @@ class _HomeTabState extends State<HomeTab> {
                                 userPhotoUrl: user?.photoUrl,
                               ),
                       icon: const Icon(Icons.map_outlined),
-                      label: const Text("View all apartments on map"),
+                      label:  Text(l10n.viewAllOnMap),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: AppColors.whiteColor,
@@ -239,13 +242,13 @@ class _HomeTabState extends State<HomeTab> {
                   SizedBox(height: 20.h),
                   Row(
                     children: [
-                      Text("Featured Estates", style: theme.textTheme.displaySmall),
+                      Text(l10n.featuredEstates, style: theme.textTheme.displaySmall),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
                         },
-                        child: Text("View all", style: theme.textTheme.displaySmall),
+                        child: Text(l10n.viewAll, style: theme.textTheme.displaySmall),
                       ),
                     ],
                   ),
@@ -260,13 +263,13 @@ class _HomeTabState extends State<HomeTab> {
                   SizedBox(height: 20.h),
                   Row(
                     children: [
-                      Text("Top Location", style: theme.textTheme.displaySmall),
+                      Text(l10n.topLocation, style: theme.textTheme.displaySmall),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
                         },
-                        child: Text("View all", style: theme.textTheme.displaySmall),
+                        child: Text(l10n.viewAll, style: theme.textTheme.displaySmall),
                       ),
                     ],
                   ),
@@ -281,7 +284,7 @@ class _HomeTabState extends State<HomeTab> {
                       height: 60.h,
                       child: Center(
                         child: Text(
-                          "No districts available",
+                          l10n.noDistrictsAvailable,
                           style: theme.textTheme.bodyMedium,
                         ),
                       ),
@@ -292,7 +295,7 @@ class _HomeTabState extends State<HomeTab> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: topDistricts.length,
-                        separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                        separatorBuilder: (_, index) => SizedBox(width: 10.w),
                         itemBuilder: (_, index) {
                           final district = topDistricts[index];
                           return SizedBox(
@@ -314,13 +317,13 @@ class _HomeTabState extends State<HomeTab> {
                   SizedBox(height: 10.h),
                   Row(
                     children: [
-                      Text("Nearby Estate", style: theme.textTheme.displaySmall),
+                      Text(l10n.nearbyEstate, style: theme.textTheme.displaySmall),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
                         },
-                        child: Text("View all", style: theme.textTheme.displaySmall),
+                        child: Text(l10n.viewAll, style: theme.textTheme.displaySmall),
                       ),
                     ],
                   ),
@@ -345,6 +348,7 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildUniversitySelector({
     required ThemeData theme,
     required University selectedUniversity,
+    required AppLocalizations l10n,
   }) {
     return InkWell(
       onTap: () {
@@ -364,7 +368,7 @@ class _HomeTabState extends State<HomeTab> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                     child: Text(
-                      "Select your University to get the apartment near by your University ",
+                      l10n.selectUniversity,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -378,7 +382,7 @@ class _HomeTabState extends State<HomeTab> {
                             : theme.iconTheme.color,
                       ),
                       title: Text(
-                        university.name,
+                        university.getLocalizedName(l10n),
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           color: isSelected ? AppColors.primaryColor : null,
@@ -413,7 +417,7 @@ class _HomeTabState extends State<HomeTab> {
             SizedBox(width: 6.w),
             Expanded(
               child: Text(
-                selectedUniversity.name,
+                selectedUniversity.getLocalizedName(l10n),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyMedium,
@@ -430,12 +434,13 @@ class _HomeTabState extends State<HomeTab> {
     required bool isLoading,
     required List apartments,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLoading && apartments.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (apartments.isEmpty) {
-      return const Center(child: Text("No featured estates available"));
+      return  Center(child: Text(l10n.noFeaturedEstates));
     }
 
     return ListView.separated(
@@ -452,12 +457,13 @@ class _HomeTabState extends State<HomeTab> {
     required bool isLoading,
     required List apartments,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLoading && apartments.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (apartments.isEmpty) {
-      return const Center(child: Text("No nearby estates available"));
+      return  Center(child: Text(l10n.noNearbyEstates));
     }
 
     return ListView.separated(

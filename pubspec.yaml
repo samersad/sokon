@@ -31,7 +31,7 @@ dependencies:
   photo_view: ^0.15.0
   flutter_launcher_icons: ^0.14.4
   flutter_credit_card: ^4.1.0
-  intl: ^0.20.2
+  intl: any
   supabase_flutter: ^2.8.1
   google_sign_in: ^7.2.0
   google_sign_in_android: ^7.2.0
@@ -56,6 +56,8 @@ dependencies:
   firebase_core: ^4.7.0
   firebase_messaging: ^16.2.0
   flutter_local_notifications: ^21.0.0
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +69,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/images/
     - .env

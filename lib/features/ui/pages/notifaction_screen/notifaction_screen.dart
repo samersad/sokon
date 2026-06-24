@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -46,6 +47,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return BlocBuilder<NotificationViewModel, NotificationStates>(
       bloc: viewModel,
@@ -64,7 +66,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
                 children: [
                   const BackContainer(),
                   SizedBox(height: 20.h),
-                  Text("Notification", style: theme.textTheme.headlineMedium),
+                  Text(l10n.notification, style: theme.textTheme.headlineMedium),
                   SizedBox(height: 20.h),
                   if (state is NotificationLoading)
                     const Expanded(
@@ -199,23 +201,24 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
   }
 
   String _getNotificationTitle(String? type) {
+    final l10n = AppLocalizations.of(context)!;
     switch (type) {
       case 'broadcast':
-        return 'Announcement';
+        return l10n.announcement;
       case 'new_apartment':
-        return 'New Apartment';
+        return l10n.newApartment;
       case 'new_booking':
-        return 'Booking Request Received';
+        return l10n.bookingRequestReceived;
       case 'booking_accepted':
-        return 'Booking Approved';
+        return l10n.bookingApproved;
       case 'booking_cancelled':
         return 'Booking Cancelled';
       case 'booking_rejected':
         return 'Booking Rejected';
       case 'new_message':
-        return 'New Message';
+        return l10n.newMessage;
       default:
-        return 'Notification';
+        return l10n.notification;
     }
   }
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:sokon/l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,6 +43,7 @@ class _AddApartmentState extends State<AddApartment> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userViewModel = context.read<UserViewModel>();
 
     return BlocListener<AddApartmentViewModel, AddApartmentStates>(
@@ -49,7 +51,7 @@ class _AddApartmentState extends State<AddApartment> {
       listener: (context, state) {
         if (state is AddApartmentLoading) {
           _isLoadingDialogShowing = true;
-          AlertDialogUtils.showLoading(context: context, msg: "Uploading...");
+          AlertDialogUtils.showLoading(context: context, msg: l10n.uploading);
         } else if (state is AddApartmentProgress) {
           AlertDialogUtils.hideLoading(context: context);
           AlertDialogUtils.showLoading(context: context, msg: state.message);
@@ -71,8 +73,8 @@ class _AddApartmentState extends State<AddApartment> {
           }
           AlertDialogUtils.showMessage(
             context: context,
-            msg: "Apartment added successfully",
-            title: "Success",
+            msg: l10n.apartmentAddedSuccess,
+            title: l10n.success,
             pos: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -118,7 +120,7 @@ class _AddApartmentState extends State<AddApartment> {
                 onPressed: () => Navigator.maybePop(context),
               ),
               title: Text(
-                "Add Apartment",
+                l10n.addApartment,
                 style: (theme.textTheme.headlineMedium ??
                         AppStyles.medium16black)
                     .copyWith(fontWeight: FontWeight.w700),
@@ -149,7 +151,7 @@ class _AddApartmentState extends State<AddApartment> {
                   color: screenColor,
                   border: Border(
                     top: BorderSide(
-                      color: _borderColor(context).withOpacity(0.25),
+                      color: _borderColor(context).withValues(alpha: 0.25),
                     ),
                   ),
                 ),
@@ -162,7 +164,7 @@ class _AddApartmentState extends State<AddApartment> {
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 10,
-                      shadowColor: AppColors.primaryColor.withOpacity(0.3),
+                      shadowColor: AppColors.primaryColor.withValues(alpha: 0.3),
                       backgroundColor: accentColor,
                       foregroundColor: AppColors.whiteColor,
                       shape: RoundedRectangleBorder(
@@ -170,7 +172,7 @@ class _AddApartmentState extends State<AddApartment> {
                       ),
                     ),
                     child: Text(
-                      "Add Apartment",
+                      l10n.addApartment,
                       style: AppStyles.semiBold14White.copyWith(
                         color: AppColors.whiteColor,
                         fontSize: 16.sp,
@@ -192,6 +194,7 @@ class _AddApartmentState extends State<AddApartment> {
   }
 
   Widget _buildMediaSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -201,7 +204,7 @@ class _AddApartmentState extends State<AddApartment> {
               child: _MediaPickerCard(
                 icon: Icons.add_a_photo_outlined,
                 label: viewModel.apartmentImages.isEmpty
-                    ? "Add Photos"
+                    ? l10n.addPhotos
                     : "${viewModel.apartmentImages.length} Photo${viewModel.apartmentImages.length == 1 ? '' : 's'}",
                 onTap: _showPhotoSourceSheet,
               ),
@@ -210,7 +213,7 @@ class _AddApartmentState extends State<AddApartment> {
             Expanded(
               child: _MediaPickerCard(
                 icon: Icons.video_call_outlined,
-                label: viewModel.videoFile == null ? "Add Video" : "Video Added",
+                label: viewModel.videoFile == null ? l10n.addVideo : l10n.videoAdded,
                 onTap: _showVideoSourceSheet,
               ),
             ),
@@ -226,8 +229,9 @@ class _AddApartmentState extends State<AddApartment> {
   }
 
   Widget _buildMediaPreviewSection() {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
-      title: "Selected Media",
+      title: l10n.selectedMedia,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -286,32 +290,33 @@ class _AddApartmentState extends State<AddApartment> {
   }
 
   Widget _buildBasicInfoSection() {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
-      title: "Basic Information",
+      title: l10n.basicInformation,
       child: Column(
         children: [
           LabeledInfoField(
-            label: "Apartment Name",
-            explanation: "Provide a clear, brief name for the apartment (e.g. 'Cozy Private Studio near Faculty of Engineering'). This will be shown in listings.",
+            label: l10n.apartmentNameLabel,
+            explanation: l10n.apartmentNameHint,
             child: _designField(
               controller: viewModel.nameCRl,
-              hintText: "e.g. Modern Studio in Downtown",
+              hintText: l10n.apartmentNameHintText,
             ),
           ),
           SizedBox(height: 18.h),
           LabeledInfoField(
-            label: "Monthly Price (EGP)",
-            explanation: "Enter the rent price per month in Egyptian Pounds (EGP). Be precise about the price.",
+            label: l10n.monthlyPriceLabel,
+            explanation: l10n.monthlyPriceHint,
             child: _designField(
               controller: viewModel.priceCRl,
-              hintText: "0.00",
+              hintText: l10n.zeroPriceHint,
               keyboardType: TextInputType.number,
               suffixIconName: Padding(
                 padding: EdgeInsets.only(right: 16.w),
                 child: Center(
                   widthFactor: 1,
                   child: Text(
-                    "EGP",
+                    l10n.egp,
                     style: (Theme.of(context).textTheme.displaySmall ??
                             AppStyles.bold14Primary)
                         .copyWith(fontWeight: FontWeight.w800),
@@ -322,11 +327,11 @@ class _AddApartmentState extends State<AddApartment> {
           ),
           SizedBox(height: 18.h),
           LabeledInfoField(
-            label: "Description",
-            explanation: "Describe the property details. Mention utilities included, rules, roommate details, security deposit, and distance to universities.",
+            label: l10n.description,
+            explanation: l10n.propertyDetailsHint,
             child: _designField(
               controller: viewModel.descriptionCRl,
-              hintText: "Describe the property features, view, and utilities...",
+              hintText: l10n.propertyDetailsPlaceholder,
               keyboardType: TextInputType.multiline,
               maxLines: 4,
               paddingVertical: 16,
@@ -338,13 +343,14 @@ class _AddApartmentState extends State<AddApartment> {
   }
 
   Widget _buildPropertyDetailsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
-      title: "Property Details",
+      title: l10n.propertyDetails,
       child: Column(
         children: [
           _StepperRow(
             icon: Icons.bed_outlined,
-            label: "Bedrooms",
+            label: l10n.bedrooms,
             explanation: "Select the total number of private/shared bedrooms in this apartment.",
             value: viewModel.bedrooms,
             onIncrease: viewModel.increaseBedrooms,
@@ -352,15 +358,15 @@ class _AddApartmentState extends State<AddApartment> {
           ),
           _StepperRow(
             icon: Icons.bathtub_outlined,
-            label: "Bathrooms",
-            explanation: "Select the number of fully functional bathrooms.",
+            label: l10n.bathrooms,
+            explanation: l10n.selectBathrooms,
             value: viewModel.bathrooms,
             onIncrease: viewModel.increaseBathrooms,
             onDecrease: viewModel.decreaseBathrooms,
           ),
           _StepperRow(
             icon: Icons.chair_outlined,
-            label: "Living Rooms",
+            label: l10n.livingRooms,
             explanation: "Select the number of common/living areas.",
             value: viewModel.livingRooms,
             onIncrease: viewModel.increaseLivingRooms,
@@ -368,16 +374,16 @@ class _AddApartmentState extends State<AddApartment> {
           ),
           _StepperRow(
             icon: Icons.groups_outlined,
-            label: "Living Capacity",
-            explanation: "Select the maximum number of people allowed to rent and live in this apartment together.",
+            label: l10n.livingCapacity,
+            explanation: l10n.selectLivingCapacity,
             value: viewModel.maxPeople,
             onIncrease: viewModel.increaseMaxPeople,
             onDecrease: viewModel.decreaseMaxPeople,
           ),
           _StepperRow(
             icon: Icons.stairs_outlined,
-            label: "Floor",
-            explanation: "Select which floor the apartment is located on (e.g. Ground Floor = 0, First Floor = 1, etc.).",
+            label: l10n.floor(""),
+            explanation: l10n.selectFloor,
             value: viewModel.floor,
             onIncrease: () => _setFloor(viewModel.floor + 1),
             onDecrease: () {
@@ -393,19 +399,20 @@ class _AddApartmentState extends State<AddApartment> {
   }
 
   Widget _buildLocationSection(LocationViewModel locationViewModel) {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
-      title: "Location Details",
+      title: l10n.locationDetails,
       child: BlocBuilder<LocationViewModel, LocationState>(
         builder: (context, state) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LabeledInfoField(
-                label: "Address",
-                explanation: "Enter the detailed street address, building number, and apartment number so clients can find it easily.",
+                label: l10n.address,
+                explanation: l10n.streetAddressHint,
                 child: _designField(
                   controller: viewModel.addressCRl,
-                  hintText: "Street number and name",
+                  hintText: l10n.streetAddressLabel,
                   suffixIconName: Padding(
                     padding: EdgeInsets.only(right: 12.w),
                     child: InkWell(
@@ -447,20 +454,20 @@ class _AddApartmentState extends State<AddApartment> {
                 children: [
                   Expanded(
                     child: LabeledInfoField(
-                      label: "City",
-                      explanation: "Select the city where the apartment is located.",
+                      label: l10n.city,
+                      explanation: l10n.selectCity,
                       child: _designField(
                         controller: viewModel.cityCRl,
                         readOnly: true,
-                        hintText: "e.g. Assuit",
+                        hintText: l10n.assiutHint,
                       ),
                     ),
                   ),
                   SizedBox(width: 16.w),
                   Expanded(
                     child: LabeledInfoField(
-                      label: "District",
-                      explanation: "Select the district or neighborhood of the apartment to help users search by proximity.",
+                      label: l10n.district,
+                      explanation: l10n.selectDistrict,
                       child: _designField(
                         controller: viewModel.districtCRl,
                         readOnly: true,
@@ -499,7 +506,7 @@ class _AddApartmentState extends State<AddApartment> {
       hintText: hintText,
       hintStyle: (theme.textTheme.bodyMedium ?? AppStyles.regular14gray)
           .copyWith(
-        color: theme.highlightColor.withOpacity(isDark ? 0.55 : 0.75),
+        color: theme.highlightColor.withValues(alpha: isDark ? 0.55 : 0.75),
         fontSize: 16.sp,
       ),
       keyboardType: keyboardType,
@@ -526,38 +533,41 @@ class _AddApartmentState extends State<AddApartment> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text("Camera"),
-              onTap: () {
-                Navigator.pop(context);
-                viewModel.pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text("Gallery"),
-              onTap: () {
-                Navigator.pop(context);
-                viewModel.pickImage(ImageSource.gallery);
-              },
-            ),
-            if (viewModel.apartmentImages.isNotEmpty)
+      builder: (_) {
+        final l10n = AppLocalizations.of(context)!;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               ListTile(
-                leading: const Icon(Icons.image_search_outlined),
-                title: const Text("Preview selected photos"),
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: Text(l10n.camera),
                 onTap: () {
                   Navigator.pop(context);
-                  openFullScreenGallery(context, 0, viewModel.apartmentImages);
+                  viewModel.pickImage(ImageSource.camera);
                 },
               ),
-          ],
-        ),
-      ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(l10n.gallery),
+                onTap: () {
+                  Navigator.pop(context);
+                  viewModel.pickImage(ImageSource.gallery);
+                },
+              ),
+              if (viewModel.apartmentImages.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.image_search_outlined),
+                  title: Text(l10n.previewSelectedPhotos),
+                  onTap: () {
+                    Navigator.pop(context);
+                    openFullScreenGallery(context, 0, viewModel.apartmentImages);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -567,29 +577,32 @@ class _AddApartmentState extends State<AddApartment> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.videocam_outlined),
-              title: const Text("Camera"),
-              onTap: () {
-                Navigator.pop(context);
-                viewModel.pickVideo(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.video_library_outlined),
-              title: const Text("Gallery"),
-              onTap: () {
-                Navigator.pop(context);
-                viewModel.pickVideo(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (_) {
+        final l10n = AppLocalizations.of(context)!;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.videocam_outlined),
+                title: Text(l10n.camera),
+                onTap: () {
+                  Navigator.pop(context);
+                  viewModel.pickVideo(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.video_library_outlined),
+                title: Text(l10n.gallery),
+                onTap: () {
+                  Navigator.pop(context);
+                  viewModel.pickVideo(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -835,7 +848,6 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
@@ -884,6 +896,7 @@ class _StepperRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final accentColor = _AddApartmentState._accentColor(context);
@@ -1025,6 +1038,7 @@ class _StepperButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return InkWell(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -63,11 +64,12 @@ class _UserLocationPickerState extends State<UserLocationPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final locationViewModel = context.read<LocationViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pick Your Location"),
+        title:  Text(l10n.pickYourLocation),
         centerTitle: true,
       ),
       body: BlocBuilder<LocationViewModel, LocationState>(
@@ -92,7 +94,7 @@ class _UserLocationPickerState extends State<UserLocationPicker> {
                   markers: _selectedLocation != null
                       ? {
                           Marker(
-                            markerId: const MarkerId("User Location"),
+                            markerId:  MarkerId(l10n.userLocation),
                             position: _selectedLocation!,
                           ),
                         }
@@ -149,7 +151,7 @@ class _UserLocationPickerState extends State<UserLocationPicker> {
                                   ),
                                   SizedBox(height: 2.h),
                                   Text(
-                                    "Tap the map, then confirm your location.",
+                                    l10n.tapMapConfirmLocation,
                                     style: AppStyles.regular12gray,
                                   ),
                                 ],
@@ -179,7 +181,7 @@ class _UserLocationPickerState extends State<UserLocationPicker> {
                                     SizedBox(width: 10.w),
                                     Expanded(
                                       child: Text(
-                                        "Loading selected address...",
+                                        l10n.loadingSelectedAddress,
                                         style: AppStyles.regular12gray,
                                       ),
                                     ),
@@ -188,7 +190,7 @@ class _UserLocationPickerState extends State<UserLocationPicker> {
                               : Text(
                                   _selectedAddress?.trim().isNotEmpty == true
                                       ? _selectedAddress!
-                                      : "No location selected yet.",
+                                      : l10n.noLocationSelected,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppStyles.regular14black,
@@ -222,7 +224,7 @@ class _UserLocationPickerState extends State<UserLocationPicker> {
                                     ),
                                   )
                                 : Text(
-                                    "Confirm Location",
+                                    l10n.confirmLocation,
                                     style: AppStyles.semiBold14White,
                                   ),
                           ),

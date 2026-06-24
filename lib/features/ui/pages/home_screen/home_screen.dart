@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/cache/cubit_manger/user_view_model.dart';
 import '../../../../core/di/di.dart';
-import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_routes.dart';
 import 'cubit/home_screen_states.dart';
 import 'cubit/home_screen_view_model.dart';
@@ -42,7 +41,7 @@ class HomeScreen extends StatelessWidget {
                 width: 35.w,
                 height: 35.h,
                 color: isDarkMode
-                    ? (isSelected ? Colors.white : Colors.white.withOpacity(0.4))
+                    ? (isSelected ? Colors.white : Colors.white.withValues(alpha: 0.4))
                     : null,
               );
             },

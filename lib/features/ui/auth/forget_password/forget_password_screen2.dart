@@ -10,6 +10,7 @@ import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_styles.dart';
 import '../../../../core/utils/app_validator.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 import '../../widgets/custom_text_form_field.dart';
 
@@ -29,6 +30,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return BlocProvider.value(
       value: viewModel,
       child: BlocConsumer<ForgetPasswordViewModel, ForgetPasswordState>(
@@ -36,23 +38,22 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
           if (state is ForgetPasswordLoading) {
             AlertDialogUtils.showLoading(
               context: context,
-              msg: "Updating password...",
+              msg: l10n.updatingPassword,
             );
           } else if (state is ForgetPasswordError) {
             AlertDialogUtils.hideLoading(context: context);
             AlertDialogUtils.showMessage(
               context: context,
               msg: state.message,
-              title: "Error",
+              title: l10n.error,
             );
           } else if (state is ResetPasswordSuccess) {
             AlertDialogUtils.hideLoading(context: context);
             AlertDialogUtils.showMessage(
               context: context,
-              msg:
-                  "Password reset successfully. Please login with your new password.",
-              title: "Success",
-              pos: Text("Login", style: AppStyles.bold12PrimaryColor),
+              msg: l10n.passwordResetSuccess,
+              title: l10n.success,
+              pos: Text(l10n.login, style: AppStyles.bold12PrimaryColor),
               posAction: () {
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   AppRoutes.loginRoute,
@@ -78,7 +79,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                           horizontal: 15.w,
                         ),
                         child: Text(
-                          "New Password",
+                          l10n.newPassword,
                           style: theme.textTheme.headlineMedium,
                         ),
                       ),
@@ -96,7 +97,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                           CustomTextFormField(
                             controller: passwordCtrl,
                             hintStyle: theme.textTheme.bodyMedium,
-                            hintText: "New Password",
+                            hintText: l10n.newPassword,
                             obscureText: viewModel.hidePassword,
                             suffixIconName: IconButton(
                               icon: Icon(
@@ -111,13 +112,13 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                             fillColor: theme.disabledColor,
                             borderSideColor: theme.highlightColor,
                             validator: (val) =>
-                                AppValidators.validatePassword(val),
+                                AppValidators.validatePassword(val, l10n),
                           ),
                           SizedBox(height: 20.h),
                           CustomTextFormField(
                             controller: confirmPasswordCtrl,
                             hintStyle: theme.textTheme.bodyMedium,
-                            hintText: "Confirm New Password",
+                            hintText: l10n.confirmNewPassword,
                             obscureText: viewModel.hidePassword,
                             suffixIconName: IconButton(
                               icon: Icon(
@@ -135,6 +136,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                                 AppValidators.validateConfirmPassword(
                                   val,
                                   passwordCtrl.text,
+                                  l10n,
                                 ),
                           ),
                           SizedBox(height: 70.h),
@@ -144,7 +146,7 @@ class _ForgetPasswordScreen2State extends State<ForgetPasswordScreen2> {
                                 viewModel.resetPassword(passwordCtrl.text);
                               }
                             },
-                            text: "Finish",
+                            text: l10n.finish,
                             width: 336.w,
                             borderRadius: 30.r,
                             backgroundColorElevated: theme.primaryColor,

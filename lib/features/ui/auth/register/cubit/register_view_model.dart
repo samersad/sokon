@@ -6,6 +6,7 @@ import '../../../../../core/model/RegisterResponse.dart';
 import '../../../../../core/model/my_user.dart';
 import '../../../../../core/utils/app_styles.dart';
 import '../../../../../data/repository/auth/repository/auth_repository.dart';
+import '../../../../../l10n/app_localizations.dart';
 import 'register_states.dart';
 
 @injectable
@@ -138,6 +139,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     RegisterUser user,
     UserViewModel userCubit,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     String? selectedDialogRole;
     showDialog(
       context: context,
@@ -146,18 +148,18 @@ class RegisterViewModel extends Cubit<RegisterStates> {
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
-              title:  Text("Select your role",style: AppStyles.bold20blackIner),
+              title:  Text(l10n.selectYourRole,style: AppStyles.bold20blackIner),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<String>(
-                    title: const Text("Owner"),
+                    title: Text(l10n.owner),
                     value: 'owner',
                     groupValue: selectedDialogRole,
                     onChanged: (value) => setState(() => selectedDialogRole = value),
                   ),
                   RadioListTile<String>(
-                    title: const Text("Client"),
+                    title: Text(l10n.client),
                     value: 'client',
                     groupValue: selectedDialogRole,
                     onChanged: (value) => setState(() => selectedDialogRole = value),
@@ -173,7 +175,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
                     Navigator.pop(dialogContext);
                     updateUserRole(user, selectedDialogRole!, userCubit);
                   },
-                  child: const Text("Confirm"),
+                  child: Text(l10n.confirm),
                 ),
               ],
             );

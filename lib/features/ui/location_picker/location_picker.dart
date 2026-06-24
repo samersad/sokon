@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -67,11 +68,12 @@ class _LocationPickerState extends State<LocationPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final locationViewModel = context.read<LocationViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pick Apartment Location"),
+        title: Text(l10n.pickApartmentLocation),
         centerTitle: true,
       ),
       body: BlocBuilder<LocationViewModel, LocationState>(
@@ -160,7 +162,7 @@ class _LocationPickerState extends State<LocationPicker> {
                                   ),
                                   SizedBox(height: 2.h),
                                   Text(
-                                    "Tap the map to place the apartment marker.",
+                                    l10n.tapMapToPlaceMarker,
                                     style: AppStyles.regular12gray,
                                   ),
                                 ],
@@ -190,7 +192,7 @@ class _LocationPickerState extends State<LocationPicker> {
                                     SizedBox(width: 10.w),
                                     Expanded(
                                       child: Text(
-                                        "Loading selected address...",
+                                        l10n.loadingSelectedAddress,
                                         style: AppStyles.regular12gray,
                                       ),
                                     ),
@@ -199,7 +201,7 @@ class _LocationPickerState extends State<LocationPicker> {
                               : Text(
                                   _selectedAddress?.trim().isNotEmpty == true
                                       ? _selectedAddress!
-                                      : "No location selected yet.",
+                                      : l10n.noLocationSelected,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppStyles.regular14black,
@@ -233,7 +235,7 @@ class _LocationPickerState extends State<LocationPicker> {
                                     ),
                                   )
                                 : Text(
-                                    "Confirm Location",
+                                    l10n.confirmLocation,
                                     style: AppStyles.semiBold14White,
                                   ),
                           ),

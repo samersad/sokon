@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:sokon/l10n/app_localizations.dart';
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
@@ -67,6 +68,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
   }
 
   Future<void> _initializePlayer() async {
+    final l10n = AppLocalizations.of(context)!;
     final loadVersion = ++_loadVersion;
     await _disposeControllers();
 
@@ -130,7 +132,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
       if (!mounted || loadVersion != _loadVersion) return;
 
       setState(() {
-        _errorMessage = 'Video playback is unavailable.';
+        _errorMessage = l10n.videoPlaybackUnavailable;
         _isLoading = false;
       });
     }
@@ -195,6 +197,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return _buildShell(child: _buildLoadingState());
     }
@@ -205,7 +208,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
 
     final chewieController = _chewieController;
     if (chewieController == null) {
-      return _buildShell(child: _buildErrorState('Video playback failed.'));
+      return _buildShell(child: _buildErrorState(l10n.videoPlaybackFailed));
     }
 
     return Column(

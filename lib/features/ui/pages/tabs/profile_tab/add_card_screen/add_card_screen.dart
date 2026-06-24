@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -35,13 +36,14 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
 
-        title: Text("Add Card", style: theme.textTheme.titleLarge),
+        title: Text(l10n.addCard, style: theme.textTheme.titleLarge),
         centerTitle: true,
       ),
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -56,7 +58,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 cvvCode: cvvCode,
                 showBackView: isCvvFocused,
                 onCreditCardWidgetChange: (CreditCardBrand brand) {},
-                bankName: 'My Bank',
+                bankName: l10n.myBank,
                 cardBgColor: theme.primaryColor,
                 enableFloatingCard: true,
                 height: 220.h,
@@ -64,7 +66,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 obscureCardNumber: true,
                 obscureCardCvv: true,
                 labelCardHolder: 'CARD HOLDER',
-                labelValidThru: 'VALID THRU',
+                labelValidThru: l10n.validThru,
                 cardType: CardType.mastercard,
                 isHolderNameVisible: true,
                 animationDuration: const Duration(milliseconds: 1000),
@@ -88,25 +90,25 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 isExpiryDateVisible: true,
                 enableCvv: true,
 
-                inputConfiguration: const InputConfiguration(
+                inputConfiguration: InputConfiguration(
                   cardNumberDecoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Card Number',
-                    hintText: 'XXXX XXXX XXXX XXXX',
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.cardNumber,
+                    hintText: l10n.cardNumberPlaceholder,
                   ),
-                  expiryDateDecoration: InputDecoration(
+                  expiryDateDecoration:  InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Expiry Date',
-                    hintText: 'MM/YY',
+                    labelText: l10n.expiryDate,
+                    hintText: l10n.expiryDatePlaceholder,
                   ),
-                  cvvCodeDecoration: InputDecoration(
+                  cvvCodeDecoration:  InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'CVV',
-                    hintText: 'XXX',
+                    labelText: l10n.cvvLabel,
+                    hintText: l10n.cvvPlaceholder,
                   ),
-                  cardHolderDecoration: InputDecoration(
+                  cardHolderDecoration:  InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Card Holder',
+                    labelText: l10n.cardHolder,
                   ),
                 ),
               ),
@@ -130,7 +132,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
                   }
                   ,
-                  text: "Add Card",
+                  text: l10n.addCard,
                   customPadding: 15,
                   borderRadius: 20.r,
                   backgroundColorElevated: theme.primaryColor,

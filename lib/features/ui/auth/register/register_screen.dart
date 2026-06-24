@@ -8,9 +8,11 @@ import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_routes.dart';
 import '../../../../core/utils/app_styles.dart';
 import '../../../../core/utils/app_validator.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../widgets/alert_dialog_utils.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/language_toggle.dart';
 import '../widgets/circle_avatar_container.dart';
 import 'cubit/register_states.dart';
 import 'cubit/register_view_model.dart';
@@ -40,17 +42,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final userViewModel = context.read<UserViewModel>();
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return BlocListener<RegisterViewModel, RegisterStates>(
       bloc: viewModel,
       listener: (context, state) {
         if (state is RegisterLoadingStates) {
-          AlertDialogUtils.showLoading(context: context, msg: 'Loading...');
+          AlertDialogUtils.showLoading(context: context, msg: l10n.loading);
         } else if (state is RegisterErrorStates) {
           AlertDialogUtils.hideLoading(context: context);
           AlertDialogUtils.showMessage(
             context: context,
             msg: state.errorMessage,
-            pos: Text("Ok", style: theme.textTheme.labelMedium),
+            pos: Text(l10n.ok, style: theme.textTheme.labelMedium),
           );
         } else if (state is RegisterNeedsRoleStates) {
           AlertDialogUtils.hideLoading(context: context);
@@ -74,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 120.h),
-                    Center(child: Text("Sign Up", style: theme.textTheme.headlineLarge)),
+                    Center(child: Text(l10n.signUp, style: theme.textTheme.headlineLarge)),
                     SizedBox(height: 100.h),
                     Container(
                       decoration: BoxDecoration(
@@ -95,21 +98,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextFormField(
                                 controller: viewModel.userCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Username",
+                                hintText: l10n.username,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 validator: (val) =>
-                                    AppValidators.validateUsername(val),
+                                    AppValidators.validateUsername(val, l10n),
                               ),
                               SizedBox(height: 16.h),
                               CustomTextFormField(
                                 controller: viewModel.emailCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Email",
+                                hintText: l10n.email,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 validator: (val) =>
-                                    AppValidators.validateEmail(val),
+                                    AppValidators.validateEmail(val, l10n),
                               ),
                               SizedBox(height: 16.h),
                               DropdownButtonFormField<String>(
@@ -139,20 +142,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 iconEnabledColor: theme.highlightColor,
                                 dropdownColor: theme.cardColor,
                                 style: theme.textTheme.bodyMedium,
-                                hint: const Text("Role"),
+                                hint: Text(l10n.role),
                                 items: RegisterViewModel.roleOptions
                                     .map(
                                       (role) => DropdownMenuItem<String>(
                                         value: role,
                                         child: Text(
-                                          role[0].toUpperCase() + role.substring(1),
+                                          role == 'owner' ? l10n.owner : l10n.client,
                                         ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: viewModel.setRole,
                                 validator: (value) => value == null || value.isEmpty
-                                    ? 'this field is required'
+                                    ? l10n.fieldRequired
                                     : null,
                               ),
                               SizedBox(height: 16.h),
@@ -160,22 +163,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 CustomTextFormField(
                                   controller: viewModel.collegeCtrl,
                                   hintStyle: theme.textTheme.bodyMedium,
-                                  hintText: "College",
+                                  hintText: l10n.college,
                                   fillColor: theme.disabledColor,
                                   borderSideColor: theme.highlightColor,
-                                  validator: AppValidators.validateFullName,
+                                  validator: (val) => AppValidators.validateFullName(val, l10n),
                                 ),
                                 SizedBox(height: 16.h),
                               ],
                               CustomTextFormField(
                                 controller: viewModel.phoneCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Phone Number",
+                                hintText: l10n.phoneNumber,
                                 keyboardType: TextInputType.phone,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 validator: (val) =>
-                                    AppValidators.validatePhoneNumber(val),
+                                    AppValidators.validatePhoneNumber(val, l10n),
                               ),
                               SizedBox(height: 16.h),
                               DropdownButtonFormField<String>(
@@ -210,14 +213,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       (gender) => DropdownMenuItem<String>(
                                         value: gender,
                                         child: Text(
-                                          gender[0].toUpperCase() + gender.substring(1),
+                                          gender == 'male' ? l10n.male : l10n.female,
                                         ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: viewModel.setGender,
                                 validator: (value) => value == null || value.isEmpty
-                                    ? 'this field is required'
+                                    ? l10n.fieldRequired
                                     : null,
                               ),
                               SizedBox(height: 16.h),
@@ -226,12 +229,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextFormField(
                                 controller: viewModel.passwordCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Password",
+                                hintText: l10n.password,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 obscureText: viewModel.hidePassword,
                                 validator: (val) =>
-                                    AppValidators.validatePassword(val),
+                                    AppValidators.validatePassword(val, l10n),
                                 suffixIconName: IconButton(
                                   icon: Icon(
                                     viewModel.hidePassword
@@ -247,13 +250,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextFormField(
                                 controller: viewModel.confirmPasswordCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Confirm Password",
+                                hintText: l10n.confirmPassword,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 obscureText: viewModel.hidePassword,
                                 validator: (val) => AppValidators.validateConfirmPassword(
                                   val,
                                   viewModel.passwordCtrl.text,
+                                  l10n,
                                 ),
                                 suffixIconName: IconButton(
                                   icon: Icon(
@@ -271,7 +275,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 onPressed: () {
                                   viewModel.register(userViewModel);
                                 },
-                                text: "Register",
+                                text: l10n.register,
                                 width: 250.w,
                                 backgroundColorElevated: theme.primaryColor,
                                 textStyle: theme.textTheme.titleLarge,
@@ -309,7 +313,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "have an account?",
+                                    l10n.haveAccount,
                                     style: theme.textTheme.bodyMedium,
                                   ),
                                   TextButton(
@@ -318,12 +322,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           .pushReplacementNamed(AppRoutes.loginRoute);
                                     },
                                     child: Text(
-                                      "Login",
+                                      l10n.login,
                                       style: AppStyles.semiBold14Primary,
                                     ),
                                   ),
                                 ],
                               ),
+                              const LanguageToggle(),
+                              SizedBox(height: 20.h),
                             ],
                           ),
                         ),

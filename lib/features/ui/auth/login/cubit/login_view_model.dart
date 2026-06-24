@@ -6,6 +6,7 @@ import '../../../../../core/model/RegisterResponse.dart';
 import '../../../../../core/model/my_user.dart';
 import '../../../../../core/utils/app_styles.dart';
 import '../../../../../data/repository/auth/repository/auth_repository.dart';
+import '../../../../../l10n/app_localizations.dart';
 import 'login_states.dart';
 
 @injectable
@@ -76,6 +77,7 @@ class LoginViewModel extends Cubit<LoginStates> {
     RegisterUser user,
     UserViewModel userCubit,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     String? selectedDialogRole;
     showDialog(
       context: context,
@@ -84,18 +86,18 @@ class LoginViewModel extends Cubit<LoginStates> {
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
-              title:  Text("Select your role",style: AppStyles.bold20blackIner),
+              title:  Text(l10n.selectYourRole,style: AppStyles.bold20blackIner),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<String>(
-                    title: const Text("Owner"),
+                    title: Text(l10n.owner),
                     value: 'owner',
                     groupValue: selectedDialogRole,
                     onChanged: (value) => setState(() => selectedDialogRole = value),
                   ),
                   RadioListTile<String>(
-                    title: const Text("Client"),
+                    title: Text(l10n.client),
                     value: 'client',
                     groupValue: selectedDialogRole,
                     onChanged: (value) => setState(() => selectedDialogRole = value),
@@ -111,7 +113,7 @@ class LoginViewModel extends Cubit<LoginStates> {
                     Navigator.pop(dialogContext);
                     updateUserRole(user, selectedDialogRole!, userCubit);
                   },
-                  child: const Text("Confirm"),
+                  child: Text(l10n.confirm),
                 ),
               ],
             );

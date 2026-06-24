@@ -1,10 +1,24 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 
 class University {
   final String name;
   final LatLng location;
 
   const University({required this.name, required this.location});
+
+  String getLocalizedName(AppLocalizations l10n) {
+    switch (name) {
+      case 'Assiut University':
+        return l10n.assiutUniversity;
+      case 'Assiut National University':
+        return l10n.assiutNationalUniversity;
+      case 'Badr University Assiut':
+        return l10n.badrUniversityAssiut;
+      default:
+        return name;
+    }
+  }
 }
 
 class UniversityLocations {

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -69,6 +70,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
   }
 
   Future<void> _buildMarkers() async {
+    final l10n = AppLocalizations.of(context)!;
     final markers = <Marker>{};
     final userLocation = widget.arguments.userLocation;
 
@@ -84,7 +86,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
             borderColor: AppColors.whiteBlue,
             size: 118,
           ),
-          infoWindow: const InfoWindow(title: "My Location"),
+          infoWindow:  InfoWindow(title: l10n.myLocation),
         ),
       );
     }
@@ -269,6 +271,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -326,7 +329,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
                         ),
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Apartments on Map",
+                          l10n.apartmentsOnMap,
                           style: theme.textTheme.labelMedium,
                         ),
                       ),
@@ -369,7 +372,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
                     ),
                     TextButton(
                       onPressed: _fitMapToMarkers,
-                      child: const Text("Fit"),
+                      child:  Text(l10n.fit),
                     ),
                   ],
                 ),

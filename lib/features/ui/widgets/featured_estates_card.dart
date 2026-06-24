@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/model/ApartmentResponse.dart';
@@ -12,6 +13,7 @@ class FeaturedEstatesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return InkWell(
       onTap: () => Navigator.of(
@@ -59,7 +61,7 @@ class FeaturedEstatesCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     AutoSizeText(
-                      apartment.name ?? "No Name",
+                      apartment.name ?? l10n.noName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.displaySmall,

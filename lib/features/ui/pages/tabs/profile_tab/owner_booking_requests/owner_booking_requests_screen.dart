@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -48,6 +49,7 @@ class _OwnerBookingRequestsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final user = context.read<UserViewModel>().user;
 
@@ -68,23 +70,23 @@ class _OwnerBookingRequestsScreenState
                     children: [
                       const BackContainer(),
                       SizedBox(width: 15.w),
-                      Text("Booking Requests", style: theme.textTheme.headlineMedium),
+                      Text(l10n.bookingRequests, style: theme.textTheme.headlineMedium),
                     ],
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Text(
-                    "Review live booking activity for your apartments",
+                    l10n.reviewLiveBookingActivity,
                     style: theme.textTheme.bodyMedium,
                   ),
                 ),
                 SizedBox(height: 20.h),
                 Expanded(
                   child: user == null
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            "Please login to manage your booking requests",
+                            l10n.pleaseLoginToManageRequests,
                           ),
                         )
                       : _buildContent(state),
@@ -99,6 +101,7 @@ class _OwnerBookingRequestsScreenState
 
   Widget _buildContent(OwnerBookingRequestsStates state) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     if (state is OwnerBookingRequestsLoading) {
       return Center(
         child: CircularProgressIndicator(color: theme.primaryColor),
@@ -147,6 +150,7 @@ class _OwnerBookingRequestsScreenState
 
   Widget _buildBookingCard(BookingResponse booking) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final periodFormat = DateFormat('dd MMM yyyy');
     final createdAtFormat = DateFormat('dd MMM yyyy, hh:mm a');
     final status = _normalizeStatus(booking.status);
@@ -158,11 +162,11 @@ class _OwnerBookingRequestsScreenState
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: theme.brightness == Brightness.dark
-            ? Colors.white.withOpacity(0.2)
-            : theme.dividerColor.withOpacity(0.2)),
+            ? Colors.white.withValues(alpha: 0.2)
+            : theme.dividerColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -241,7 +245,7 @@ class _OwnerBookingRequestsScreenState
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(status).withOpacity(0.12),
+                  color: _getStatusColor(status).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
@@ -265,19 +269,19 @@ class _OwnerBookingRequestsScreenState
             child: Column(
               children: [
                 _buildInfoRow(
-                  label: "Period",
+                  label: l10n.period,
                   value:
                       "${booking.startDate != null ? periodFormat.format(booking.startDate!) : '-'} - ${booking.endDate != null ? periodFormat.format(booking.endDate!) : '-'}",
                 ),
                 SizedBox(height: 10.h),
                 _buildInfoRow(
-                  label: "Total Price",
+                  label: l10n.totalPrice,
                   value:
                       "${booking.totalPrice?.toStringAsFixed(0) ?? '0'} EG",
                 ),
                 SizedBox(height: 10.h),
                 _buildInfoRow(
-                  label: "People",
+                  label: l10n.people,
                   value: "${booking.peopleCount ?? 1}",
                 ),
                 SizedBox(height: 10.h),
@@ -285,7 +289,7 @@ class _OwnerBookingRequestsScreenState
                   label: "Requested",
                   value: booking.createdAt != null
                       ? createdAtFormat.format(booking.createdAt!)
-                      : "Unknown",
+                      : l10n.unknown,
                 ),
               ],
             ),
@@ -327,6 +331,7 @@ class _OwnerBookingRequestsScreenState
 
   Widget _buildActions(BookingResponse booking, String status, bool isUpdating) {
    var theme=Theme.of(context);
+   final l10n = AppLocalizations.of(context)!;
     if (status == 'pending') {
       return Row(
         children: [
@@ -337,10 +342,10 @@ class _OwnerBookingRequestsScreenState
                   : () => _updateBookingStatus(
                         booking: booking,
                         nextStatus: 'accepted',
-                        dialogTitle: 'Accept booking',
+                        dialogTitle: l10n.acceptBooking,
                         dialogMessage:
-                            'Do you want to accept this booking request?',
-                        successMessage: 'Booking accepted',
+                            l10n.confirmAcceptBooking,
+                        successMessage: l10n.bookingAccepted,
                       ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.primaryColor,
@@ -351,7 +356,7 @@ class _OwnerBookingRequestsScreenState
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: Text("Accept",style: theme.textTheme.bodySmall,),
+              child: Text(l10n.accept,style: theme.textTheme.bodySmall,),
             ),
           ),
           SizedBox(width: 12.w),
@@ -362,20 +367,20 @@ class _OwnerBookingRequestsScreenState
                   : () => _updateBookingStatus(
                         booking: booking,
                         nextStatus: 'rejected',
-                        dialogTitle: 'Reject booking',
+                        dialogTitle: l10n.rejectBooking,
                         dialogMessage:
-                            'Do you want to reject this booking request?',
-                        successMessage: 'Booking rejected',
+                            l10n.confirmRejectBooking,
+                        successMessage: l10n.bookingRejected,
                       ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red,
-                side: BorderSide(color: Colors.red.withOpacity(0.35)),
+                side: BorderSide(color: Colors.red.withValues(alpha: 0.35)),
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: const Text("Reject"),
+              child:  Text(l10n.reject),
             ),
           ),
         ],
@@ -391,24 +396,25 @@ class _OwnerBookingRequestsScreenState
                   booking: booking,
                   nextStatus: 'cancelled',
                   dialogTitle: 'Cancel booking',
-                  dialogMessage: 'Do you want to cancel this booking?',
-                  successMessage: 'Booking cancelled',
+                  dialogMessage: l10n.confirmCancelBooking,
+                  successMessage: l10n.bookingCancelled,
                 ),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.red,
-          side: BorderSide(color: Colors.red.withOpacity(0.35)),
+          side: BorderSide(color: Colors.red.withValues(alpha: 0.35)),
           padding: EdgeInsets.symmetric(vertical: 12.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
         ),
-        child: const Text("Cancel Booking"),
+        child:  Text(l10n.cancelBooking),
       ),
     );
   }
 
   Widget _buildEmptyState() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 32.w),
@@ -422,7 +428,7 @@ class _OwnerBookingRequestsScreenState
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 18,
                   ),
                 ],
@@ -430,17 +436,17 @@ class _OwnerBookingRequestsScreenState
               child: Icon(
                 Icons.assignment_outlined,
                 size: 60.sp,
-                color: theme.primaryColor.withOpacity(0.22),
+                color: theme.primaryColor.withValues(alpha: 0.22),
               ),
             ),
             SizedBox(height: 22.h),
             Text(
-              "No booking requests yet",
+              l10n.noBookingRequestsYet,
               style: theme.textTheme.labelLarge,
             ),
             SizedBox(height: 8.h),
             Text(
-              "New booking activity for your apartments will appear here in real time.",
+              l10n.newBookingActivity,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
@@ -465,6 +471,7 @@ class _OwnerBookingRequestsScreenState
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -473,11 +480,11 @@ class _OwnerBookingRequestsScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('No'),
+            child:  Text(l10n.no),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes'),
+            child:  Text(l10n.yes),
           ),
         ],
       ),
@@ -497,10 +504,12 @@ class _OwnerBookingRequestsScreenState
         status: nextStatus,
       );
       if (!mounted) return;
-      final userId = context.read<UserViewModel>().user?.id;
+      final userViewModel = context.read<UserViewModel>();
+      final userId = userViewModel.user?.id;
       if (userId != null && userId.isNotEmpty) {
         await viewModel.getOwnerBookings(userId);
       }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(successMessage)),
       );
@@ -546,17 +555,18 @@ class _OwnerBookingRequestsScreenState
   }
 
   String _getStatusLabel(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'accepted':
       case 'confirmed':
-        return 'ACCEPTED';
+        return l10n.acceptedStatus;
       case 'cancelled':
-        return 'CANCELLED';
+        return l10n.cancelledStatus;
       case 'rejected':
         return 'REJECTED';
       case 'pending':
       default:
-        return 'PENDING';
+        return l10n.pendingStatus;
     }
   }
 }

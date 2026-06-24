@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -53,6 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final themeCubit = context.read<ThemeViewModel>();
     final editableFillColor = Theme.of(context).disabledColor;
     final readOnlyFillColor = Theme.of(context).disabledColor.withOpacity(0.45);
@@ -61,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       listener: (context, state) {
         if (state is SettingsSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Profile updated successfully")),
+             SnackBar(content: Text(l10n.profileUpdated)),
           );
           Navigator.pop(context);
         } else if (state is SettingsError) {
@@ -81,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           appBar: AppBar(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
-            title: Text("Edit Profile", style: Theme.of(context).textTheme.titleLarge),
+            title: Text(l10n.editProfile, style: Theme.of(context).textTheme.titleLarge),
             centerTitle: true,
             actions: [
               IconButton(
@@ -138,22 +140,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           SizedBox(height: 80.h),
-                          Text("Username", style: AppStyles.semiBold14DarkPrimary),
+                          Text(l10n.username, style: AppStyles.semiBold14DarkPrimary),
                           SizedBox(height: 5.h),
                           CustomTextFormField(
-                            hintText: "Username",
+                            hintText: l10n.username,
                             controller: nameController,
                             paddingVertical: 15.h,
                             borderSideColor: AppColors.grayColor,
                             hintStyle: Theme.of(context).textTheme.bodyMedium,
                             fillColor: editableFillColor,
-                            validator: AppValidators.validateFullName,
+                            validator: (val) => AppValidators.validateFullName(val, l10n),
                           ),
                           SizedBox(height: 20.h),
-                          Text("Email", style: AppStyles.semiBold14DarkPrimary),
+                          Text(l10n.email, style: AppStyles.semiBold14DarkPrimary),
                           SizedBox(height: 5.h),
                           CustomTextFormField(
-                            hintText: "Email",
+                            hintText: l10n.email,
                             controller: emailController,
                             paddingVertical: 15.h,
                             borderSideColor: AppColors.grayColor,
@@ -163,10 +165,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           SizedBox(height: 20.h),
                           if (user?.role != 'owner') ...[
-                            Text("College", style: AppStyles.semiBold14DarkPrimary),
+                            Text(l10n.college, style: AppStyles.semiBold14DarkPrimary),
                             SizedBox(height: 5.h),
                             CustomTextFormField(
-                              hintText: "College",
+                              hintText: l10n.college,
                               controller: collegeController,
                               paddingVertical: 15.h,
                               borderSideColor: AppColors.grayColor,
@@ -175,20 +177,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             SizedBox(height: 20.h),
                           ],
-                          Text("Phone Number", style: AppStyles.semiBold14DarkPrimary),
+                          Text(l10n.phoneNumber, style: AppStyles.semiBold14DarkPrimary),
                           SizedBox(height: 5.h),
                           CustomTextFormField(
-                            hintText: "Phone Number",
+                            hintText: l10n.phoneNumber,
                             controller: phoneController,
                             paddingVertical: 15.h,
                             borderSideColor: AppColors.grayColor,
                             hintStyle: Theme.of(context).textTheme.bodyMedium,
                             fillColor: editableFillColor,
                             keyboardType: TextInputType.phone,
-                            validator: AppValidators.validatePhoneNumber,
+                            validator: (val) => AppValidators.validatePhoneNumber(val, l10n),
                           ),
                           SizedBox(height: 20.h),
-                          Text("Gender", style: AppStyles.semiBold14DarkPrimary),
+                          Text(l10n.gender, style: AppStyles.semiBold14DarkPrimary),
                           SizedBox(height: 5.h),
                           Container(
                             width: double.infinity,
@@ -217,7 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 );
                               }
                             },
-                            text: "Save Change",
+                            text: l10n.saveChanges,
                             width: 500.w,
                             borderRadius: 10.r,
                             backgroundColorElevated: AppColors.darkBlueColor,

@@ -12,6 +12,7 @@ import 'package:sokon/features/ui/widgets/alert_dialog_utils.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_styles.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -119,15 +120,16 @@ class _VerificationScreenState extends State<VerificationScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return BlocProvider.value(
       value: viewModel,
       child: BlocListener<ForgetPasswordViewModel, ForgetPasswordState>(
         listener: (context, state) {
           if (state is ForgetPasswordLoading) {
-            AlertDialogUtils.showLoading(context: context, msg: "Verifying OTP...");
+            AlertDialogUtils.showLoading(context: context, msg: l10n.verifyingOtp);
           } else if (state is ForgetPasswordError) {
             AlertDialogUtils.hideLoading(context: context);
-            AlertDialogUtils.showMessage(context: context, msg: state.message, title: "Error");
+            AlertDialogUtils.showMessage(context: context, msg: state.message, title: l10n.error);
             _shakeController.forward(from: 0);
           } else if (state is OTPSuccess) {
             AlertDialogUtils.hideLoading(context: context);
@@ -148,12 +150,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Verification",
+                            l10n.verification,
                             style: theme.textTheme.headlineMedium,
                           ),
                           SizedBox(height: 8.h),
                           Text(
-                            "* We will send you a message to reset your password",
+                            l10n.verificationDesc,
                             style: theme.textTheme.bodyMedium,
                           ),
                         ],
@@ -168,7 +170,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "Enter the 6-digit code sent to:",
+                        l10n.enterCodeSent,
                         style: theme.textTheme.bodyMedium,
                       ),
                       SizedBox(height: 10.h),
@@ -198,7 +200,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                       SizedBox(height: 20.h),
                       _secondsLeft > 0
                           ? Text(
-                            "Resend code in $_secondsLeft s",
+                              l10n.resendCodeIn(_secondsLeft),
                               style: theme.textTheme.bodyMedium,
                             )
                           : GestureDetector(
@@ -207,7 +209,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                                 _startTimer();
                               },
                               child: Text(
-                                "Resend Code",
+                                l10n.resendCode,
                                 style: theme.textTheme.displaySmall,
                               ),
                             ),
@@ -218,7 +220,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                             viewModel.verifyOTP(_pinController.text);
                           }
                         },
-                        text: "Submit",
+                        text: l10n.submit,
                         width: 336.w,
                         borderRadius: 30.r,
                         backgroundColorElevated: theme.primaryColor,

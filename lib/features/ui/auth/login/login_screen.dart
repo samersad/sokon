@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/cache/cubit_manger/user_view_model.dart';
@@ -11,6 +12,7 @@ import '../../../../core/utils/app_validator.dart';
 import '../../widgets/alert_dialog_utils.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/language_toggle.dart';
 import '../widgets/circle_avatar_container.dart';
 import 'cubit/login_states.dart';
 import 'cubit/login_view_model.dart';
@@ -27,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userViewModel = context.read<UserViewModel>();
     final theme = Theme.of(context);
     return BlocListener<LoginViewModel, LoginStates>(
@@ -84,28 +87,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               SizedBox(height: 36.h),
                               Center(
-                                child: Text("Login", style: theme.textTheme.headlineLarge),
+                                child: Text(l10n.login, style: theme.textTheme.headlineLarge),
                               ),
                               SizedBox(height: 48.h),
                               CustomTextFormField(
                                 controller: viewModel.emailCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Email",
+                                hintText: l10n.email,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 validator: (val) =>
-                                    AppValidators.validateEmail(val),
+                                    AppValidators.validateEmail(val, l10n),
                               ),
                               SizedBox(height: 13.h),
                               CustomTextFormField(
                                 controller: viewModel.passwordCtrl,
                                 hintStyle: theme.textTheme.bodyMedium,
-                                hintText: "Password",
+                                hintText: l10n.password,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 obscureText: viewModel.hidePassword,
                                 validator: (val) =>
-                                    AppValidators.validatePassword(val),
+                                    AppValidators.validatePassword(val, l10n),
                                 suffixIconName: IconButton(
                                   icon: Icon(
                                     viewModel.hidePassword
@@ -125,18 +128,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Navigator.of(context).pushNamed(
                                         AppRoutes.forgetPasswordRoute);
                                   },
-                                child: Text(
-                                  "Forgot password ?",
-                                  style: theme.textTheme.displaySmall,
+                                  child: Text(
+                                    l10n.forgotPassword,
+                                    style: theme.textTheme.displaySmall,
+                                  ),
                                 ),
-                              ),
                               ),
                               SizedBox(height: 27.h),
                               CustomElevatedButtom(
                                 onPressed: () {
                                   viewModel.login(userViewModel);
                                 },
-                                text: "Login",
+                                text: l10n.login,
                                 width: 200,
                                 backgroundColorElevated: theme.primaryColor,
                                 textStyle: theme.textTheme.titleLarge,
@@ -174,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Don't have an account?",
+                                    l10n.dontHaveAccount,
                                     style: theme.textTheme.bodyMedium,
                                   ),
                                   TextButton(
@@ -183,13 +186,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                           AppRoutes.registerRoute);
                                     },
                                     child: Text(
-                                      "Sign Up",
+                                      l10n.signUp,
                                       style: AppStyles.semiBold14Primary,
                                     ),
                                   ),
                                   SizedBox(height: 50.h),
                                 ],
                               ),
+                              const LanguageToggle(),
+                              SizedBox(height: 20.h),
                             ],
                           ),
                         ),

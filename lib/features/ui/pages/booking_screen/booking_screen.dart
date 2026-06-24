@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -38,26 +39,27 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return BlocListener<BookingViewModel, BookingStates>(
       bloc: viewModel,
       listener: (context, state) {
         if (state.status == BookingStatus.loading) {
           isLoadingShown = true;
-          AlertDialogUtils.showLoading(context: context, msg: "Processing...");
+          AlertDialogUtils.showLoading(context: context, msg: l10n.processing);
         } else if (state.status == BookingStatus.error) {
           if (isLoadingShown) {
             AlertDialogUtils.hideLoading(context: context);
             isLoadingShown = false;
           }
 
-          if (state.errorMessage == "Please select a date range") {
+          if (state.errorMessage == l10n.selectDateRange) {
             return;
           }
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? "Something went wrong"),
+              content: Text(state.errorMessage ?? l10n.somethingWentWrong),
             ),
           );
         } else if (state.status == BookingStatus.success) {
@@ -75,7 +77,7 @@ class _BookingScreenState extends State<BookingScreen> {
             appBar: AppBar(
               backgroundColor: theme.scaffoldBackgroundColor,
               elevation: 0,
-              title: Text("Booking", style: theme.textTheme.titleLarge),
+              title: Text(l10n.booking, style: theme.textTheme.titleLarge),
               centerTitle: true,
             ),
             backgroundColor: theme.scaffoldBackgroundColor,
@@ -140,7 +142,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                         SizedBox(width: 4.w),
                                         Expanded(
                                           child: AutoSizeText(
-                                            apartment.address ?? "No Address",
+                                            apartment.address ?? l10n.noAddress,
                                             style: theme.textTheme.bodyMedium,
                                             maxLines: 2,
                                           ),
@@ -176,7 +178,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       SizedBox(height: 20.h),
 
-                      Text("Period", style: theme.textTheme.headlineSmall),
+                      Text(l10n.period, style: theme.textTheme.headlineSmall),
 
                       InkWell(
                         onTap: () async {
@@ -194,7 +196,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Date", style: theme.textTheme.bodyMedium),
+                                Text(l10n.date, style: theme.textTheme.bodyMedium),
                                 Text(
                                   viewModel.getFormattedDate(),
                                   style: theme.textTheme.labelMedium,
@@ -225,13 +227,13 @@ class _BookingScreenState extends State<BookingScreen> {
                       SizedBox(height: 16.h),
 
                       Text(
-                        "Make sure to check your date before making any sort of payments",
+                        l10n.checkDateBeforePayment,
                         style: theme.textTheme.bodyMedium,
                       ),
 
                       SizedBox(height: 20.h),
 
-                      Text("Payments", style: theme.textTheme.headlineSmall),
+                      Text(l10n.payments, style: theme.textTheme.headlineSmall),
 
                       Row(
                         children: [
@@ -241,7 +243,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           Expanded(
                             child: Text(
                               state.cardNumber == null
-                                  ? "No Card Added"
+                                  ? l10n.noCardAdded
                                   : "**** **** **** ${state.cardNumber!.substring(state.cardNumber!.length - 4)}",
                               style: theme.textTheme.labelMedium,
                             ),
@@ -257,7 +259,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               }
                             },
                             child: Text(
-                              state.cardNumber == null ? "Add Card" : "Edit",
+                              state.cardNumber == null ? l10n.addCard : l10n.edit,
                               style: theme.textTheme.labelMedium,
                             ),
                           ),
@@ -269,7 +271,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       TextButton(
                         onPressed: () {},
                         child: Text(
-                          "Enter a Voucher",
+                          l10n.enterVoucher,
                           style: theme.textTheme.labelMedium?.copyWith(
                             decoration: TextDecoration.underline,
                           ),
@@ -279,31 +281,31 @@ class _BookingScreenState extends State<BookingScreen> {
                       SizedBox(height: 20.h),
 
                       Text(
-                        "Price Details",
+                        l10n.priceDetails,
                         style: theme.textTheme.headlineSmall,
                       ),
 
                       buildRow(
                         context,
-                        "Period time",
+                        l10n.periodTime,
                         state.selectedDate == null
                             ? "-"
                             : "${state.selectedDate!.duration.inDays} Days",
                       ),
                       buildRow(
                         context,
-                        "People renting",
+                        l10n.peopleRenting,
                         "${state.peopleCount} / ${apartment.availablePeople ?? apartment.maxPeople ?? 1}",
                       ),
                       buildRow(
                         context,
-                        "Monthly payment",
+                        l10n.monthlyPayment,
                         "${apartment.price ?? 0} EG",
                       ),
-                      buildRow(context, "Tax", "10 EG"),
+                      buildRow(context, l10n.tax, "10 EG"),
                       buildRow(
                         context,
-                        "Total",
+                        l10n.total,
                         "${(apartment.price ?? 0) + 10} EG",
                         isTotal: true,
                       ),
@@ -312,7 +314,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                       CustomElevatedButtom(
                         onPressed: () => viewModel.confirmBooking(apartment),
-                        text: "Confirm and Pay",
+                        text: l10n.confirmAndPay,
                         customPadding: 20,
                         borderRadius: 10.r,
                         backgroundColorElevated: theme.primaryColor,
@@ -359,6 +361,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _buildPeopleSelector(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     final availablePeople =
         apartment.availablePeople ?? apartment.maxPeople ?? 1;
     final isDark = theme.brightness == Brightness.dark;
@@ -380,7 +383,7 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
         borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
-          color: theme.primaryColor.withOpacity(isDark ? 0.35 : 0.14),
+          color: theme.primaryColor.withValues(alpha: isDark ? 0.35 : 0.14),
         ),
       ),
       child: Row(
@@ -389,7 +392,7 @@ class _BookingScreenState extends State<BookingScreen> {
             width: 46.w,
             height: 46.w,
             decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.14),
+              color: theme.primaryColor.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Icon(
@@ -403,7 +406,7 @@ class _BookingScreenState extends State<BookingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("People", style: theme.textTheme.labelMedium),
+                Text(l10n.people, style: theme.textTheme.labelMedium),
                 SizedBox(height: 4.h),
                 Text(
                   "$availablePeople ${availablePeople == 1 ? 'spot' : 'spots'} currently available",
@@ -441,6 +444,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   void showSuccessDialog(BuildContext parentContext) {
     final theme = Theme.of(parentContext);
+    final l10n = AppLocalizations.of(parentContext)!;
     showDialog(
       context: parentContext,
       barrierDismissible: false,
@@ -458,13 +462,13 @@ class _BookingScreenState extends State<BookingScreen> {
                   Image.asset(AppAssets.successBg),
                   const SizedBox(height: 20),
                   Text(
-                    "Yey, your booking success",
+                    l10n.bookingSuccessTitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "you have successfully booked a property, enjoy your property",
+                    l10n.bookingSuccessSub,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),

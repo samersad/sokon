@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -38,6 +39,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final user = userViewModel.user;
@@ -55,17 +57,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 children: [
                   const BackContainer(),
                   SizedBox(height: 20.h),
-                  Text("My Bookings", style: theme.textTheme.headlineMedium),
+                  Text(l10n.myBookings, style: theme.textTheme.headlineMedium),
                   SizedBox(height: 5.h),
                   Text(
-                    "Track your apartment bookings",
+                    l10n.trackYourApartmentBookings,
                     style: theme.textTheme.bodyMedium,
                   ),
                   SizedBox(height: 20.h),
                   Expanded(
                     child: user == null
-                        ? const Center(
-                            child: Text("Please login to see your bookings"),
+                        ? Center(
+                            child: Text(l10n.pleaseLoginToSeeBookings),
                           )
                         : Builder(
                             builder: (context) {
@@ -81,8 +83,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               }
                               if (state is MyBookingsSuccess) {
                                 if (state.bookings.isEmpty) {
-                                  return const Center(
-                                    child: Text("No bookings found"),
+                                  return Center(
+                                    child: Text(l10n.noBookingsFound),
                                   );
                                 }
                                 return ListView.separated(
@@ -110,16 +112,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   Widget buildBookingCard(BuildContext context, BookingResponse booking) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final dateFormat = DateFormat('dd MMM yyyy');
     return Container(
       padding: EdgeInsets.all(15.sp),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -185,11 +188,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: getStatusColor(booking.status).withOpacity(0.1),
+                  color: getStatusColor(booking.status).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  getStatusLabel(booking.status),
+                  getStatusLabel(booking.status, l10n),
                   style: TextStyle(
                     color: getStatusColor(booking.status),
                     fontSize: 10.sp,
@@ -206,7 +209,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Period", style: theme.textTheme.bodyMedium),
+                  Text(l10n.period, style: theme.textTheme.bodyMedium),
                   Text(
                     "${booking.startDate != null ? dateFormat.format(booking.startDate!) : '-'} - ${booking.endDate != null ? dateFormat.format(booking.endDate!) : '-'}",
                     style: theme.textTheme.labelMedium,
@@ -216,7 +219,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text("Total Price", style: theme.textTheme.bodyMedium),
+                  Text(l10n.totalPrice, style: theme.textTheme.bodyMedium),
                   Text(
                     "${booking.totalPrice ?? 0} EG",
                     style: theme.textTheme.displaySmall,
@@ -243,24 +246,24 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 onPressed: () => _cancelBooking(booking),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red,
-                  side: BorderSide(color: Colors.red.withOpacity(0.4)),
+                  side: BorderSide(color: Colors.red.withValues(alpha: 0.4)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
-                child: const Text("Cancel Booking"),
+                child: Text(l10n.cancelBooking),
               ),
             ),
           if (_canRate(booking)) ...[
             SizedBox(height: 12.h),
-            _buildRatingBox(context, booking),
+            _buildRatingBox(context, booking, l10n),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildRatingBox(BuildContext context, BookingResponse booking) {
+  Widget _buildRatingBox(BuildContext context, BookingResponse booking, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final isSaving = _ratingBookingId == booking.id;
     final selectedRating = booking.rating ?? 0;
@@ -276,7 +279,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            selectedRating > 0 ? "Your rating" : "Rate your stay",
+            selectedRating > 0 ? l10n.yourRating : l10n.rateYourStay,
             style: theme.textTheme.bodyMedium,
           ),
           SizedBox(height: 8.h),
@@ -329,17 +332,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     }
   }
 
-  String getStatusLabel(String? status) {
+  String getStatusLabel(String? status, AppLocalizations l10n) {
     switch (normalizeStatus(status)) {
       case 'accepted':
       case 'confirmed':
-        return 'ACCEPTED';
+        return l10n.acceptedStatus;
       case 'cancelled':
       case 'rejected':
-        return 'CANCELLED';
+        return l10n.cancelledStatus;
       case 'pending':
       default:
-        return 'PENDING';
+        return l10n.pendingStatus;
     }
   }
 
@@ -381,13 +384,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       setState(() {
         _ratingBookingId = null;
       });
-      final userId = context.read<UserViewModel>().user?.id;
+      final userViewModel = context.read<UserViewModel>();
+      final userId = userViewModel.user?.id;
       if (userId != null && userId.isNotEmpty) {
         await viewModel.getMyBookings(userId);
       }
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Rating saved')));
+      ).showSnackBar(SnackBar(content: Text(l10n.ratingSaved)));
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -408,25 +414,26 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cancel booking'),
-        content: const Text('Do you want to cancel this booking request?'),
+        content: Text(l10n.confirmCancelBookingRequest),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('No'),
+            child: Text(l10n.no),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes'),
+            child: Text(l10n.yes),
           ),
         ],
       ),
     );
 
-    if (confirm != true) {
+    if (confirm != true || !mounted) {
       return;
     }
 
@@ -436,13 +443,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         status: 'cancelled',
       );
       if (!mounted) return;
-      final userId = context.read<UserViewModel>().user?.id;
+      final userViewModel = context.read<UserViewModel>();
+      final userId = userViewModel.user?.id;
       if (userId != null && userId.isNotEmpty) {
         await viewModel.getMyBookings(userId);
       }
+      if (!mounted) return;
+      final l10nAgain = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Booking cancelled')));
+      ).showSnackBar(SnackBar(content: Text(l10nAgain.bookingCancelled)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(

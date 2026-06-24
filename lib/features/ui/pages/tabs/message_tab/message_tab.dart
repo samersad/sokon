@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
@@ -34,6 +35,7 @@ class _MessageTabState extends State<MessageTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final userId = userViewModel.user?.id ?? '';
@@ -49,9 +51,9 @@ class _MessageTabState extends State<MessageTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Messages", style: theme.textTheme.headlineMedium),
+                  Text(l10n.messages, style: theme.textTheme.headlineMedium),
                   SizedBox(height: 20.h),
-                  SearchWidget(hintText: "Search"),
+                  SearchWidget(hintText: l10n.search),
                   SizedBox(height: 10.h),
                   Expanded(
                     child: Builder(
@@ -67,7 +69,7 @@ class _MessageTabState extends State<MessageTab> {
                         }
                         if (state is MessageLoaded) {
                           if (state.chats.isEmpty) {
-                            return const Center(child: Text("No messages yet"));
+                            return  Center(child: Text(l10n.noMessages));
                           }
 
                           var chats = state.chats;
@@ -90,7 +92,7 @@ class _MessageTabState extends State<MessageTab> {
                               final displayPhotos =
                                   chatData['displayPhotos'] as Map?;
                               final displayName = displayNames?[receiverId] ??
-                                  (receiverId == userId ? "Saved chat" : "User");
+                                  (receiverId == userId ? l10n.savedChat : "User");
                               final photoUrl = displayPhotos?[receiverId];
                               final lastMessage =
                                   (chatData['lastMessage'] as String? ?? "")

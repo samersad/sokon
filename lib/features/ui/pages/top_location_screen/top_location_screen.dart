@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_states.dart';
@@ -29,6 +30,7 @@ class _TopLocationScreenState extends State<TopLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -41,10 +43,10 @@ class _TopLocationScreenState extends State<TopLocationScreen> {
             children: [
               const BackContainer(),
               SizedBox(height: 20.h),
-              Text("Top Location", style: theme.textTheme.headlineMedium),
+              Text(l10n.topLocation, style: theme.textTheme.headlineMedium),
               SizedBox(height: 5.h),
               Text(
-                "Districts ranked by how many apartments they have",
+                l10n.districtsRanked,
                 style: theme.textTheme.bodyMedium,
               ),
               SizedBox(height: 16.h),
@@ -63,7 +65,7 @@ class _TopLocationScreenState extends State<TopLocationScreen> {
                     }
 
                     if (districts.isEmpty) {
-                      return const Center(child: Text("No districts found"));
+                      return Center(child: Text(l10n.noDistrictsFound));
                     }
 
                     return GridView.builder(

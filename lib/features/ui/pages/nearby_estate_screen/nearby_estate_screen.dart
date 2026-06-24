@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
@@ -29,6 +30,7 @@ class _NearbyEstateScreenState extends State<NearbyEstateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return BlocBuilder<NearbyEstateViewModel, NearbyEstateStates>(
       bloc: viewModel,
@@ -44,9 +46,9 @@ class _NearbyEstateScreenState extends State<NearbyEstateScreen> {
                   children: [
                     const BackContainer(),
                     SizedBox(height: 20.h),
-                    Text("Nearby Estate", style: theme.textTheme.headlineMedium),
+                    Text(l10n.nearbyEstate, style: theme.textTheme.headlineMedium),
                     SizedBox(height: 5.h),
-                    Text("Find the best recommendations place to live",
+                    Text(l10n.findBestRecommendations,
                         style: theme.textTheme.bodyMedium),
                     SizedBox(height: 10.h),
                     Builder(
@@ -60,7 +62,7 @@ class _NearbyEstateScreenState extends State<NearbyEstateScreen> {
                           return Center(child: Text(state.message));
                         } else if (state is NearbyEstateSuccess) {
                           if (state.apartments.isEmpty) {
-                            return const Center(child: Text("No apartments found"));
+                            return  Center(child: Text(l10n.noApartmentsFound));
                           }
                           return GridView.builder(
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

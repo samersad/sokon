@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
@@ -29,6 +30,7 @@ class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return BlocBuilder<FeaturedEstateViewModel, FeaturedEstateStates>(
       bloc: viewModel,
@@ -44,9 +46,9 @@ class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
                   children: [
                     const BackContainer(),
                     SizedBox(height: 20.h),
-                    Text("Featured Estates", style: theme.textTheme.headlineMedium),
+                    Text(l10n.featuredEstates, style: theme.textTheme.headlineMedium),
                     SizedBox(height: 5.h),
-                    Text("Find the best recommendations place to live",
+                    Text(l10n.findBestRecommendations,
                         style: theme.textTheme.bodyMedium),
                     SizedBox(height: 10.h),
                     Builder(
@@ -60,7 +62,7 @@ class _FeaturedEstateScreenState extends State<FeaturedEstateScreen> {
                           return Center(child: Text(state.message));
                         } else if (state is FeaturedEstateSuccess) {
                           if (state.apartments.isEmpty) {
-                            return const Center(child: Text("No featured apartments found"));
+                            return  Center(child: Text(l10n.noFeaturedApartmentsFound));
                           }
                           return ListView.separated(
                             shrinkWrap: true,

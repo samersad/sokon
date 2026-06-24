@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
+import 'package:sokon/core/cache/cubit_manger/language_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/location_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/theme_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_states.dart';
@@ -29,6 +30,7 @@ import 'package:sokon/features/ui/pages/tabs/profile_tab/my_bookings/my_bookings
 import 'package:sokon/features/ui/pages/tabs/profile_tab/owner_booking_requests/owner_booking_requests_screen.dart';
 import 'package:sokon/features/ui/pages/tabs/profile_tab/settings/settings_screen.dart';
 import 'package:sokon/features/ui/pages/top_location_screen/top_location_screen.dart';
+import 'core/cache/cubit_manger/language_state.dart';
 import 'core/cache/shared_prefs_helper.dart';
 import 'core/di/di.dart';
 import 'core/services/firebase_cloud_messaging.dart';
@@ -42,6 +44,7 @@ import 'features/ui/pages/nearby_estate_screen/nearby_estate_screen.dart';
 import 'features/ui/pages/notifaction_screen/notifaction_screen.dart';
 import 'features/ui/pages/tabs/profile_tab/add_card_screen/add_card_screen.dart';
 import 'features/ui/pages/tabs/profile_tab/my_apartments/my_apartments_screen.dart';
+import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +63,7 @@ Future<void> main() async {
   final locationViewModel = getIt<LocationViewModel>();
   final apartmentViewModel = getIt<ApartmentViewModel>();
   final themeViewModel = ThemeViewModel();
+  final languageViewModel = LanguageViewModel();
   String routeName;
   RegisterUser? restoredUser;
   final cachedUser = SharedPrefsHelper.getData(key: "cached_user");
@@ -107,6 +111,7 @@ Future<void> main() async {
         BlocProvider.value(value: locationViewModel),
         BlocProvider.value(value: apartmentViewModel),
         BlocProvider.value(value: themeViewModel),
+        BlocProvider.value(value: languageViewModel),
       ],
       child: MyApp(routeName: routeName),
     ),
@@ -126,63 +131,70 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return BlocBuilder<ThemeViewModel, ThemeState>(
           builder: (context, themeState) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              initialRoute: routeName,
-              routes: {
-                AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
-                AppRoutes.homeMapRoute: (context) {
-                  final arguments =
-                      ModalRoute.of(context)!.settings.arguments
-                          as HomeMapArguments;
-                  return HomeMapScreen(arguments: arguments);
-                },
-                AppRoutes.loginRoute: (context) => const LoginScreen(),
-                AppRoutes.registerRoute: (context) => const RegisterScreen(),
-                AppRoutes.forgetPasswordRoute: (context) =>
-                    const ForgetPasswordScreen(),
-                AppRoutes.verificationRoute: (context) =>
-                    const VerificationScreen(),
-                AppRoutes.forgetPassword2Route: (context) =>
-                    const ForgetPasswordScreen2(),
-                AppRoutes.addApartmentRoute: (context) => const AddApartment(),
-                AppRoutes.editApartmentRoute: (context) {
-                  final apartment =
-                      ModalRoute.of(context)!.settings.arguments as ApartmentResponse;
-                  return EditApartment(apartment: apartment);
-                },
-                AppRoutes.apartmentDetailsRoute: (context) =>
-                    const ApartmentDetails(),
-                AppRoutes.locationPickerRoute: (context) =>
-                    const LocationPicker(),
-                AppRoutes.topLocationRoute: (context) =>
-                    const TopLocationScreen(),
-                AppRoutes.districtApartmentsRoute: (context) =>
-                    const DistrictApartmentsScreen(),
-                AppRoutes.nearbyEstateRoute: (context) =>
-                    const NearbyEstateScreen(),
-                AppRoutes.featuredEstateRoute: (context) =>
-                    const FeaturedEstateScreen(),
-                AppRoutes.settingsScreenRoute: (context) =>
-                    const SettingsScreen(),
-                AppRoutes.notificationRoute: (context) =>
-                    const NotifactionScreen(),
-                AppRoutes.addCardRoute: (context) => const AddCardScreen(),
-                AppRoutes.bookingRoute: (context) => const BookingScreen(),
-                AppRoutes.myApartmentsRoute: (context) =>
-                    const MyApartmentsScreen(),
-                AppRoutes.chatRoute: (context) => const ChatScreen(),
-                AppRoutes.myBookingsRoute: (context) =>
-                    const MyBookingsScreen(),
-                AppRoutes.ownerBookingRequestsRoute: (context) =>
-                    const OwnerBookingRequestsScreen(),
-                AppRoutes.userLocationPickerRoute: (context) =>
-                    const UserLocationPicker(),
-
+            return BlocBuilder<LanguageViewModel, LanguageState>(
+              builder: (context, languageState) {
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  initialRoute: routeName,
+                  routes: {
+                    AppRoutes.homeScreenRoute: (context) => const HomeScreen(),
+                    AppRoutes.homeMapRoute: (context) {
+                      final arguments =
+                          ModalRoute.of(context)!.settings.arguments
+                              as HomeMapArguments;
+                      return HomeMapScreen(arguments: arguments);
+                    },
+                    AppRoutes.loginRoute: (context) => const LoginScreen(),
+                    AppRoutes.registerRoute: (context) => const RegisterScreen(),
+                    AppRoutes.forgetPasswordRoute: (context) =>
+                        const ForgetPasswordScreen(),
+                    AppRoutes.verificationRoute: (context) =>
+                        const VerificationScreen(),
+                    AppRoutes.forgetPassword2Route: (context) =>
+                        const ForgetPasswordScreen2(),
+                    AppRoutes.addApartmentRoute: (context) => const AddApartment(),
+                    AppRoutes.editApartmentRoute: (context) {
+                      final apartment =
+                          ModalRoute.of(context)!.settings.arguments
+                              as ApartmentResponse;
+                      return EditApartment(apartment: apartment);
+                    },
+                    AppRoutes.apartmentDetailsRoute: (context) =>
+                        const ApartmentDetails(),
+                    AppRoutes.locationPickerRoute: (context) =>
+                        const LocationPicker(),
+                    AppRoutes.topLocationRoute: (context) =>
+                        const TopLocationScreen(),
+                    AppRoutes.districtApartmentsRoute: (context) =>
+                        const DistrictApartmentsScreen(),
+                    AppRoutes.nearbyEstateRoute: (context) =>
+                        const NearbyEstateScreen(),
+                    AppRoutes.featuredEstateRoute: (context) =>
+                        const FeaturedEstateScreen(),
+                    AppRoutes.settingsScreenRoute: (context) =>
+                        const SettingsScreen(),
+                    AppRoutes.notificationRoute: (context) =>
+                        const NotifactionScreen(),
+                    AppRoutes.addCardRoute: (context) => const AddCardScreen(),
+                    AppRoutes.bookingRoute: (context) => const BookingScreen(),
+                    AppRoutes.myApartmentsRoute: (context) =>
+                        const MyApartmentsScreen(),
+                    AppRoutes.chatRoute: (context) => const ChatScreen(),
+                    AppRoutes.myBookingsRoute: (context) =>
+                        const MyBookingsScreen(),
+                    AppRoutes.ownerBookingRequestsRoute: (context) =>
+                        const OwnerBookingRequestsScreen(),
+                    AppRoutes.userLocationPickerRoute: (context) =>
+                        const UserLocationPicker(),
+                  },
+                  locale: languageState.locale,
+                  localizationsDelegates: AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  theme: AppTheme.lightTheme,
+                  darkTheme: AppTheme.darkTheme,
+                  themeMode: themeState.themeMode,
+                );
               },
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
-              themeMode: themeState.themeMode,
             );
           },
         );

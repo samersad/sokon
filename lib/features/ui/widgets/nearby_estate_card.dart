@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/utils/app_routes.dart';
@@ -11,6 +12,7 @@ class NearbyEstateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return InkWell(
       onTap: () => Navigator.of(
@@ -45,7 +47,7 @@ class NearbyEstateCard extends StatelessWidget {
             SizedBox(height: 8.h),
 
             Text(
-              apartment.name ?? "No Name",
+              apartment.name ?? l10n.noName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.displaySmall,

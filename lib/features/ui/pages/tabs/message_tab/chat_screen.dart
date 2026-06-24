@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:sokon/l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -95,6 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final userViewModel = context.read<UserViewModel>();
     final senderId = userViewModel.user?.id ?? '';
@@ -158,7 +160,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     if (messages.isEmpty) {
                       return Center(
                         child: Text(
-                          "Start the conversation",
+                          l10n.startConversation,
                           style: theme.textTheme.bodyMedium,
                         ),
                       );
@@ -216,7 +218,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         minLines: 1,
                         maxLines: 4,
                         decoration: InputDecoration(
-                          hintText: "Type a message...",
+                          hintText: l10n.typeMessage,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.r),
                           ),
@@ -290,6 +292,7 @@ class _ChatScreenState extends State<ChatScreen> {
     required String receiverName,
     required String? receiverPhotoUrl,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: AppColors.whiteBlue,
@@ -299,12 +302,12 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt_outlined),
-                title: const Text("Take photo"),
+                title:  Text(l10n.takePhoto),
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text("Choose from gallery"),
+                title:  Text(l10n.chooseFromGallery),
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
             ],
@@ -347,7 +350,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Unable to send photo")),
+         SnackBar(content: Text(l10n.unableToSendPhoto)),
       );
     } finally {
       if (mounted) {

@@ -10,6 +10,7 @@ import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_styles.dart';
 import '../../../../core/utils/app_validator.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 import '../../widgets/custom_text_form_field.dart';
 
@@ -28,18 +29,28 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return BlocProvider(
       create: (context) => viewModel,
       child: BlocListener<ForgetPasswordViewModel, ForgetPasswordState>(
         listener: (context, state) {
           if (state is ForgetPasswordLoading) {
-            AlertDialogUtils.showLoading(context: context, msg: "Sending OTP...");
+            AlertDialogUtils.showLoading(
+              context: context,
+              msg: l10n.sendingOtp,
+            );
           } else if (state is ForgetPasswordError) {
             AlertDialogUtils.hideLoading(context: context);
-            AlertDialogUtils.showMessage(context: context, msg: state.message, title: "Error");
+            AlertDialogUtils.showMessage(
+              context: context,
+              msg: state.message,
+              title: l10n.error,
+            );
           } else if (state is ForgetPasswordSuccess) {
             AlertDialogUtils.hideLoading(context: context);
-            Navigator.of(context).pushNamed(AppRoutes.verificationRoute, arguments: emailCtrl.text);
+            Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.verificationRoute, arguments: emailCtrl.text);
           }
         },
         child: Scaffold(
@@ -52,8 +63,14 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                   children: [
                     Image.asset(AppAssets.forgetBg),
                     Padding(
-                        padding: EdgeInsets.symmetric(vertical: 70.h, horizontal: 15.w),
-                      child: Text("Forgot Password", style: theme.textTheme.headlineMedium),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 70.h,
+                        horizontal: 15.w,
+                      ),
+                      child: Text(
+                        l10n.forgotPassword,
+                        style: theme.textTheme.headlineMedium,
+                      ),
                     ),
                   ],
                 ),
@@ -65,17 +82,22 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Enter Your Email Address ", style: theme.textTheme.bodyMedium),
+                        Text(
+                          l10n.enterEmailAddress,
+                          style: theme.textTheme.bodyMedium,
+                        ),
                         SizedBox(height: 20.h),
                         CustomTextFormField(
                           controller: emailCtrl,
                           hintStyle: theme.textTheme.bodyMedium,
-                          hintText: "Email",
+                          hintText: l10n.email,
                           fillColor: theme.disabledColor,
                           borderSideColor: theme.highlightColor,
                           validator: (val) {
-                            if (val == null || val.isEmpty) return "Email is required";
-                            return AppValidators.validateEmail(val);
+                            if (val == null || val.isEmpty) {
+                              return l10n.fieldRequired;
+                            }
+                            return AppValidators.validateEmail(val, l10n);
                           },
                         ),
                         SizedBox(height: 40.h),
@@ -85,7 +107,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                               viewModel.sendOTP(emailCtrl.text);
                             }
                           },
-                          text: "Continue",
+                          text: l10n.continueButton,
                           width: 336.w,
                           borderRadius: 30.r,
                           backgroundColorElevated: theme.primaryColor,

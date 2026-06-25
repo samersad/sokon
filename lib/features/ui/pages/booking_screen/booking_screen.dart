@@ -210,7 +210,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       if (state.showDateError) ...[
                         SizedBox(height: 8.h),
                         Text(
-                          "Select date",
+                          l10n.selectDate,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.redMaterial,
                           ),
@@ -480,7 +480,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         (route) => false,
                       );
                     },
-                    text: "successfully",
+                    text: l10n.success,
                     customPadding: 15,
                     borderRadius: 10.r,
                     backgroundColorElevated: theme.primaryColor,

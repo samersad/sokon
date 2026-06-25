@@ -79,7 +79,12 @@ Future<void> main() async {
     }
   }
 
-  userViewModel.updateUser(restoredUser);
+  // Register the listener BEFORE calling updateUser so the cold-start
+  // UserUpdated emission is not missed. The auth repository writes
+  // `token` and `cached_user` into SharedPrefs *before* returning the
+  // user object, so when syncTokenForUser fires it always finds fresh data.
+  // This single listener covers all paths: cold start, login, register,
+  // and Google sign-in — no extra explicit call is needed.
   userViewModel.stream.listen((state) async {
     if (state is UserUpdated) {
       if (state.user == null) {
@@ -89,7 +94,7 @@ Future<void> main() async {
       }
     }
   });
-  await FirebaseCloudMessaging.syncTokenForUser(restoredUser?.id);
+  userViewModel.updateUser(restoredUser);
 
   final restoredRole = restoredUser?.role?.trim();
   if (cachedToken is! String ||

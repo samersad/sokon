@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/user_states.dart';
 import 'package:sokon/core/cache/cubit_manger/theme_view_model.dart';
@@ -89,7 +90,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                     backgroundColor: theme.disabledColor,
                                     backgroundImage: (photoUrl != null &&
                                             photoUrl.isNotEmpty
-                                        ? NetworkImage(photoUrl)
+                                        ? CachedNetworkImageProvider(photoUrl)
                                         : AssetImage(AppAssets.profileImage))
                                         as ImageProvider,
                                   ),
@@ -120,7 +121,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             icon: themeCubit.isDark
                                 ? Icons.dark_mode_outlined
                                 : Icons.light_mode_outlined,
-                            title: themeCubit.isDark ? "Dark Mode" : "Light Mode",
+                            title: themeCubit.isDark ?l10n.darkMode :l10n.lightMode ,
                             color: theme.primaryColor,
                             onTap: () => _showThemeSheet(context, themeCubit),
                           ),
@@ -257,6 +258,7 @@ class _ProfileTabState extends State<ProfileTab> {
 
   void _showThemeSheet(BuildContext context, ThemeViewModel themeCubit) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: theme.cardColor,
@@ -272,12 +274,12 @@ class _ProfileTabState extends State<ProfileTab> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Theme", style: currentTheme.textTheme.displaySmall),
+                Text(l10n.theme, style: currentTheme.textTheme.displaySmall),
                 SizedBox(height: 12.h),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.light_mode_outlined),
-                  title: Text("Light Mode", style: currentTheme.textTheme.labelMedium),
+                  title: Text(l10n.lightMode , style: currentTheme.textTheme.labelMedium),
                   trailing: themeCubit.isDark ? null : Icon(Icons.check, color: currentTheme.primaryColor),
                   onTap: () {
                     themeCubit.setDark(dark: false);
@@ -287,7 +289,7 @@ class _ProfileTabState extends State<ProfileTab> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.dark_mode_outlined),
-                  title: Text("Dark Mode", style: currentTheme.textTheme.labelMedium),
+                  title: Text(l10n.darkMode , style: currentTheme.textTheme.labelMedium),
                   trailing: themeCubit.isDark ? Icon(Icons.check, color: currentTheme.primaryColor) : null,
                   onTap: () {
                     themeCubit.setDark(dark: true);

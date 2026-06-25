@@ -4,6 +4,7 @@ import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,6 +14,7 @@ import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
+import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_view_model.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/chat_states.dart';
 import 'package:sokon/features/ui/pages/tabs/message_tab/cubit/chat_view_model.dart';
 
@@ -79,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
       if (!mounted) return;
       viewModel.getMessages(chatId);
+      getIt<NotificationViewModel>().markChatNotificationsAsRead(chatId);
     } catch (_) {
       // The cubit already emits the API error.
     }
@@ -135,7 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   radius: 18.r,
                   backgroundColor: theme.disabledColor,
                   backgroundImage: (receiverPhotoUrl != null && receiverPhotoUrl!.isNotEmpty)
-                      ? NetworkImage(receiverPhotoUrl!)
+                      ? CachedNetworkImageProvider(receiverPhotoUrl!)
                       : AssetImage(AppAssets.avatar) as ImageProvider,
                 ),
                 SizedBox(width: 10.w),
@@ -417,12 +420,19 @@ class _ChatScreenState extends State<ChatScreen> {
                         onTap: () => _openImagePreview(imageUrl),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(14.r),
-                          child: Image.network(
-                            imageUrl,
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl,
                             width: 248.w,
                             height: 220.h,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
+                            placeholder: (context, url) => Container(
+                              width: 248.w,
+                              height: 220.h,
+                              color: Colors.black12,
+                              alignment: Alignment.center,
+                              child: const CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            errorWidget: (context, url, error) {
                               return Container(
                                 width: 248.w,
                                 height: 220.h,
@@ -527,7 +537,7 @@ class _ChatScreenState extends State<ChatScreen> {
             foregroundColor: Colors.white,
           ),
           body: PhotoView(
-            imageProvider: NetworkImage(imageUrl),
+            imageProvider: CachedNetworkImageProvider(imageUrl),
             backgroundDecoration: const BoxDecoration(color: Colors.black),
             loadingBuilder: (context, event) =>
                 const Center(child: CircularProgressIndicator()),

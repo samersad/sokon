@@ -1,3 +1,5 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
 import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +10,22 @@ import '../../../core/utils/app_assets.dart';
 
 class NearbyEstateCard extends StatelessWidget {
   final ApartmentResponse apartment;
-  const NearbyEstateCard({super.key, required this.apartment});
+  final LatLng? referenceLocation;
+  const NearbyEstateCard({super.key, required this.apartment, this.referenceLocation});
+
+  String _calculateDistance() {
+    if (referenceLocation == null || apartment.lat == null || apartment.lng == null) {
+      return "";
+    }
+    final distanceInMeters = Geolocator.distanceBetween(
+      referenceLocation!.latitude,
+      referenceLocation!.longitude,
+      apartment.lat!,
+      apartment.lng!,
+    );
+    final distanceInKm = distanceInMeters / 1000;
+    return "${distanceInKm.toStringAsFixed(1)} km";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +84,15 @@ class NearbyEstateCard extends StatelessWidget {
                     style: theme.textTheme.displaySmall,
                   ),
                 ),
-                Image.asset(AppAssets.downIcon, width: 12.w),
+                if (_calculateDistance().isNotEmpty)
+                  Text(
+                    _calculateDistance(),
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10.sp,
+                    ),
+                  ),
               ],
             ),
 

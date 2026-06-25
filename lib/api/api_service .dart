@@ -44,8 +44,7 @@ class ApiService {
       );
       return RegisterResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage);
+      throw Exception(_getErrorMessage(e));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -66,10 +65,8 @@ class ApiService {
 
       return LoginResponse.fromJson(response.data); // ← الصحيsح
     } on DioException catch (e) {
-      final errorMessage = e.response?.data["message"] ?? "Unknown Error";
-
       if (e.response != null) {
-        throw Exception(errorMessage);
+        throw Exception(_getErrorMessage(e));
       } else {
         throw Exception("Network Error");
       }
@@ -88,6 +85,7 @@ class ApiService {
     dynamic fcmToken,
   }) async {
     try {
+      final formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+2$phoneNumber';
       final token = SharedPrefsHelper.getData(key: "token")?.toString();
       final response = await dio.patch(
         EndPoints.userApi(userId),
@@ -95,7 +93,7 @@ class ApiService {
           "name": name,
           "email": email,
           "college": college,
-          "phoneNumber": phoneNumber,
+          "phoneNumber": formattedPhone,
           "gender": gender,
           "role": role,
           "photoUrl": photoUrl,
@@ -110,8 +108,7 @@ class ApiService {
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Update user failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Update user failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -129,8 +126,7 @@ class ApiService {
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Save user failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Save user failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -146,8 +142,7 @@ class ApiService {
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get user failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get user failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -161,8 +156,7 @@ class ApiService {
       );
       return RegisterResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Session exchange failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Session exchange failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -180,8 +174,7 @@ class ApiService {
       }
       return null;
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Request password reset failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Request password reset failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -202,8 +195,7 @@ class ApiService {
       }
       throw Exception("Invalid response from server");
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "OTP verification failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "OTP verification failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -220,8 +212,7 @@ class ApiService {
       );
       return RegisterResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Confirm password reset failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Confirm password reset failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -238,8 +229,7 @@ class ApiService {
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Update password failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Update password failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -261,8 +251,7 @@ class ApiService {
       }
       return logoutResponse;
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Logout failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Logout failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -280,8 +269,7 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Delete account failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Delete account failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -297,8 +285,7 @@ class ApiService {
 
       return ApartmentResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Add apartment failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Add apartment failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -319,8 +306,7 @@ class ApiService {
 
       return ApartmentResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Update apartment failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Update apartment failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -338,8 +324,7 @@ class ApiService {
       );
       return ApartmentResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Update apartment verification failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Update apartment verification failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -352,8 +337,7 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Delete apartment failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Delete apartment failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -367,8 +351,7 @@ class ApiService {
       );
       return _parseApartmentList(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get apartments failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get apartments failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -411,8 +394,7 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Add booking failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Add booking failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -448,8 +430,7 @@ class ApiService {
       }
       return false;
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Check active booking failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Check active booking failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -467,8 +448,7 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Update booking status failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Update booking status failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -493,8 +473,7 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Update booking status failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Update booking status failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -512,8 +491,7 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Rate booking failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Rate booking failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -528,8 +506,7 @@ class ApiService {
       );
       return _parseMapList(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get chats failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get chats failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -546,8 +523,7 @@ class ApiService {
       );
       return _parseMap(response.data, keys: const ['chat', 'data', 'item']);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Save chat failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Save chat failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -561,8 +537,7 @@ class ApiService {
       );
       return _parseMap(response.data, keys: const ['chat', 'data', 'item']);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get chat failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get chat failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -575,8 +550,7 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Delete chat failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Delete chat failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -590,8 +564,7 @@ class ApiService {
       );
       return _parseMapList(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get messages failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get messages failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -609,8 +582,7 @@ class ApiService {
       );
       return Map<String, dynamic>.from(response.data as Map);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Send message failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Send message failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -623,8 +595,7 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Delete message failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Delete message failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -639,8 +610,7 @@ class ApiService {
       );
       return _parseNotificationList(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get notifications failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get notifications failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -653,8 +623,7 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Mark notification read failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Mark notification read failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -668,8 +637,7 @@ class ApiService {
       );
       return _parseNotificationList(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Mark all notifications read failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Mark all notifications read failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -689,6 +657,20 @@ class ApiService {
       throw Exception("Authentication token is required.");
     }
     return Options(headers: {"Authorization": "Bearer $token"});
+  }
+
+  String _getErrorMessage(DioException e, {String? defaultMessage}) {
+    final dynamic data = e.response?.data;
+    if (data is Map) {
+      return data['message']?.toString() ??
+          data['error']?.toString() ??
+          defaultMessage ??
+          "Unknown Error";
+    }
+    if (data is String && data.isNotEmpty) {
+      return data;
+    }
+    return defaultMessage ?? "Network or Server Error";
   }
 
   List<ApartmentResponse> _parseApartmentList(dynamic data) {
@@ -730,8 +712,7 @@ class ApiService {
       );
       return _parseBookingList(response.data);
     } on DioException catch (e) {
-      final serverMessage = e.response?.data?['message'];
-      throw Exception(serverMessage ?? "Get bookings failed");
+      throw Exception(_getErrorMessage(e, defaultMessage: "Get bookings failed"));
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -755,6 +736,7 @@ class ApiService {
       return [];
     }
     return listData
+        .where((item) => item is Map)
         .map((item) => Map<String, dynamic>.from(item as Map))
         .toList();
   }

@@ -186,33 +186,53 @@ class FirebaseCloudMessaging {
 
   static Future<void> _saveFcmToken(String userId, String? token) async {
     try {
+      // Read the cached user to populate name/email/role fields for the PATCH.
+      // If the cache is missing (e.g. on first launch before login completes),
+      // we still attempt the PATCH with only the fields we know.
+      RegisterUser? decoded;
       final cachedUser = SharedPrefsHelper.getData(key: "cached_user");
-      if (cachedUser is! String || cachedUser.isEmpty) {
-        return;
-      }
-
-      final decoded = RegisterUser.fromJson(
-        Map<String, dynamic>.from(jsonDecode(cachedUser) as Map),
-      );
-      if (decoded.id != userId) {
-        return;
+      if (cachedUser is String && cachedUser.isNotEmpty) {
+        try {
+          decoded = RegisterUser.fromJson(
+            Map<String, dynamic>.from(jsonDecode(cachedUser) as Map),
+          );
+          if (decoded.id != null && decoded.id != userId) {
+            // Cached user belongs to a different account — skip to avoid
+            // clobbering the wrong user record, but still sync the token
+            // using a bare PATCH with empty profile fields.
+            debugPrint(
+              'FCM: cached user id (${decoded.id}) != target userId ($userId) — '
+              'syncing token without cached profile data.',
+            );
+            decoded = null;
+          }
+        } catch (e) {
+          debugPrint('FCM: failed to parse cached user: $e');
+          decoded = null;
+        }
       }
 
       final updatedUser = await _apiService.updateUser(
         userId: userId,
-        name: decoded.name ?? "",
-        email: decoded.email ?? "",
-        phoneNumber: decoded.phoneNumber ?? "",
-        college: decoded.college,
-        gender: decoded.gender,
-        role: decoded.role ?? "client",
-        photoUrl: decoded.photoUrl,
+        name: decoded?.name ?? "",
+        email: decoded?.email ?? "",
+        phoneNumber: decoded?.phoneNumber ?? "",
+        college: decoded?.college,
+        gender: decoded?.gender,
+        role: decoded?.role ?? "client",
+        photoUrl: decoded?.photoUrl,
         fcmToken: token,
       );
+
+      // Refresh the local cache so future reads reflect the new token.
       await SharedPrefsHelper.saveData(
         key: "cached_user",
         value: jsonEncode(updatedUser.toSupaBase()),
       );
-    } catch (_) {}
+      debugPrint('FCM: token ${token == null ? 'cleared' : 'saved'} for user $userId');
+    } catch (e) {
+      // Log instead of swallowing so failures are visible in debug output.
+      debugPrint('FCM: _saveFcmToken failed for user $userId: $e');
+    }
   }
 }

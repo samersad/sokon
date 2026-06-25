@@ -37,9 +37,7 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
     if (!isInitialized) {
       final userId = context.read<UserViewModel>().user?.id;
       if (userId != null && userId.isNotEmpty) {
-        viewModel.listenToNotifications(userId).then((_) {
-          viewModel.markAllAsRead(userId);
-        });
+        viewModel.listenToNotifications(userId);
       }
       isInitialized = true;
     }

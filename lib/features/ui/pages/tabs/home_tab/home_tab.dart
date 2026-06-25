@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
@@ -181,7 +182,7 @@ class _HomeTabState extends State<HomeTab> {
                           radius: 18.r,
                           backgroundColor: Colors.grey.shade200,
                           backgroundImage: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
-                              ? NetworkImage(user.photoUrl!)
+                              ? CachedNetworkImageProvider(user.photoUrl!)
                               : AssetImage(AppAssets.profileImage) as ImageProvider,
                         ),
                       ),
@@ -471,7 +472,10 @@ class _HomeTabState extends State<HomeTab> {
       itemCount: apartments.length,
       separatorBuilder: (_, __) => SizedBox(width: 10.w),
       itemBuilder: (_, index) {
-        return NearbyEstateCard(apartment: apartments[index]);
+        return NearbyEstateCard(
+          apartment: apartments[index],
+          referenceLocation: viewModel.state.selectedUniversity.location,
+        );
       },
     );
   }

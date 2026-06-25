@@ -177,6 +177,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 keyboardType: TextInputType.phone,
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
+                                prefixIconName: Container(
+                                  width: 80.w,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                                  child: Row(
+                                    children: [
+                                      Text("🇪🇬", style: TextStyle(fontSize: 20.sp)),
+                                      SizedBox(width: 5.w),
+                                      Text("+2", style: theme.textTheme.bodyMedium),
+                                      SizedBox(width: 5.w),
+                                      Container(
+                                        height: 20.h,
+                                        width: 1.w,
+                                        color: theme.highlightColor,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 validator: (val) =>
                                     AppValidators.validatePhoneNumber(val, l10n),
                               ),

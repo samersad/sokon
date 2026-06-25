@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:sokon/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
@@ -54,10 +55,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final themeCubit = context.read<ThemeViewModel>();
-    final editableFillColor = Theme.of(context).disabledColor;
-    final readOnlyFillColor = Theme.of(context).disabledColor.withOpacity(0.45);
+    final editableFillColor = theme.disabledColor;
+    final readOnlyFillColor = theme.disabledColor.withOpacity(0.45);
     return BlocConsumer<SettingsViewModel, SettingsState>(
       bloc: viewModel,
       listener: (context, state) {
@@ -116,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   backgroundImage: viewModel.profileImage != null
                                       ? FileImage(viewModel.profileImage!)
                                       : (user?.photoUrl != null && user!.photoUrl!.isNotEmpty
-                                          ? NetworkImage(user.photoUrl!)
+                                          ? CachedNetworkImageProvider(user.photoUrl!)
                                           : AssetImage(AppAssets.profileImage)) as ImageProvider,
                                 ),
                                 Positioned(
@@ -182,11 +184,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           CustomTextFormField(
                             hintText: l10n.phoneNumber,
                             controller: phoneController,
-                            paddingVertical: 15.h,
-                            borderSideColor: AppColors.grayColor,
-                            hintStyle: Theme.of(context).textTheme.bodyMedium,
-                            fillColor: editableFillColor,
+                            borderSideColor: theme.highlightColor,
+                            hintStyle: theme.textTheme.bodyMedium,
+                            fillColor: theme.disabledColor,
                             keyboardType: TextInputType.phone,
+                            prefixIconName: Container(
+                              width: 80.w,
+                              padding: EdgeInsets.symmetric(horizontal: 10.w),
+                              child: Row(
+                                children: [
+                                  Text("🇪🇬", style: TextStyle(fontSize: 20.sp)),
+                                  SizedBox(width: 5.w),
+                                  Text("+2", style: theme.textTheme.bodyMedium),
+                                  SizedBox(width: 5.w),
+                                  Container(
+                                    height: 20.h,
+                                    width: 1.w,
+                                    color: theme.highlightColor,
+                                  ),
+                                ],
+                              ),
+                            ),
                             validator: (val) => AppValidators.validatePhoneNumber(val, l10n),
                           ),
                           SizedBox(height: 20.h),

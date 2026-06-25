@@ -87,13 +87,18 @@ class _MessageTabState extends State<MessageTab> {
                                 orElse: () => userId,
                               );
 
-                              final displayNames =
-                                  chatData['displayNames'] as Map?;
-                              final displayPhotos =
-                                  chatData['displayPhotos'] as Map?;
-                              final displayName = displayNames?[receiverId] ??
-                                  (receiverId == userId ? l10n.savedChat : "User");
-                              final photoUrl = displayPhotos?[receiverId];
+                              final displayNames = chatData['displayNames'];
+                              final displayPhotos = chatData['displayPhotos'];
+                              
+                              String displayName = (receiverId == userId ? l10n.savedChat : "User");
+                              if (displayNames is Map && displayNames.containsKey(receiverId)) {
+                                displayName = displayNames[receiverId]?.toString() ?? displayName;
+                              }
+                              
+                              String? photoUrl;
+                              if (displayPhotos is Map && displayPhotos.containsKey(receiverId)) {
+                                photoUrl = displayPhotos[receiverId]?.toString();
+                              }
                               final lastMessage =
                                   (chatData['lastMessage'] as String? ?? "")
                                       .trim();

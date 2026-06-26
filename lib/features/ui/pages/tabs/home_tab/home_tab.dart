@@ -128,7 +128,9 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                       SizedBox(width: 10.w),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.of(context).pushNamed(AppRoutes.chatBotRoute);
+                        },
                         child: Image.asset(AppAssets.chatBot, width: 24.w),
                       ),
                       SizedBox(width: 10.w),

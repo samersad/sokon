@@ -8,7 +8,7 @@ with normalized as (
     id,
     coalesce(nullif(trim(city), ''), 'Assuit') as normalized_city,
     case
-      when district is null then 'فيريال'
+      when district is null then 'فريال'
       when btrim(
         translate(
           district,
@@ -28,7 +28,7 @@ with normalized as (
           ''
         )
       ) in (
-        'فيريال',
+        'فريال',
         'سيتي',
         'سيد',
         'الجمهوريه',
@@ -53,7 +53,7 @@ with normalized as (
           ''
         )
       )
-      else 'فيريال'
+      else 'فريال'
     end as normalized_district,
     coalesce(floor, 1) as normalized_floor
   from public.apartments
@@ -68,7 +68,7 @@ where n.id = a.id;
 
 alter table public.apartments
 alter column city set default 'Assuit',
-alter column district set default 'فيريال',
+alter column district set default 'فريال',
 alter column floor set default 1,
 alter column city set not null,
 alter column district set not null,
@@ -100,7 +100,7 @@ add constraint apartments_district_check check (
       ''
     )
   ) in (
-    'فيريال',
+    'فريال',
     'سيتي',
     'سيد',
     'الجمهوريه',

@@ -99,7 +99,7 @@ class ApartmentResponse {
     if (resolvedDistrict != null && resolvedDistrict.isNotEmpty) {
       parts.add(resolvedDistrict);
     }
-    return parts.isEmpty ? "Assuit • فيريال" : parts.join(" • ");
+    return parts.isEmpty ? "Assuit • فريال" : parts.join(" • ");
   }
 
   String get displayLocationLabel {

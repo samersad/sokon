@@ -19,7 +19,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   static const String fixedCity = 'Assuit';
   static const List<String> districtOptions = [
-    'فيريال',
+    'فريال',
     'سيتي',
     'سيد',
     'الجمهوريه',

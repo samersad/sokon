@@ -70,7 +70,7 @@ class Apartment {
     if (resolvedDistrict.isNotEmpty) {
       parts.add(resolvedDistrict);
     }
-    return parts.isEmpty ? "Assuit • فيريال" : parts.join(" • ");
+    return parts.isEmpty ? "Assuit • فريال" : parts.join(" • ");
   }
 
   String get displayLocationLabel {
@@ -159,15 +159,15 @@ class Apartment {
 String _normalizeDistrictName(String? district) {
   final value = district?.trim();
   if (value == null || value.isEmpty) {
-    return 'فيريال';
+    return 'فريال';
   }
   const allowedDistricts = {
-    'فيريال',
+    'فريال',
     'سيتي',
     'سيد',
     'الجمهوريه',
     'يسري راغب',
     'آخر',
   };
-  return allowedDistricts.contains(value) ? value : 'فيريال';
+  return allowedDistricts.contains(value) ? value : 'فريال';
 }

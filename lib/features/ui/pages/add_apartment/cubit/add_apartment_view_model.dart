@@ -213,12 +213,15 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
       videoFile = pickedVideoFile;
       existingVideoUrl = null; // Clear existing video if new one is picked
-      emit(AddApartmentUpdateUI());
     } catch (e) {
       videoFile = null;
       emit(AddApartmentError("Video playback failed"));
     } finally {
       await controller.dispose();
+      // Emit update UI only after the temporary controller is fully disposed
+      if (videoFile != null) {
+        emit(AddApartmentUpdateUI());
+      }
     }
   }
 

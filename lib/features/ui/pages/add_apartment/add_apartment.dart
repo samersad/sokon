@@ -266,6 +266,7 @@ class _AddApartmentState extends State<AddApartment> {
                 children: [
                   AppVideoPlayer.file(
                     viewModel.videoFile!.path,
+                    key: ValueKey(viewModel.videoFile!.path),
                     height: 190.h,
                     borderRadius: BorderRadius.circular(16.r),
                   ),

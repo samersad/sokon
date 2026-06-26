@@ -9,6 +9,8 @@ import 'package:sokon/features/ui/widgets/back_container.dart';
 import 'package:sokon/features/ui/widgets/featured_estates_card.dart';
 import 'package:sokon/l10n/app_localizations.dart';
 
+import 'package:sokon/api/api_constants.dart';
+
 class ChatMessage {
   final String text;
   final bool isBot;
@@ -38,11 +40,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   final Dio _dio = Dio();
 
   String get _chatbotUrl {
-    // 10.0.2.2 is the gateway to the host machine loopback interface on Android emulators
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:5001/api/chat';
-    }
-    return 'http://localhost:5001/api/chat';
+    // Try the dedicated AI chat endpoint first
+    return '${ApiConstants.baseUrl}/ai/chat';
   }
 
   @override
@@ -78,6 +77,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
+    final isArabic = Directionality.of(context) == TextDirection.rtl;
+
     final userMsg = ChatMessage(
       text: text,
       isBot: false,
@@ -104,7 +105,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
         final String reply = data['reply'] ?? '';
-        final rawApartments = data['data'];
+        
+        // Check for 'suggestions' or 'data' in the response
+        final rawApartments = data['suggestions'] ?? data['data'];
 
         List<ApartmentResponse> apartments = [];
         if (rawApartments is List) {
@@ -124,7 +127,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       } else {
         setState(() {
           _messages.add(ChatMessage(
-            text: "عذراً، حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة مرة أخرى.",
+            text: isArabic ? "عذراً، حدث خطأ أثناء الاتصال بمساعد سكن. يرجى المحاولة مرة أخرى." : "Sorry, an error occurred while connecting to the assistant. Please try again.",
             isBot: true,
             timestamp: DateTime.now(),
           ));
@@ -133,7 +136,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     } catch (e) {
       setState(() {
         _messages.add(ChatMessage(
-          text: "غير قادر على الاتصال بمساعد سكن الذكي حالياً. تأكد من تشغيل خادم البوت على منفذ 5001.",
+          text: isArabic 
+            ? "غير قادر على الاتصال بمساعد سكن الذكي حالياً. يرجى التأكد من اتصالك بالإنترنت أو المحاولة لاحقاً." 
+            : "Unable to connect to Sokon AI Assistant right now. Please check your internet connection or try again later.",
           isBot: true,
           timestamp: DateTime.now(),
         ));
@@ -270,11 +275,11 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             if (message.apartments.isNotEmpty) ...[
               SizedBox(height: 8.h),
               SizedBox(
-                height: 180.h,
+                height: 185.h,
                 child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
+                  scrollDirection: Axis.vertical,
                   itemCount: message.apartments.length,
-                  separatorBuilder: (context, index) => SizedBox(width: 10.w),
+                  separatorBuilder: (context, index) => SizedBox(width: 20.w),
                   itemBuilder: (context, index) {
                     final apartment = message.apartments[index];
                     return FeaturedEstatesCard(apartment: apartment);

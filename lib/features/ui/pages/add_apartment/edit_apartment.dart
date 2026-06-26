@@ -290,12 +290,14 @@ class _EditApartmentState extends State<EditApartment> {
                   if (localVideoPath != null)
                     AppVideoPlayer.file(
                       localVideoPath,
+                      key: ValueKey(localVideoPath),
                       height: 190.h,
                       borderRadius: BorderRadius.circular(16.r),
                     )
                   else
                     AppVideoPlayer.network(
                       remoteVideoUrl!,
+                      key: ValueKey(remoteVideoUrl),
                       height: 190.h,
                       borderRadius: BorderRadius.circular(16.r),
                     ),

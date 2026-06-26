@@ -68,7 +68,6 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
   }
 
   Future<void> _initializePlayer() async {
-    final l10n = AppLocalizations.of(context)!;
     final loadVersion = ++_loadVersion;
     await _disposeControllers();
 
@@ -82,7 +81,13 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
     final videoPlayerController = _createVideoController();
 
     try {
-      await videoPlayerController.initialize();
+      debugPrint("Initializing video player for: ${_sourceKey}");
+      // Use a timeout to prevent hanging forever
+      await videoPlayerController.initialize().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception("Video initialization timeout"),
+      );
+      debugPrint("Video player initialized successfully");
 
       if (!mounted || loadVersion != _loadVersion) {
         await videoPlayerController.dispose();
@@ -103,17 +108,13 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
           backgroundColor: AppColors.grayColor.withOpacity(0.25),
           bufferedColor: AppColors.whiteColor.withOpacity(0.35),
         ),
-        placeholder: _buildShell(
-          child: widget.placeholder ?? _buildLoadingState(),
-        ),
+        // Use an empty placeholder after initialization is done
+        placeholder: Container(color: Colors.black),
         errorBuilder: (context, errorMessage) {
           return _buildShell(
             child: _buildErrorState(errorMessage),
           );
         },
-        progressIndicatorDelay: Platform.isAndroid
-            ? _androidProgressDelay
-            : null,
       );
 
       if (!mounted || loadVersion != _loadVersion) {
@@ -127,12 +128,13 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
         _chewieController = chewieController;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
+      debugPrint("Video initialization failed: $e");
       await videoPlayerController.dispose();
       if (!mounted || loadVersion != _loadVersion) return;
 
       setState(() {
-        _errorMessage = l10n.videoPlaybackUnavailable;
+        _errorMessage = AppLocalizations.of(context)?.videoPlaybackUnavailable ?? "Video playback unavailable";
         _isLoading = false;
       });
     }
@@ -153,8 +155,17 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
     _chewieController = null;
     _videoPlayerController = null;
 
+    // Dispose Chewie first. By default, Chewie disposes the video player controller
+    // unless autoDispose is set to false. 
     chewieController?.dispose();
-    await videoPlayerController?.dispose();
+    
+    // Explicitly dispose the video player controller as well, just in case,
+    // or if Chewie wasn't fully initialized.
+    try {
+      await videoPlayerController?.dispose();
+    } catch (e) {
+      debugPrint("Error disposing video controller: $e");
+    }
   }
 
   Widget _buildShell({required Widget child}) {

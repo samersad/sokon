@@ -62,7 +62,9 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
       final bookings = await bookingRepository.getBookings(userId);
       final hasAcceptedBooking = bookings.any((b) =>
           b.apartmentId == apartment.id &&
-          (b.status?.toLowerCase() == 'accepted' || b.status?.toLowerCase() == 'active'));
+          (b.status?.toLowerCase() == 'accepted' || 
+           b.status?.toLowerCase() == 'confirmed' ||
+           b.status?.toLowerCase() == 'active'));
 
       if (!mounted) return;
       setState(() {

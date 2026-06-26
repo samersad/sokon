@@ -8,6 +8,8 @@ import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/model/BookingResponse.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 
+import '../../../../../../core/utils/app_colors.dart';
+import '../../../../../../core/utils/app_routes.dart';
 import '../../../../widgets/back_container.dart';
 import 'cubit/my_bookings_states.dart';
 import 'cubit/my_bookings_view_model.dart';
@@ -200,6 +202,24 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   ),
                 ),
               ),
+              if (normalizeStatus(booking.status) == 'accepted' || normalizeStatus(booking.status) == 'confirmed') ...[
+                SizedBox(width: 8.w),
+                InkWell(
+                  onTap: () => _openChat(booking),
+                  child: Container(
+                    padding: EdgeInsets.all(6.r),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      color: AppColors.primaryColor,
+                      size: 18.sp,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           const Divider(height: 25),
@@ -211,7 +231,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 children: [
                   Text(l10n.period, style: theme.textTheme.bodyMedium),
                   Text(
-                    "${booking.startDate != null ? dateFormat.format(booking.startDate!) : '-'} - ${booking.endDate != null ? dateFormat.format(booking.endDate!) : '-'}",
+                    "${booking.startDate != null ? dateFormat.format(booking.startDate!.toLocal()) : '-'} - ${booking.endDate != null ? dateFormat.format(booking.endDate!.toLocal()) : '-'}",
                     style: theme.textTheme.labelMedium,
                   ),
                 ],
@@ -363,6 +383,24 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     final status = normalizeStatus(booking.status);
     return booking.id != null &&
         (status == 'accepted' || status == 'confirmed');
+  }
+
+  void _openChat(BookingResponse booking) {
+    if (booking.ownerId != null) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.chatRoute,
+        arguments: {
+          'receiverId': booking.ownerId,
+          'receiverName': booking.ownerName ?? 'Owner',
+          'receiverPhotoUrl': null,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Owner contact not available')),
+      );
+    }
   }
 
   Future<void> _rateBooking(BookingResponse booking, int rating) async {

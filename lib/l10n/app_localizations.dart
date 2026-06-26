@@ -194,6 +194,24 @@ abstract class AppLocalizations {
   /// **'No apartments found'**
   String get noApartmentsFound;
 
+  /// No description provided for @apartmentsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apartments'**
+  String apartmentsCount(Object count);
+
+  /// No description provided for @apartmentsInDistrictCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apartments in this district'**
+  String apartmentsInDistrictCount(Object count);
+
+  /// No description provided for @apartmentsOnMapCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apartments with map locations'**
+  String apartmentsOnMapCount(Object count);
+
   /// No description provided for @topLocation.
   ///
   /// In en, this message translates to:
@@ -1861,6 +1879,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'EGP'**
   String get egp;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String minutesAgo(Object count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String hoursAgo(Object count);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String daysAgo(Object count);
 }
 
 class _AppLocalizationsDelegate

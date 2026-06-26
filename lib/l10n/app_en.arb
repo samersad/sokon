@@ -15,6 +15,9 @@
   "recent": "Recent",
   "recentSearch": "Recent Search",
   "noApartmentsFound": "No apartments found",
+  "apartmentsCount": "{count} apartments",
+  "apartmentsInDistrictCount": "{count} apartments in this district",
+  "apartmentsOnMapCount": "{count} apartments with map locations",
   "topLocation": "Top Location",
   "noDistrictsFound": "No districts found",
   "noDistrictsAvailable": "No districts available",
@@ -292,5 +295,9 @@
   "invalidEmailOrPassword": "Invalid email or password",
   "failedToUploadImage": "Failed to upload image",
   "failedToUploadVideo": "Failed to upload video",
-  "egp": "EGP"
+  "egp": "EGP",
+  "justNow": "Just now",
+  "minutesAgo": "{count}m ago",
+  "hoursAgo": "{count}h ago",
+  "daysAgo": "{count}d ago"
 }

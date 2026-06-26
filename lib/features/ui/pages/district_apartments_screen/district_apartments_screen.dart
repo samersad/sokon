@@ -28,7 +28,7 @@ class DistrictApartmentsScreen extends StatelessWidget {
               Text(districtSummary.district, style: theme.textTheme.headlineMedium),
               SizedBox(height: 5.h),
               Text(
-                "${districtSummary.apartmentCount} apartments in this district",
+                l10n.apartmentsInDistrictCount(districtSummary.apartmentCount),
                 style: theme.textTheme.bodyMedium,
               ),
               SizedBox(height: 16.h),

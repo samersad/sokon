@@ -366,7 +366,7 @@ class _HomeMapScreenState extends State<HomeMapScreen> {
                     SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
-                        "${_apartmentsWithLocation.length} apartments with map locations",
+                        l10n.apartmentsOnMapCount(_apartmentsWithLocation.length),
                         style: theme.textTheme.bodyMedium,
                       ),
                     ),

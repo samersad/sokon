@@ -59,6 +59,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noApartmentsFound => 'No apartments found';
 
   @override
+  String apartmentsCount(Object count) {
+    return '$count apartments';
+  }
+
+  @override
+  String apartmentsInDistrictCount(Object count) {
+    return '$count apartments in this district';
+  }
+
+  @override
+  String apartmentsOnMapCount(Object count) {
+    return '$count apartments with map locations';
+  }
+
+  @override
   String get topLocation => 'Top Location';
 
   @override
@@ -947,4 +962,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get egp => 'EGP';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(Object count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String daysAgo(Object count) {
+    return '${count}d ago';
+  }
 }

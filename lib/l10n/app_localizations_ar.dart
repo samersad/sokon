@@ -59,6 +59,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noApartmentsFound => 'لم يتم العثور على شقق';
 
   @override
+  String apartmentsCount(Object count) {
+    return '$count شقة';
+  }
+
+  @override
+  String apartmentsInDistrictCount(Object count) {
+    return '$count شقة في هذا الحي';
+  }
+
+  @override
+  String apartmentsOnMapCount(Object count) {
+    return '$count شقة بمواقع على الخريطة';
+  }
+
+  @override
   String get topLocation => 'أبرز المواقع';
 
   @override
@@ -936,4 +951,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get egp => 'جم';
+
+  @override
+  String get justNow => 'الآن';
+
+  @override
+  String minutesAgo(Object count) {
+    return 'منذ $count دقيقة';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return 'منذ $count ساعة';
+  }
+
+  @override
+  String daysAgo(Object count) {
+    return 'منذ $count أيام';
+  }
 }

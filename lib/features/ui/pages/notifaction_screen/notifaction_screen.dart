@@ -99,16 +99,33 @@ class _NotifactionScreenState extends State<NotifactionScreen> {
     );
   }
 
+  String _formatTime(DateTime? dateTime, AppLocalizations l10n) {
+    if (dateTime == null) return "";
+    final localDateTime = dateTime.toLocal();
+    final now = DateTime.now();
+    final difference = now.difference(localDateTime);
+
+    if (difference.inMinutes < 1) {
+      return l10n.justNow;
+    } else if (difference.inMinutes < 60) {
+      return l10n.minutesAgo(difference.inMinutes);
+    } else if (difference.inHours < 24) {
+      return l10n.hoursAgo(difference.inHours);
+    } else if (difference.inDays < 7) {
+      return l10n.daysAgo(difference.inDays);
+    } else {
+      return DateFormat('dd MMM, hh:mm a').format(localDateTime);
+    }
+  }
+
   Widget _buildNotificationCard(
     BuildContext context,
     AppNotification notification,
   ) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
-    final createdAt = notification.createdAt;
-    final timeText = createdAt == null
-        ? ""
-        : DateFormat('dd MMM, hh:mm a').format(createdAt);
+    final timeText = _formatTime(notification.createdAt, l10n);
     final isUnread = notification.isRead != true;
 
     return InkWell(

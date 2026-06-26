@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sokon/l10n/app_localizations.dart';
 
 import '../../../core/model/district_summary.dart';
 import '../../../core/utils/app_assets.dart';
@@ -20,6 +21,7 @@ class DistrictLocationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: onTap,
@@ -54,7 +56,7 @@ class DistrictLocationCard extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    "${districtSummary.apartmentCount} apartments",
+                    l10n.apartmentsCount(districtSummary.apartmentCount),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.medium12gray,
@@ -74,7 +76,7 @@ class DistrictLocationCard extends StatelessWidget {
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    "${districtSummary.apartmentCount} apartments",
+                    l10n.apartmentsCount(districtSummary.apartmentCount),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall,

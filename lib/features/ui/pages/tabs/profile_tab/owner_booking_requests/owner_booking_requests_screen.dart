@@ -9,6 +9,7 @@ import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
+import '../../../../../../core/utils/app_routes.dart';
 import '../../../../widgets/back_container.dart';
 import 'cubit/owner_booking_requests_states.dart';
 import 'cubit/owner_booking_requests_view_model.dart';
@@ -257,6 +258,24 @@ class _OwnerBookingRequestsScreenState
                   ),
                 ),
               ),
+              if (status == 'accepted' || status == 'confirmed') ...[
+                SizedBox(width: 8.w),
+                InkWell(
+                  onTap: () => _openChat(booking),
+                  child: Container(
+                    padding: EdgeInsets.all(6.r),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      color: AppColors.primaryColor,
+                      size: 18.sp,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           SizedBox(height: 14.h),
@@ -288,7 +307,7 @@ class _OwnerBookingRequestsScreenState
                 _buildInfoRow(
                   label: "Requested",
                   value: booking.createdAt != null
-                      ? createdAtFormat.format(booking.createdAt!)
+                      ? createdAtFormat.format(booking.createdAt!.toLocal())
                       : l10n.unknown,
                 ),
               ],
@@ -529,6 +548,24 @@ class _OwnerBookingRequestsScreenState
 
   bool _shouldShowActions(String status) {
     return status == 'pending' || status == 'accepted' || status == 'confirmed';
+  }
+
+  void _openChat(BookingResponse booking) {
+    if (booking.clientId != null) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.chatRoute,
+        arguments: {
+          'receiverId': booking.clientId,
+          'receiverName': booking.clientName ?? 'Client',
+          'receiverPhotoUrl': null,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Client contact not available')),
+      );
+    }
   }
 
   String _normalizeStatus(String? status) {

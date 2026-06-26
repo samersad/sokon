@@ -29,9 +29,6 @@ class ApartmentDetailsViewModel extends Cubit<ApartmentDetailsStates> {
   bool canUserRent(String? userId, String? userRole) {
     if (userRole != 'client') return false;
     if (userId == apartment?.ownerId) return false;
-    if ((apartment?.availablePeople ?? apartment?.maxPeople ?? 0) <= 0) {
-      return false;
-    }
     return true;
   }
 }

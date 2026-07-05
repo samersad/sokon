@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sokon/core/utils/app_colors.dart';
 
 class ToastMessage {
   static Future<bool?> toastMsg(
       String msg,
       Color backgroundColor, {
-        Color textColor = AppColors.whiteColor,
+        Color textColor = Colors.white,
       }) {
     return Fluttertoast.showToast(
       msg: msg,

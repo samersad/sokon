@@ -4,36 +4,60 @@ import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
 class AlertDialogUtils {
-  static void showLoading({required BuildContext context, required String msg}) {
+  static bool _isLoadingVisible = false;
+  static int _loadingGeneration = 0;
+
+  static void showLoading({
+    required BuildContext context,
+    required String msg,
+  }) {
+    if (_isLoadingVisible) return;
+    _isLoadingVisible = true;
+    final generation = ++_loadingGeneration;
+
     showDialog(
       barrierDismissible: false,
+      useRootNavigator: true,
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
-        content: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10.h),
-          child: Row(
-            children: [
-              CircularProgressIndicator(color: AppColors.primaryColor),
-              SizedBox(width: 20.w),
-              Expanded(
-                child: Text(
-                  msg,
-                  style: AppStyles.semiBold14Primary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.r),
+          ),
+          content: Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.h),
+            child: Row(
+              children: [
+                CircularProgressIndicator(color: AppColors.primaryColor),
+                SizedBox(width: 20.w),
+                Expanded(
+                  child: Text(
+                    msg,
+                    style: AppStyles.semiBold14Primary,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    );
+    ).whenComplete(() {
+      if (generation == _loadingGeneration) {
+        _isLoadingVisible = false;
+      }
+    });
   }
 
   static void hideLoading({required BuildContext context}) {
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
+    if (!_isLoadingVisible) return;
+    _isLoadingVisible = false;
+    _loadingGeneration++;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.pop();
     }
   }
 
@@ -49,9 +73,12 @@ class AlertDialogUtils {
     showDialog(
       context: context,
       useRootNavigator: true,
+      barrierDismissible: true,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
           title: title != null
               ? Text(title, style: AppStyles.bold20blackIner)
               : null,
@@ -61,7 +88,10 @@ class AlertDialogUtils {
               child: Text(msg, style: AppStyles.medium16black),
             ),
           ),
-          actionsPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 15.h),
+          actionsPadding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 15.h,
+          ),
           actions: [
             Row(
               children: [

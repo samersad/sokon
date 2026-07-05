@@ -11,6 +11,7 @@ class BookingStates {
   final bool showDateError;
   final BookingStatus status;
   final String? errorMessage;
+  final bool requiresPhoneVerification;
 
   const BookingStates({
     this.selectedDate,
@@ -21,6 +22,7 @@ class BookingStates {
     this.showDateError = false,
     this.status = BookingStatus.initial,
     this.errorMessage,
+    this.requiresPhoneVerification = false,
   });
 
   BookingStates copyWith({
@@ -37,16 +39,23 @@ class BookingStates {
     BookingStatus? status,
     String? errorMessage,
     bool clearErrorMessage = false,
+    bool? requiresPhoneVerification,
   }) {
     return BookingStates(
-      selectedDate: clearSelectedDate ? null : (selectedDate ?? this.selectedDate),
+      selectedDate: clearSelectedDate
+          ? null
+          : (selectedDate ?? this.selectedDate),
       cardNumber: clearCardNumber ? null : (cardNumber ?? this.cardNumber),
       cardHolder: clearCardHolder ? null : (cardHolder ?? this.cardHolder),
       expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
       peopleCount: peopleCount ?? this.peopleCount,
       showDateError: showDateError ?? this.showDateError,
       status: status ?? this.status,
-      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: clearErrorMessage
+          ? null
+          : (errorMessage ?? this.errorMessage),
+      requiresPhoneVerification:
+          requiresPhoneVerification ?? this.requiresPhoneVerification,
     );
   }
 }

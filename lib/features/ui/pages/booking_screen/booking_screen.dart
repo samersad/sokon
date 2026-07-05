@@ -32,7 +32,8 @@ class _BookingScreenState extends State<BookingScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!isInitialized) {
-      apartment = ModalRoute.of(context)!.settings.arguments as ApartmentResponse;
+      apartment =
+          ModalRoute.of(context)!.settings.arguments as ApartmentResponse;
       isInitialized = true;
     }
   }
@@ -54,6 +55,23 @@ class _BookingScreenState extends State<BookingScreen> {
           }
 
           if (state.errorMessage == l10n.selectDateRange) {
+            return;
+          }
+
+          if (state.requiresPhoneVerification) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage ?? l10n.somethingWentWrong),
+                action: SnackBarAction(
+                  label: l10n.settings,
+                  onPressed: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.settingsScreenRoute);
+                  },
+                ),
+              ),
+            );
             return;
           }
 
@@ -196,7 +214,10 @@ class _BookingScreenState extends State<BookingScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(l10n.date, style: theme.textTheme.bodyMedium),
+                                Text(
+                                  l10n.date,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
                                 Text(
                                   viewModel.getFormattedDate(),
                                   style: theme.textTheme.labelMedium,
@@ -259,7 +280,9 @@ class _BookingScreenState extends State<BookingScreen> {
                               }
                             },
                             child: Text(
-                              state.cardNumber == null ? l10n.addCard : l10n.edit,
+                              state.cardNumber == null
+                                  ? l10n.addCard
+                                  : l10n.edit,
                               style: theme.textTheme.labelMedium,
                             ),
                           ),

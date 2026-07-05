@@ -15,6 +15,7 @@ class ApartmentResponse {
     this.city,
     this.district,
     this.locationAddress,
+    this.gender,
     this.lat,
     this.lng,
     this.ownerId,
@@ -46,6 +47,7 @@ class ApartmentResponse {
       city: data['city']?.toString(),
       district: data['district']?.toString(),
       locationAddress: data['locationAddress']?.toString(),
+      gender: _normalizeApartmentGender(data['gender']?.toString()),
       lat: (data['lat'] as num?)?.toDouble(),
       lng: (data['lng'] as num?)?.toDouble(),
       ownerId: data['ownerId']?.toString(),
@@ -77,6 +79,7 @@ class ApartmentResponse {
   final String? city;
   final String? district;
   final String? locationAddress;
+  final String? gender;
   final double? lat;
   final double? lng;
   final String? ownerId;
@@ -112,6 +115,8 @@ class ApartmentResponse {
 
   String get floorLabel => floor != null ? "Floor $floor" : "Floor 1";
 
+  String get normalizedGender => _normalizeApartmentGender(gender);
+
   String get ratingLabel {
     final count = ratingCount ?? 0;
     if (count == 0) {
@@ -137,6 +142,7 @@ class ApartmentResponse {
       'city': city,
       'district': district,
       'locationAddress': locationAddress,
+      'gender': normalizedGender,
       'lat': lat,
       'lng': lng,
       'ownerId': ownerId,
@@ -150,4 +156,10 @@ class ApartmentResponse {
       'createdAt': createdAt?.toIso8601String(),
     };
   }
+}
+
+String _normalizeApartmentGender(String? gender) {
+  final value = gender?.trim().toLowerCase();
+  const allowedGenders = {'male', 'female'};
+  return allowedGenders.contains(value) ? value! : '';
 }

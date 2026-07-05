@@ -74,6 +74,13 @@ class FeaturedEstatesCard extends StatelessWidget {
                           apartment.ratingLabel,
                           style: theme.textTheme.displaySmall,
                         ),
+                        SizedBox(width: 8.w),
+                        Flexible(
+                          child: _GenderBadge(
+                            label: _genderLabel(l10n, apartment.normalizedGender),
+                            gender: apartment.normalizedGender,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
@@ -112,5 +119,64 @@ class FeaturedEstatesCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _GenderBadge extends StatelessWidget {
+  const _GenderBadge({
+    required this.label,
+    required this.gender,
+  });
+
+  final String label;
+  final String gender;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_genderIcon(gender), size: 13.sp, color: theme.highlightColor),
+          SizedBox(width: 3.w),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(fontSize: 10.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+IconData _genderIcon(String gender) {
+  switch (gender) {
+    case 'male':
+      return Icons.male_rounded;
+    case 'female':
+      return Icons.female_rounded;
+    default:
+      return Icons.groups_rounded;
+  }
+}
+
+String _genderLabel(AppLocalizations l10n, String gender) {
+  switch (gender) {
+    case 'male':
+      return l10n.male;
+    case 'female':
+      return l10n.female;
+    default:
+      return l10n.localeName == 'ar' ? 'الكل' : 'Any';
   }
 }

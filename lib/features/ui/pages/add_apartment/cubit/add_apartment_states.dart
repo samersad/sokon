@@ -8,7 +8,9 @@ class AddApartmentSuccess extends AddApartmentStates {}
 
 class AddApartmentError extends AddApartmentStates {
   final String message;
-  AddApartmentError(this.message);
+  final bool requiresPhoneVerification;
+
+  AddApartmentError(this.message, {this.requiresPhoneVerification = false});
 }
 
 class AddApartmentProgress extends AddApartmentStates {

@@ -9,6 +9,7 @@ import 'package:sokon/cloudinary_service.dart';
 import 'package:sokon/core/cache/shared_prefs_helper.dart';
 import 'package:sokon/core/model/RegisterResponse.dart';
 import 'package:sokon/core/services/firebase_cloud_messaging.dart';
+import 'package:sokon/core/utils/phone_verification_utils.dart';
 import '../../../../../../core/model/my_user.dart';
 import '../auth_remote_data_source.dart';
 
@@ -37,18 +38,17 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     String phoneNumber,
     String gender,
     String role,
-  ) async =>
-      _toMyUser(
-        await registerWithBackend(
-          email,
-          password,
-          name,
-          college,
-          phoneNumber,
-          gender,
-          role,
-        ),
-      );
+  ) async => _toMyUser(
+    await registerWithBackend(
+      email,
+      password,
+      name,
+      college,
+      phoneNumber,
+      gender,
+      role,
+    ),
+  );
 
   @override
   Future<RegisterUser> registerWithBackend(
@@ -69,6 +69,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       college: college?.trim().isEmpty == true ? null : college?.trim(),
       gender: gender,
       role: role.trim().toLowerCase(),
+      phoneVerified: false,
     );
     return _saveBackendAuthResponse(response);
   }
@@ -95,6 +96,10 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       }
     }
 
+    final phoneVerified =
+        PhoneVerificationUtils.isSamePhone(user.phoneNumber, phoneNumber) &&
+        user.phoneVerified == true;
+
     final updatedUser = await _apiService.updateUser(
       userId: userId,
       name: name,
@@ -105,7 +110,9 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       role: user.role ?? "client",
       photoUrl: photoUrl,
       fcmToken: user.fcmToken,
+      phoneVerified: phoneVerified,
     );
+    updatedUser.phoneVerified ??= phoneVerified;
 
     await _cacheBackendUser(updatedUser);
     return updatedUser;
@@ -115,9 +122,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   Future<MyUser> signInWithGoogle() async {
     try {
       final GoogleSignIn signIn = GoogleSignIn.instance;
-      await signIn.initialize(
-        clientId: dotenv.env['server_client_id'],
-      );
+      await signIn.initialize(clientId: dotenv.env['server_client_id']);
       await signIn.signOut();
       await _ignoreErrors(signIn.disconnect());
 
@@ -139,7 +144,8 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
 
         final user = MyUser(
           id: res.user!.id,
-          name: res.user!.userMetadata?['full_name'] ??
+          name:
+              res.user!.userMetadata?['full_name'] ??
               googleUser.displayName ??
               "",
           email: res.user!.email ?? googleUser.email,
@@ -192,6 +198,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
         role: normalizedRole,
         photoUrl: user.photoUrl,
         fcmToken: user.fcmToken,
+        phoneVerified: user.phoneVerified ?? false,
         createdAt: user.createdAt?.toIso8601String(),
       ),
     );
@@ -206,28 +213,28 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     String? college,
     String? gender,
     File? profileImage,
-  ) async =>
-      _toMyUser(
-        await updateProfileWithBackend(
-          RegisterUser(
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            college: user.college,
-            phoneNumber: user.phoneNumber,
-            gender: user.gender,
-            role: user.role,
-            photoUrl: user.photoUrl,
-            fcmToken: user.fcmToken,
-            createdAt: user.createdAt?.toIso8601String(),
-          ),
-          name,
-          phoneNumber,
-          college,
-          gender,
-          profileImage,
-        ),
-      );
+  ) async => _toMyUser(
+    await updateProfileWithBackend(
+      RegisterUser(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        college: user.college,
+        phoneNumber: user.phoneNumber,
+        gender: user.gender,
+        role: user.role,
+        photoUrl: user.photoUrl,
+        fcmToken: user.fcmToken,
+        phoneVerified: user.phoneVerified ?? false,
+        createdAt: user.createdAt?.toIso8601String(),
+      ),
+      name,
+      phoneNumber,
+      college,
+      gender,
+      profileImage,
+    ),
+  );
 
   @override
   Future<void> signOut() async {
@@ -268,6 +275,27 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
   }
 
   @override
+  Future<void> requestPhoneVerificationOTP(
+    String phoneNumber, {
+    String channel = 'sms',
+  }) {
+    return _apiService.requestPhoneVerificationOTP(
+      phoneNumber: phoneNumber,
+      channel: channel,
+    );
+  }
+
+  @override
+  Future<RegisterUser> verifyPhoneOTP(String phoneNumber, String otp) async {
+    final user = await _apiService.verifyPhoneOTP(
+      phoneNumber: phoneNumber,
+      otp: otp,
+    );
+    await _cacheBackendUser(user);
+    return user;
+  }
+
+  @override
   Future<void> updatePassword(String newPassword) async {
     final token = _passwordResetToken;
     if (token != null && token.isNotEmpty) {
@@ -284,9 +312,7 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     await _cacheBackendUser(user);
   }
 
-  Future<void> _saveSessionData({
-    required MyUser user,
-  }) async {
+  Future<void> _saveSessionData({required MyUser user}) async {
     final accessToken = _client.auth.currentSession?.accessToken;
     if (accessToken != null && accessToken.isNotEmpty) {
       await SharedPrefsHelper.saveData(key: "token", value: accessToken);
@@ -294,11 +320,14 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
     await _cacheUser(user);
   }
 
-  Future<RegisterUser> _saveBackendAuthResponse(RegisterResponse response) async {
+  Future<RegisterUser> _saveBackendAuthResponse(
+    RegisterResponse response,
+  ) async {
     final responseUser = response.user;
     if (responseUser == null) {
       throw Exception("User data not found in backend response.");
     }
+    responseUser.phoneVerified ??= false;
 
     final token = response.session?.accessToken;
     if (token != null && token.isNotEmpty) {
@@ -342,8 +371,10 @@ class AuthRemoteDataImpl implements AuthRemoteDataSource {
       role: user.role,
       photoUrl: user.photoUrl?.toString(),
       fcmToken: user.fcmToken?.toString(),
-      createdAt:
-          user.createdAt != null ? DateTime.tryParse(user.createdAt!) : null,
+      phoneVerified: user.phoneVerified ?? false,
+      createdAt: user.createdAt != null
+          ? DateTime.tryParse(user.createdAt!)
+          : null,
     );
   }
 

@@ -19,13 +19,25 @@ class SearchTab extends StatefulWidget {
 }
 
 class _SearchTabState extends State<SearchTab> {
+  static const List<String> _districtOptions = [
+    'any',
+    'فريال',
+    'سيتي',
+    'سيد',
+    'الجمهوريه',
+    'يسري راغب',
+    'آخر',
+  ];
+
   final SearchViewModel viewModel = getIt<SearchViewModel>();
   final TextEditingController _searchController = TextEditingController();
 
   // Filter state
   bool _isForRent = true;
   String _selectedPropertyType = "Apartment";
-  RangeValues _currentRangeValues = const RangeValues(10, 800);
+  String _selectedDistrict = "any";
+  String _selectedGender = "any";
+  RangeValues _currentRangeValues = const RangeValues(0, 5000);
   final Set<String> _selectedFacilities = {};
 
   @override
@@ -141,10 +153,11 @@ class _SearchTabState extends State<SearchTab> {
 
   void _showFilterBottomSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -169,24 +182,74 @@ class _SearchTabState extends State<SearchTab> {
                             width: 40.w,
                             height: 5.h,
                             decoration: BoxDecoration(
-                              color: Colors.grey[300],
+                              color: theme.highlightColor.withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
                         SizedBox(height: 30.h),
-                        Text(l10n.lookingFor, style: Theme.of(context).textTheme.labelMedium),
+                        Text(l10n.lookingFor, style: theme.textTheme.labelMedium),
                         _buildFilterCheckbox(l10n.forRent, _isForRent, (v) => setSheetState(() => _isForRent = v!)),
                         // _buildFilterCheckbox(l10n.forSale, _isForSale, (v) => setSheetState(() => _isForSale = v!)),
                         SizedBox(height: 20.h),
-                        Text(l10n.propertyType, style: Theme.of(context).textTheme.labelMedium),
+                        Text(l10n.propertyType, style: theme.textTheme.labelMedium),
                         ...["Apartment",].map((type) => _buildFilterCheckbox(
                               type,
                               _selectedPropertyType == type,
                               (v) => setSheetState(() => _selectedPropertyType = type),
                             )),
                         SizedBox(height: 20.h),
-                        Text(l10n.priceRange, style: Theme.of(context).textTheme.labelMedium),
+                        Text(l10n.district, style: theme.textTheme.labelMedium),
+                        SizedBox(height: 10.h),
+                        DropdownButtonFormField<String>(
+                          value: _selectedDistrict,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 14.w,
+                              vertical: 12.h,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                          ),
+                          items: _districtOptions
+                              .map(
+                                (district) => DropdownMenuItem<String>(
+                                  value: district,
+                                  child: Text(_districtLabel(l10n, district)),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (district) {
+                            if (district == null) return;
+                            setSheetState(() => _selectedDistrict = district);
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+                        Text(l10n.gender, style: theme.textTheme.labelMedium),
+                        SizedBox(height: 12.h),
+                        Row(
+                          children: ['any', 'male', 'female'].map((gender) {
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsetsDirectional.only(
+                                  end: gender == 'female' ? 0 : 10.w,
+                                ),
+                                child: _buildGenderFilterChip(
+                                  gender: gender,
+                                  label: _genderLabel(l10n, gender),
+                                  selected: _selectedGender == gender,
+                                  onTap: () => setSheetState(
+                                    () => _selectedGender = gender,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        SizedBox(height: 20.h),
+                        Text(l10n.priceRange, style: theme.textTheme.labelMedium),
                         RangeSlider(
                           values: _currentRangeValues,
                           min: 0,
@@ -202,12 +265,12 @@ class _SearchTabState extends State<SearchTab> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("EG${_currentRangeValues.start.round()}", style: Theme.of(context).textTheme.bodyMedium),
-                            Text("EG${_currentRangeValues.end.round()}", style: Theme.of(context).textTheme.bodyMedium),
+                            Text("EG${_currentRangeValues.start.round()}", style: theme.textTheme.bodyMedium),
+                            Text("EG${_currentRangeValues.end.round()}", style: theme.textTheme.bodyMedium),
                           ],
                         ),
                         SizedBox(height: 20.h),
-                        Text(l10n.facilities, style: Theme.of(context).textTheme.labelMedium),
+                        Text(l10n.facilities, style: theme.textTheme.labelMedium),
                         SizedBox(height: 15.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -227,7 +290,9 @@ class _SearchTabState extends State<SearchTab> {
                                   setSheetState(() {
                                     _isForRent = true;
                                     _selectedPropertyType = "Apartment";
-                                    _currentRangeValues = const RangeValues(10, 800);
+                                    _selectedDistrict = "any";
+                                    _selectedGender = "any";
+                                    _currentRangeValues = const RangeValues(0, 5000);
                                     _selectedFacilities.clear();
                                   });
                                 },
@@ -240,6 +305,9 @@ class _SearchTabState extends State<SearchTab> {
                               child: ElevatedButton(
                                 onPressed: () {
                                   viewModel.filter(
+                                    type: _selectedPropertyType,
+                                    district: _selectedDistrict,
+                                    gender: _selectedGender,
                                     minPrice: _currentRangeValues.start,
                                     maxPrice: _currentRangeValues.end,
                                   );
@@ -264,6 +332,59 @@ class _SearchTabState extends State<SearchTab> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildGenderFilterChip({
+    required String gender,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14.r),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 46.h,
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primaryColor.withValues(alpha: isDark ? 0.24 : 0.12)
+              : theme.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: selected
+                ? AppColors.primaryColor
+                : theme.highlightColor.withValues(alpha: 0.18),
+            width: selected ? 1.4 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _genderIcon(gender),
+              size: 18.sp,
+              color: selected ? AppColors.primaryColor : theme.highlightColor,
+            ),
+            SizedBox(width: 5.w),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: selected ? AppColors.primaryColor : theme.highlightColor,
+                  fontSize: 12.sp,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -312,4 +433,32 @@ class _SearchTabState extends State<SearchTab> {
       ),
     );
   }
+}
+
+IconData _genderIcon(String gender) {
+  switch (gender) {
+    case 'male':
+      return Icons.male_rounded;
+    case 'female':
+      return Icons.female_rounded;
+    default:
+      return Icons.groups_rounded;
+  }
+}
+
+String _genderLabel(AppLocalizations l10n, String gender) {
+  switch (gender) {
+    case 'male':
+      return l10n.male;
+    case 'female':
+      return l10n.female;
+    default:
+      return l10n.localeName == 'ar' ? 'الكل' : 'Any';
+  }
+}
+
+String _districtLabel(AppLocalizations l10n, String district) {
+  return district == 'any'
+      ? (l10n.localeName == 'ar' ? 'كل المناطق' : 'Any district')
+      : district;
 }

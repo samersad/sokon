@@ -75,6 +75,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
           selectedGender,
           role,
         );
+        user.phoneVerified = false;
         userCubit.updateUser(user);
         emit(RegisterSuccessStates(user));
       } catch (e) {
@@ -110,7 +111,11 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     }
   }
 
-  Future<void> updateUserRole(RegisterUser user, String role, UserViewModel userCubit) async {
+  Future<void> updateUserRole(
+    RegisterUser user,
+    String role,
+    UserViewModel userCubit,
+  ) async {
     try {
       emit(RegisterLoadingStates());
       final normalizedRole = role.trim().toLowerCase();
@@ -122,6 +127,26 @@ class RegisterViewModel extends Cubit<RegisterStates> {
     } catch (e) {
       emit(RegisterErrorStates("Failed to save user role: ${e.toString()}"));
     }
+  }
+
+  Future<void> requestPhoneVerificationOTP(
+    String phoneNumber, {
+    String channel = 'sms',
+  }) {
+    return authRepository.requestPhoneVerificationOTP(
+      phoneNumber,
+      channel: channel,
+    );
+  }
+
+  Future<RegisterUser> verifyPhoneOTP(
+    String phoneNumber,
+    String otp,
+    UserViewModel userCubit,
+  ) async {
+    final user = await authRepository.verifyPhoneOTP(phoneNumber, otp);
+    userCubit.updateUser(user);
+    return user;
   }
 
   Future<void> confirmPendingGoogleRole(UserViewModel userCubit) async {
@@ -148,7 +173,10 @@ class RegisterViewModel extends Cubit<RegisterStates> {
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
-              title:  Text(l10n.selectYourRole,style: AppStyles.bold20blackIner),
+              title: Text(
+                l10n.selectYourRole,
+                style: AppStyles.bold20blackIner,
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -156,20 +184,23 @@ class RegisterViewModel extends Cubit<RegisterStates> {
                     title: Text(l10n.owner),
                     value: 'owner',
                     groupValue: selectedDialogRole,
-                    onChanged: (value) => setState(() => selectedDialogRole = value),
+                    onChanged: (value) =>
+                        setState(() => selectedDialogRole = value),
                   ),
                   RadioListTile<String>(
                     title: Text(l10n.client),
                     value: 'client',
                     groupValue: selectedDialogRole,
-                    onChanged: (value) => setState(() => selectedDialogRole = value),
+                    onChanged: (value) =>
+                        setState(() => selectedDialogRole = value),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    if (selectedDialogRole == null || selectedDialogRole!.isEmpty) {
+                    if (selectedDialogRole == null ||
+                        selectedDialogRole!.isEmpty) {
                       return;
                     }
                     Navigator.pop(dialogContext);
@@ -196,6 +227,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
       role: user.role,
       photoUrl: user.photoUrl,
       fcmToken: user.fcmToken,
+      phoneVerified: user.phoneVerified ?? false,
       createdAt: user.createdAt?.toIso8601String(),
     );
   }
@@ -211,6 +243,7 @@ class RegisterViewModel extends Cubit<RegisterStates> {
       role: user.role,
       photoUrl: user.photoUrl?.toString(),
       fcmToken: user.fcmToken?.toString(),
+      phoneVerified: user.phoneVerified ?? false,
       createdAt: user.createdAt != null
           ? DateTime.tryParse(user.createdAt!)
           : null,

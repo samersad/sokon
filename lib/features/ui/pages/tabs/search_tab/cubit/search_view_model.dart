@@ -45,24 +45,22 @@ class SearchViewModel extends Cubit<SearchStates> {
 
   void filter({
     String? type,
+    String? district,
+    String? gender,
     double? minPrice,
     double? maxPrice,
     int? bedrooms,
   }) async {
     emit(SearchLoading());
     try {
-      if (_allApartments.isEmpty) {
-        _allApartments = await apartmentRepository.getAllApartments();
-      }
-
-      final results = _allApartments.where((apartment) {
-        bool matches = true;
-        if (minPrice != null && (apartment.price ?? 0) < minPrice) matches = false;
-        if (maxPrice != null && (apartment.price ?? 0) > maxPrice) matches = false;
-        if (bedrooms != null && apartment.bedrooms != bedrooms) matches = false;
-        return matches;
-      }).toList();
-
+      final results = await apartmentRepository.filterApartments(
+        type: type,
+        district: district,
+        gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        bedrooms: bedrooms,
+      );
       emit(SearchLoaded(results));
     } catch (e) {
       emit(SearchError(e.toString()));

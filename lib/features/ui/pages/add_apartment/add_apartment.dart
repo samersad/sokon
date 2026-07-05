@@ -64,6 +64,17 @@ class _AddApartmentState extends State<AddApartment> {
             SnackBar(
               content: Text(state.message),
               backgroundColor: AppColors.redColor,
+              action: state.requiresPhoneVerification
+                  ? SnackBarAction(
+                      label: l10n.settings,
+                      textColor: AppColors.whiteColor,
+                      onPressed: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.settingsScreenRoute);
+                      },
+                    )
+                  : null,
             ),
           );
         } else if (state is AddApartmentSuccess) {
@@ -100,10 +111,9 @@ class _AddApartmentState extends State<AddApartment> {
           final locationViewModel = context.read<LocationViewModel>();
           final theme = Theme.of(context);
           final isDark = theme.brightness == Brightness.dark;
-          final screenColor =
-              isDark
-                  ? AppColors.addApartmentDarkBackground
-                  : AppColors.addApartmentLightBackground;
+          final screenColor = isDark
+              ? AppColors.addApartmentDarkBackground
+              : AppColors.addApartmentLightBackground;
           final accentColor = _accentColor(context);
 
           return Scaffold(
@@ -114,16 +124,17 @@ class _AddApartmentState extends State<AddApartment> {
               leading: IconButton(
                 icon: Icon(
                   Icons.arrow_back,
-                  color: theme.appBarTheme.foregroundColor ??
+                  color:
+                      theme.appBarTheme.foregroundColor ??
                       (isDark ? AppColors.whiteColor : AppColors.blackColor),
                 ),
                 onPressed: () => Navigator.maybePop(context),
               ),
               title: Text(
                 l10n.addApartment,
-                style: (theme.textTheme.headlineMedium ??
-                        AppStyles.medium16black)
-                    .copyWith(fontWeight: FontWeight.w700),
+                style:
+                    (theme.textTheme.headlineMedium ?? AppStyles.medium16black)
+                        .copyWith(fontWeight: FontWeight.w700),
               ),
               centerTitle: true,
             ),
@@ -160,11 +171,16 @@ class _AddApartmentState extends State<AddApartment> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      viewModel.uploadApartment(userViewModel, locationViewModel);
+                      viewModel.uploadApartment(
+                        userViewModel,
+                        locationViewModel,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 10,
-                      shadowColor: AppColors.primaryColor.withValues(alpha: 0.3),
+                      shadowColor: AppColors.primaryColor.withValues(
+                        alpha: 0.3,
+                      ),
                       backgroundColor: accentColor,
                       foregroundColor: AppColors.whiteColor,
                       shape: RoundedRectangleBorder(
@@ -213,7 +229,9 @@ class _AddApartmentState extends State<AddApartment> {
             Expanded(
               child: _MediaPickerCard(
                 icon: Icons.video_call_outlined,
-                label: viewModel.videoFile == null ? l10n.addVideo : l10n.videoAdded,
+                label: viewModel.videoFile == null
+                    ? l10n.addVideo
+                    : l10n.videoAdded,
                 onTap: _showVideoSourceSheet,
               ),
             ),
@@ -318,9 +336,10 @@ class _AddApartmentState extends State<AddApartment> {
                   widthFactor: 1,
                   child: Text(
                     l10n.egp,
-                    style: (Theme.of(context).textTheme.displaySmall ??
-                            AppStyles.bold14Primary)
-                        .copyWith(fontWeight: FontWeight.w800),
+                    style:
+                        (Theme.of(context).textTheme.displaySmall ??
+                                AppStyles.bold14Primary)
+                            .copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
@@ -349,10 +368,13 @@ class _AddApartmentState extends State<AddApartment> {
       title: l10n.propertyDetails,
       child: Column(
         children: [
+          _buildGenderSelector(l10n),
+          SizedBox(height: 18.h),
           _StepperRow(
             icon: Icons.bed_outlined,
             label: l10n.bedrooms,
-            explanation: "Select the total number of private/shared bedrooms in this apartment.",
+            explanation:
+                "Select the total number of private/shared bedrooms in this apartment.",
             value: viewModel.bedrooms,
             onIncrease: viewModel.increaseBedrooms,
             onDecrease: viewModel.decreaseBedrooms,
@@ -396,6 +418,53 @@ class _AddApartmentState extends State<AddApartment> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGenderSelector(AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.people_alt_outlined,
+              color: theme.highlightColor,
+              size: 23.sp,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                l10n.gender,
+                style: (theme.textTheme.bodyMedium ?? AppStyles.regular15black)
+                    .copyWith(fontSize: 16.sp),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: AddApartmentViewModel.genderOptions.map((gender) {
+            final isSelected = viewModel.selectedGender == gender;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(
+                  end: gender == AddApartmentViewModel.genderOptions.last
+                      ? 0
+                      : 10.w,
+                ),
+                child: _GenderOptionChip(
+                  icon: _genderIcon(gender),
+                  label: _genderLabel(l10n, gender),
+                  isSelected: isSelected,
+                  onTap: () => viewModel.setGender(gender),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -507,15 +576,17 @@ class _AddApartmentState extends State<AddApartment> {
       hintText: hintText,
       hintStyle: (theme.textTheme.bodyMedium ?? AppStyles.regular14gray)
           .copyWith(
-        color: theme.highlightColor.withValues(alpha: isDark ? 0.55 : 0.75),
-        fontSize: 16.sp,
-      ),
+            color: theme.highlightColor.withValues(alpha: isDark ? 0.55 : 0.75),
+            fontSize: 16.sp,
+          ),
       keyboardType: keyboardType,
       maxLines: maxLines,
       suffixIconName: suffixIconName,
       readOnly: readOnly,
       onTap: onTap,
-      fillColor: isDark ? theme.disabledColor : AppColors.addApartmentLightField,
+      fillColor: isDark
+          ? theme.disabledColor
+          : AppColors.addApartmentLightField,
       borderSideColor: AppColors.transparentColor,
       borderRadius: 10,
       paddingHorizontal: 16,
@@ -562,7 +633,11 @@ class _AddApartmentState extends State<AddApartment> {
                   title: Text(l10n.previewSelectedPhotos),
                   onTap: () {
                     Navigator.pop(context);
-                    openFullScreenGallery(context, 0, viewModel.apartmentImages);
+                    openFullScreenGallery(
+                      context,
+                      0,
+                      viewModel.apartmentImages,
+                    );
                   },
                 ),
             ],
@@ -622,7 +697,7 @@ class _AddApartmentState extends State<AddApartment> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                child: Container(
+                  child: Container(
                     width: 44.w,
                     height: 4.h,
                     decoration: BoxDecoration(
@@ -643,7 +718,8 @@ class _AddApartmentState extends State<AddApartment> {
                   (district) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(district),
-                    trailing: viewModel.districtCRl.text.trim() == district.trim()
+                    trailing:
+                        viewModel.districtCRl.text.trim() == district.trim()
                         ? Icon(
                             Icons.check_circle,
                             color: AppColors.primaryColor,
@@ -685,8 +761,9 @@ class _AddApartmentState extends State<AddApartment> {
                   );
                 },
                 scrollPhysics: const BouncingScrollPhysics(),
-                backgroundDecoration:
-                    const BoxDecoration(color: AppColors.blackColor),
+                backgroundDecoration: const BoxDecoration(
+                  color: AppColors.blackColor,
+                ),
                 pageController: PageController(initialPage: initialIndex),
               ),
               Positioned(
@@ -709,11 +786,102 @@ class _AddApartmentState extends State<AddApartment> {
   }
 }
 
+IconData _genderIcon(String gender) {
+  switch (gender) {
+    case 'male':
+      return Icons.male_rounded;
+    case 'female':
+      return Icons.female_rounded;
+    default:
+      return Icons.groups_rounded;
+  }
+}
+
+String _genderLabel(AppLocalizations l10n, String gender) {
+  switch (gender) {
+    case 'male':
+      return l10n.male;
+    case 'female':
+      return l10n.female;
+    default:
+      return l10n.localeName == 'ar' ? 'الكل' : 'Any';
+  }
+}
+
 Color _borderColor(BuildContext context) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   return isDark
       ? AppColors.addApartmentDarkBorder
       : AppColors.addApartmentLightBorder;
+}
+
+class _GenderOptionChip extends StatelessWidget {
+  const _GenderOptionChip({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final accentColor = _AddApartmentState._accentColor(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(14.r),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 48.h,
+        padding: EdgeInsets.symmetric(horizontal: 8.w),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? accentColor.withValues(alpha: isDark ? 0.24 : 0.12)
+              : isDark
+              ? theme.disabledColor
+              : AppColors.addApartmentLightField,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: isSelected ? accentColor : _borderColor(context),
+            width: isSelected ? 1.4 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? accentColor : theme.highlightColor,
+              size: 18.sp,
+            ),
+            SizedBox(width: 5.w),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: (theme.textTheme.bodyMedium ?? AppStyles.regular14gray)
+                    .copyWith(
+                      color: isSelected ? accentColor : theme.highlightColor,
+                      fontSize: 13.sp,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _MediaPickerCard extends StatelessWidget {
@@ -741,9 +909,7 @@ class _MediaPickerCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(22.r),
-          border: Border.all(
-            color: _borderColor(context),
-          ),
+          border: Border.all(color: _borderColor(context)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -838,10 +1004,7 @@ class _RemoveMediaButton extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -856,9 +1019,7 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(
-          color: _borderColor(context),
-        ),
+        border: Border.all(color: _borderColor(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -897,7 +1058,6 @@ class _StepperRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final accentColor = _AddApartmentState._accentColor(context);
@@ -906,11 +1066,7 @@ class _StepperRow extends StatelessWidget {
       padding: EdgeInsets.only(bottom: isLast ? 0 : 16.h),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: theme.highlightColor,
-            size: 23.sp,
-          ),
+          Icon(icon, color: theme.highlightColor, size: 23.sp),
           SizedBox(width: 12.w),
           Expanded(
             child: Row(
@@ -922,10 +1078,9 @@ class _StepperRow extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: (theme.textTheme.bodyMedium ?? AppStyles.regular15black)
-                        .copyWith(
-                      fontSize: 16.sp,
-                    ),
+                    style:
+                        (theme.textTheme.bodyMedium ?? AppStyles.regular15black)
+                            .copyWith(fontSize: 16.sp),
                   ),
                 ),
                 if (explanation != null && explanation!.isNotEmpty) ...[
@@ -934,7 +1089,9 @@ class _StepperRow extends StatelessWidget {
                     onTap: () => _showExplanationDialog(context),
                     child: Icon(
                       Icons.info_outline,
-                      color: isDark ? AppColors.whiteColor.withOpacity(0.6) : AppColors.primaryColor,
+                      color: isDark
+                          ? AppColors.whiteColor.withValues(alpha: 0.6)
+                          : AppColors.primaryColor,
                       size: 16.sp,
                     ),
                   ),
@@ -946,14 +1103,14 @@ class _StepperRow extends StatelessWidget {
             width: 114.w,
             height: 42.h,
             decoration: BoxDecoration(
-              color:
-                  isDark ? theme.disabledColor : AppColors.addApartmentLightField,
+              color: isDark
+                  ? theme.disabledColor
+                  : AppColors.addApartmentLightField,
               borderRadius: BorderRadius.circular(22.r),
               border: Border.all(
-                color:
-                    isDark
-                        ? theme.highlightColor
-                        : AppColors.addApartmentSoftBorder,
+                color: isDark
+                    ? theme.highlightColor
+                    : AppColors.addApartmentSoftBorder,
               ),
             ),
             child: Row(
@@ -980,7 +1137,7 @@ class _StepperRow extends StatelessWidget {
 
   void _showExplanationDialog(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -1000,26 +1157,25 @@ class _StepperRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: (theme.textTheme.titleMedium ?? AppStyles.medium16black)
-                      .copyWith(fontWeight: FontWeight.bold),
+                  style:
+                      (theme.textTheme.titleMedium ?? AppStyles.medium16black)
+                          .copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
           content: Text(
             explanation!,
-            style: (theme.textTheme.bodyMedium ?? AppStyles.regular14gray).copyWith(
-              color: theme.highlightColor.withOpacity(0.8),
-              height: 1.4,
-            ),
+            style: (theme.textTheme.bodyMedium ?? AppStyles.regular14gray)
+                .copyWith(
+                  color: theme.highlightColor.withValues(alpha: 0.8),
+                  height: 1.4,
+                ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(
-                "Got it",
-                style: AppStyles.bold14Primary,
-              ),
+              child: Text("Got it", style: AppStyles.bold14Primary),
             ),
           ],
         );
@@ -1029,19 +1185,13 @@ class _StepperRow extends StatelessWidget {
 }
 
 class _StepperButton extends StatelessWidget {
-  const _StepperButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _StepperButton({required this.icon, required this.onTap});
 
   final IconData icon;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-
     return InkWell(
       borderRadius: BorderRadius.circular(18.r),
       onTap: onTap,

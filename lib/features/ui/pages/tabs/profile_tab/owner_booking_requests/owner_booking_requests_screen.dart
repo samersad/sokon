@@ -28,6 +28,7 @@ class _OwnerBookingRequestsScreenState
       OwnerBookingRequestsViewModel();
   bool isInitialized = false;
   String? _updatingBookingId;
+  String _selectedStatusFilter = 'all';
 
   @override
   void didChangeDependencies() {
@@ -134,19 +135,62 @@ class _OwnerBookingRequestsScreenState
         return _buildEmptyState();
       }
 
-      return ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-        itemCount: state.bookings.length,
-        separatorBuilder: (context, index) => SizedBox(height: 15.h),
-        itemBuilder: (context, index) {
-          final booking = state.bookings[index];
-          return _buildBookingCard(booking);
-        },
+      final filteredBookings = state.bookings
+          .where((booking) => _matchesStatusFilter(booking.status))
+          .toList();
+
+      return Column(
+        children: [
+          _buildStatusFilterBar(state.bookings),
+          Expanded(
+            child: filteredBookings.isEmpty
+                ? _buildFilteredEmptyState()
+                : ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                    itemCount: filteredBookings.length,
+                    separatorBuilder: (context, index) => SizedBox(height: 15.h),
+                    itemBuilder: (context, index) {
+                      final booking = filteredBookings[index];
+                      return _buildBookingCard(booking);
+                    },
+                  ),
+          ),
+        ],
       );
     }
 
     return const SizedBox.shrink();
+  }
+
+  Widget _buildStatusFilterBar(List<BookingResponse> bookings) {
+    final filters = ['all', 'pending', 'confirmed', 'rejected', 'cancelled'];
+    return SizedBox(
+      height: 48.h,
+      child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        separatorBuilder: (context, index) => SizedBox(width: 10.w),
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final count = filter == 'all'
+              ? bookings.length
+              : bookings
+                  .where((booking) => _statusBucket(booking.status) == filter)
+                  .length;
+          return _StatusFilterChip(
+            label: _getFilterLabel(filter),
+            count: count,
+            color: _getFilterColor(filter),
+            selected: _selectedStatusFilter == filter,
+            onTap: () => setState(() => _selectedStatusFilter = filter),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildBookingCard(BookingResponse booking) {
@@ -155,6 +199,7 @@ class _OwnerBookingRequestsScreenState
     final periodFormat = DateFormat('dd MMM yyyy');
     final createdAtFormat = DateFormat('dd MMM yyyy, hh:mm a');
     final status = _normalizeStatus(booking.status);
+    final statusBucket = _statusBucket(booking.status);
     final isUpdating = _updatingBookingId == booking.id;
 
     return Container(
@@ -246,19 +291,19 @@ class _OwnerBookingRequestsScreenState
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(status).withValues(alpha: 0.12),
+                  color: _getStatusColor(statusBucket).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   _getStatusLabel(status),
                   style: TextStyle(
-                    color: _getStatusColor(status),
+                    color: _getStatusColor(statusBucket),
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              if (status == 'accepted' || status == 'confirmed') ...[
+              if (statusBucket == 'confirmed') ...[
                 SizedBox(width: 8.w),
                 InkWell(
                   onTap: () => _openChat(booking),
@@ -320,9 +365,9 @@ class _OwnerBookingRequestsScreenState
               color: theme.primaryColor,
             ),
           ],
-          if (_shouldShowActions(status)) ...[
+          if (_shouldShowActions(statusBucket)) ...[
             SizedBox(height: 14.h),
-            _buildActions(booking, status, isUpdating),
+            _buildActions(booking, statusBucket, isUpdating),
           ],
         ],
       ),
@@ -475,6 +520,37 @@ class _OwnerBookingRequestsScreenState
     );
   }
 
+  Widget _buildFilteredEmptyState() {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.filter_alt_off_outlined,
+              size: 52.sp,
+              color: theme.primaryColor.withValues(alpha: 0.35),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No ${_getFilterLabel(_selectedStatusFilter).toLowerCase()} requests',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelLarge,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Choose another status to review more booking requests.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _updateBookingStatus({
     required BookingResponse booking,
     required String nextStatus,
@@ -547,7 +623,7 @@ class _OwnerBookingRequestsScreenState
   }
 
   bool _shouldShowActions(String status) {
-    return status == 'pending' || status == 'accepted' || status == 'confirmed';
+    return status == 'pending' || status == 'confirmed';
   }
 
   void _openChat(BookingResponse booking) {
@@ -576,9 +652,29 @@ class _OwnerBookingRequestsScreenState
     return normalized;
   }
 
+  String _statusBucket(String? status) {
+    final normalized = _normalizeStatus(status);
+    if (normalized == 'accepted' || normalized == 'confirmed') {
+      return 'confirmed';
+    }
+    if (normalized == 'rejected') {
+      return 'rejected';
+    }
+    if (normalized == 'cancelled' || normalized == 'canceled') {
+      return 'cancelled';
+    }
+    return 'pending';
+  }
+
+  bool _matchesStatusFilter(String? status) {
+    if (_selectedStatusFilter == 'all') {
+      return true;
+    }
+    return _statusBucket(status) == _selectedStatusFilter;
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'accepted':
       case 'confirmed':
         return Colors.green;
       case 'cancelled':
@@ -591,19 +687,119 @@ class _OwnerBookingRequestsScreenState
     }
   }
 
+  Color _getFilterColor(String filter) {
+    if (filter == 'all') {
+      return Theme.of(context).primaryColor;
+    }
+    return _getStatusColor(filter);
+  }
+
   String _getStatusLabel(String status) {
     final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'accepted':
       case 'confirmed':
-        return l10n.acceptedStatus;
+        return l10n.localeName == 'ar' ? 'مؤكد' : 'CONFIRMED';
       case 'cancelled':
         return l10n.cancelledStatus;
       case 'rejected':
-        return 'REJECTED';
+        return l10n.localeName == 'ar' ? 'مرفوض' : 'REJECTED';
       case 'pending':
       default:
         return l10n.pendingStatus;
     }
+  }
+
+  String _getFilterLabel(String filter) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (filter) {
+      case 'pending':
+        return l10n.localeName == 'ar' ? 'معلق' : 'Pending';
+      case 'confirmed':
+        return l10n.localeName == 'ar' ? 'مؤكد' : 'Confirmed';
+      case 'rejected':
+        return l10n.localeName == 'ar' ? 'مرفوض' : 'Rejected';
+      case 'cancelled':
+        return l10n.localeName == 'ar' ? 'ملغى' : 'Cancelled';
+      case 'all':
+      default:
+        return l10n.localeName == 'ar' ? 'الكل' : 'All';
+    }
+  }
+}
+
+class _StatusFilterChip extends StatelessWidget {
+  const _StatusFilterChip({
+    required this.label,
+    required this.count,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final int count;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: isDark ? 0.22 : 0.12)
+              : theme.cardColor,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected
+                ? color
+                : theme.dividerColor.withValues(alpha: isDark ? 0.3 : 0.16),
+            width: selected ? 1.3 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: selected ? color : theme.highlightColor,
+                fontSize: 12.sp,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Container(
+              constraints: BoxConstraints(minWidth: 24.w),
+              padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: selected
+                    ? color
+                    : theme.disabledColor.withValues(alpha: isDark ? 0.7 : 1),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '$count',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: selected ? Colors.white : theme.highlightColor,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

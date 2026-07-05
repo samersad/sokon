@@ -6,6 +6,7 @@ class BookingResponse {
     this.apartmentImage,
     this.clientId,
     this.clientName,
+    this.clientPhoneNumber,
     this.ownerId,
     this.ownerName,
     this.startDate,
@@ -40,6 +41,9 @@ class BookingResponse {
       apartmentImage: data['apartmentImage']?.toString(),
       clientId: data['clientId']?.toString(),
       clientName: data['clientName']?.toString(),
+      clientPhoneNumber: data['clientPhoneNumber']?.toString() ??
+          data['clientPhone']?.toString() ??
+          data['phoneNumber']?.toString(),
       ownerId: data['ownerId']?.toString(),
       ownerName: data['ownerName']?.toString(),
       startDate: data['startDate'] != null
@@ -68,6 +72,7 @@ class BookingResponse {
   final String? apartmentImage;
   final String? clientId;
   final String? clientName;
+  final String? clientPhoneNumber;
   final String? ownerId;
   final String? ownerName;
   final DateTime? startDate;
@@ -87,6 +92,7 @@ class BookingResponse {
     String? apartmentImage,
     String? clientId,
     String? clientName,
+    String? clientPhoneNumber,
     String? ownerId,
     String? ownerName,
     DateTime? startDate,
@@ -106,6 +112,7 @@ class BookingResponse {
       apartmentImage: apartmentImage ?? this.apartmentImage,
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
+      clientPhoneNumber: clientPhoneNumber ?? this.clientPhoneNumber,
       ownerId: ownerId ?? this.ownerId,
       ownerName: ownerName ?? this.ownerName,
       startDate: startDate ?? this.startDate,
@@ -128,6 +135,7 @@ class BookingResponse {
       'apartmentImage': apartmentImage,
       'clientId': clientId,
       'clientName': clientName,
+      'clientPhoneNumber': clientPhoneNumber,
       'ownerId': ownerId,
       'ownerName': ownerName,
       'startDate': startDate?.toIso8601String(),

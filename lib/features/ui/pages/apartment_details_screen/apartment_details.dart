@@ -468,6 +468,7 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           children: [
             _buildVerificationBadge(apartment, theme, l10n),
             _buildPriceChip(apartment, theme),
+            _buildGenderChip(apartment, theme, l10n),
           ],
         ),
         SizedBox(height: 16.h),
@@ -523,6 +524,41 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
           fontWeight: FontWeight.w500,
           letterSpacing: 0.6,
         ),
+      ),
+    );
+  }
+
+  Widget _buildGenderChip(ApartmentResponse apartment, ThemeData theme, AppLocalizations l10n) {
+    final isDark = theme.brightness == Brightness.dark;
+    final gender = apartment.normalizedGender;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.detailsChipDark
+            : AppColors.primaryColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _genderIcon(gender),
+            size: 16.sp,
+            color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            _genderLabel(l10n, gender),
+            style: TextStyle(
+              color: isDark ? AppColors.detailsDarkAccent : AppColors.primaryColor,
+              fontFamily: AppStyles.inter,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.4,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1093,5 +1129,27 @@ class _ApartmentDetailsState extends State<ApartmentDetails> {
         ],
       ),
     );
+  }
+}
+
+IconData _genderIcon(String gender) {
+  switch (gender) {
+    case 'male':
+      return Icons.male_rounded;
+    case 'female':
+      return Icons.female_rounded;
+    default:
+      return Icons.groups_rounded;
+  }
+}
+
+String _genderLabel(AppLocalizations l10n, String gender) {
+  switch (gender) {
+    case 'male':
+      return l10n.male;
+    case 'female':
+      return l10n.female;
+    default:
+      return l10n.localeName == 'ar' ? 'ذكر' : 'male';
   }
 }

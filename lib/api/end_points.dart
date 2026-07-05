@@ -5,8 +5,11 @@ class EndPoints {
   static const String meApi = "/auth/me";
   static const String logoutApi = "/auth/logout";
   static const String passwordResetApi = "/auth/password-reset";
-  static const String passwordResetVerifyOtpApi = "/auth/password-reset/verify-otp";
+  static const String passwordResetVerifyOtpApi =
+      "/auth/password-reset/verify-otp";
   static const String passwordResetConfirmApi = "/auth/password-reset/confirm";
+  static const String phoneOtpApi = "/auth/phone/send-otp";
+  static const String phoneOtpVerifyApi = "/auth/phone/verify-otp";
   static const String passwordApi = "/auth/password";
   static const String deleteAccountApi = "/auth/account";
   static const String usersApi = "/users";
@@ -24,8 +27,10 @@ class EndPoints {
   static String apartmentApi(String apartmentId) => "/apartments/$apartmentId";
   static String apartmentVerifyApi(String apartmentId) =>
       "/apartments/$apartmentId/verify";
-  static String bookingStatusApi(String bookingId) => "/bookings/$bookingId/status";
-  static String bookingRatingApi(String bookingId) => "/bookings/$bookingId/rating";
+  static String bookingStatusApi(String bookingId) =>
+      "/bookings/$bookingId/status";
+  static String bookingRatingApi(String bookingId) =>
+      "/bookings/$bookingId/rating";
   static String chatApi(String chatId) => "/chats/$chatId";
   static String chatMessagesApi(String chatId) => "/chats/$chatId/messages";
   static String messageApi(String messageId) => "/messages/$messageId";

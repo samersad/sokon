@@ -1,4 +1,5 @@
 import 'package:sokon/l10n/app_localizations.dart';
+import 'package:sokon/core/utils/phone_verification_utils.dart';
 
 class AppValidators {
   AppValidators._();
@@ -29,7 +30,11 @@ class AppValidators {
     }
   }
 
-  static String? validateConfirmPassword(String? val, String? password, AppLocalizations l10n) {
+  static String? validateConfirmPassword(
+    String? val,
+    String? password,
+    AppLocalizations l10n,
+  ) {
     if (val == null || val.isEmpty) {
       return l10n.fieldRequired;
     } else if (val != password) {
@@ -60,11 +65,12 @@ class AppValidators {
   }
 
   static String? validatePhoneNumber(String? val, AppLocalizations l10n) {
+    final localPhone = PhoneVerificationUtils.displayLocal(val);
     if (val == null || val.trim().isEmpty) {
       return l10n.fieldRequired;
-    } else if (int.tryParse(val.trim()) == null) {
+    } else if (localPhone.isEmpty || int.tryParse(localPhone) == null) {
       return l10n.enterNumbersOnly;
-    } else if (val.trim().length != 11) {
+    } else if (!PhoneVerificationUtils.isValidEgyptianMobile(localPhone)) {
       return l10n.phoneValidation;
     } else {
       return null;

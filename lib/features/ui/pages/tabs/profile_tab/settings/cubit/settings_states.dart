@@ -17,6 +17,11 @@ class SettingsSuccess extends SettingsState {
   SettingsSuccess(this.user);
 }
 
+class SettingsPhoneVerified extends SettingsState {
+  final RegisterUser user;
+  SettingsPhoneVerified(this.user);
+}
+
 class SettingsError extends SettingsState {
   final String message;
   SettingsError(this.message);

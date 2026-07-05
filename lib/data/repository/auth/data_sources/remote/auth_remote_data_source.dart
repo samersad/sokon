@@ -44,6 +44,11 @@ abstract class AuthRemoteDataSource {
   Future<void> signOut();
   Future<void> resetPassword(String email);
   Future<void> verifyOTP(String email, String token);
+  Future<void> requestPhoneVerificationOTP(
+    String phoneNumber, {
+    String channel,
+  });
+  Future<RegisterUser> verifyPhoneOTP(String phoneNumber, String otp);
   Future<void> updatePassword(String newPassword);
   Future<void> deleteAccount(String? password);
 }

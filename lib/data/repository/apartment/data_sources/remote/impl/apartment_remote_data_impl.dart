@@ -49,4 +49,23 @@ class ApartmentRemoteDataImpl implements ApartmentRemoteDataSource {
   Future<List<ApartmentResponse>> searchApartments(String query) async {
     return _apiService.searchApartments(query);
   }
+
+  @override
+  Future<List<ApartmentResponse>> filterApartments({
+    String? type,
+    String? district,
+    String? gender,
+    double? minPrice,
+    double? maxPrice,
+    int? bedrooms,
+  }) async {
+    return _apiService.filterApartments(
+      type: type,
+      district: district,
+      gender: gender,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      bedrooms: bedrooms,
+    );
+  }
 }

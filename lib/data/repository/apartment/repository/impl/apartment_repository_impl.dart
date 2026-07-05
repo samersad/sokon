@@ -40,4 +40,22 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   @override
   Future<List<ApartmentResponse>> searchApartments(String query) =>
       remoteDataSource.searchApartments(query);
+
+  @override
+  Future<List<ApartmentResponse>> filterApartments({
+    String? type,
+    String? district,
+    String? gender,
+    double? minPrice,
+    double? maxPrice,
+    int? bedrooms,
+  }) =>
+      remoteDataSource.filterApartments(
+        type: type,
+        district: district,
+        gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        bedrooms: bedrooms,
+      );
 }

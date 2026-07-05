@@ -13,4 +13,12 @@ abstract class ApartmentRepository {
   Future<List<ApartmentResponse>> getAllApartments();
   Future<List<ApartmentResponse>> getApartmentsByOwner(String uId);
   Future<List<ApartmentResponse>> searchApartments(String query);
+  Future<List<ApartmentResponse>> filterApartments({
+    String? type,
+    String? district,
+    String? gender,
+    double? minPrice,
+    double? maxPrice,
+    int? bedrooms,
+  });
 }

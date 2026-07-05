@@ -27,8 +27,15 @@ class AuthRepositoryImpl implements AuthRepository {
     String phoneNumber,
     String gender,
     String role,
-  ) =>
-      remoteDataSource.register(email, password, name, college, phoneNumber, gender, role);
+  ) => remoteDataSource.register(
+    email,
+    password,
+    name,
+    college,
+    phoneNumber,
+    gender,
+    role,
+  );
 
   @override
   Future<RegisterUser> registerWithBackend(
@@ -39,16 +46,15 @@ class AuthRepositoryImpl implements AuthRepository {
     String phoneNumber,
     String gender,
     String role,
-  ) =>
-      remoteDataSource.registerWithBackend(
-        email,
-        password,
-        name,
-        college,
-        phoneNumber,
-        gender,
-        role,
-      );
+  ) => remoteDataSource.registerWithBackend(
+    email,
+    password,
+    name,
+    college,
+    phoneNumber,
+    gender,
+    role,
+  );
 
   @override
   Future<RegisterUser> updateProfileWithBackend(
@@ -58,15 +64,14 @@ class AuthRepositoryImpl implements AuthRepository {
     String? college,
     String? gender,
     File? profileImage,
-  ) =>
-      remoteDataSource.updateProfileWithBackend(
-        user,
-        name,
-        phoneNumber,
-        college,
-        gender,
-        profileImage,
-      );
+  ) => remoteDataSource.updateProfileWithBackend(
+    user,
+    name,
+    phoneNumber,
+    college,
+    gender,
+    profileImage,
+  );
 
   @override
   Future<MyUser> signInWithGoogle() => remoteDataSource.signInWithGoogle();
@@ -83,20 +88,42 @@ class AuthRepositoryImpl implements AuthRepository {
     String? college,
     String? gender,
     File? profileImage,
-  ) =>
-      remoteDataSource.updateProfile(user, name, phoneNumber, college, gender, profileImage);
+  ) => remoteDataSource.updateProfile(
+    user,
+    name,
+    phoneNumber,
+    college,
+    gender,
+    profileImage,
+  );
 
   @override
   Future<void> signOut() => remoteDataSource.signOut();
 
   @override
-  Future<void> resetPassword(String email) => remoteDataSource.resetPassword(email);
+  Future<void> resetPassword(String email) =>
+      remoteDataSource.resetPassword(email);
 
   @override
-  Future<void> verifyOTP(String email, String token) => remoteDataSource.verifyOTP(email, token);
+  Future<void> verifyOTP(String email, String token) =>
+      remoteDataSource.verifyOTP(email, token);
 
   @override
-  Future<void> updatePassword(String newPassword) => remoteDataSource.updatePassword(newPassword);
+  Future<void> requestPhoneVerificationOTP(
+    String phoneNumber, {
+    String channel = 'sms',
+  }) => remoteDataSource.requestPhoneVerificationOTP(
+    phoneNumber,
+    channel: channel,
+  );
+
+  @override
+  Future<RegisterUser> verifyPhoneOTP(String phoneNumber, String otp) =>
+      remoteDataSource.verifyPhoneOTP(phoneNumber, otp);
+
+  @override
+  Future<void> updatePassword(String newPassword) =>
+      remoteDataSource.updatePassword(newPassword);
 
   @override
   Future<void> deleteAccount(String? password) =>

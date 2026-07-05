@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/model/booking.dart';
+import 'package:sokon/core/utils/phone_verification_utils.dart';
 import '../../../../../data/repository/booking/repository/booking_repository.dart';
 import 'booking_states.dart';
 
@@ -14,7 +15,7 @@ class BookingViewModel extends Cubit<BookingStates> {
   final BookingRepository bookingRepository;
 
   BookingViewModel(this.userViewModel, this.bookingRepository)
-      : super(const BookingStates());
+    : super(const BookingStates());
 
   void selectDateRange(DateTimeRange? picked) {
     emit(
@@ -23,6 +24,7 @@ class BookingViewModel extends Cubit<BookingStates> {
         showDateError: false,
         status: BookingStatus.initial,
         clearErrorMessage: true,
+        requiresPhoneVerification: false,
       ),
     );
   }
@@ -35,6 +37,7 @@ class BookingViewModel extends Cubit<BookingStates> {
         expiryDate: data["expiryDate"],
         status: BookingStatus.initial,
         clearErrorMessage: true,
+        requiresPhoneVerification: false,
       ),
     );
   }
@@ -45,6 +48,7 @@ class BookingViewModel extends Cubit<BookingStates> {
         peopleCount: peopleCount,
         status: BookingStatus.initial,
         clearErrorMessage: true,
+        requiresPhoneVerification: false,
       ),
     );
   }
@@ -62,6 +66,7 @@ class BookingViewModel extends Cubit<BookingStates> {
           showDateError: true,
           status: BookingStatus.error,
           errorMessage: "Please select a date range",
+          requiresPhoneVerification: false,
         ),
       );
       return;
@@ -72,31 +77,49 @@ class BookingViewModel extends Cubit<BookingStates> {
         state.copyWith(
           status: BookingStatus.error,
           errorMessage: "Please login to book",
+          requiresPhoneVerification: false,
         ),
       );
       return;
     }
 
-    final hasActiveBooking = await bookingRepository.hasActiveBookingForApartment(
-      userId: userViewModel.user!.id!,
-      apartmentId: apartment.id!,
-    );
+    if (!PhoneVerificationUtils.canRent(userViewModel.user)) {
+      emit(
+        state.copyWith(
+          status: BookingStatus.error,
+          errorMessage:
+              "Please go to settings and verify your phone number before renting.",
+          requiresPhoneVerification: true,
+        ),
+      );
+      return;
+    }
+
+    final hasActiveBooking = await bookingRepository
+        .hasActiveBookingForApartment(
+          userId: userViewModel.user!.id!,
+          apartmentId: apartment.id!,
+        );
     if (hasActiveBooking) {
       emit(
         state.copyWith(
           status: BookingStatus.error,
-          errorMessage: "You already rented this apartment. You can book it again after your current period ends.",
+          errorMessage:
+              "You already rented this apartment. You can book it again after your current period ends.",
+          requiresPhoneVerification: false,
         ),
       );
       return;
     }
 
-    final availablePeople = apartment.availablePeople ?? apartment.maxPeople ?? 1;
+    final availablePeople =
+        apartment.availablePeople ?? apartment.maxPeople ?? 1;
     if (availablePeople <= 0) {
       emit(
         state.copyWith(
           status: BookingStatus.error,
           errorMessage: "This apartment is fully booked.",
+          requiresPhoneVerification: false,
         ),
       );
       return;
@@ -106,7 +129,9 @@ class BookingViewModel extends Cubit<BookingStates> {
       emit(
         state.copyWith(
           status: BookingStatus.error,
-          errorMessage: "Only $availablePeople people can be added to this apartment right now.",
+          errorMessage:
+              "Only $availablePeople people can be added to this apartment right now.",
+          requiresPhoneVerification: false,
         ),
       );
       return;
@@ -117,6 +142,7 @@ class BookingViewModel extends Cubit<BookingStates> {
         showDateError: false,
         status: BookingStatus.loading,
         clearErrorMessage: true,
+        requiresPhoneVerification: false,
       ),
     );
 
@@ -144,6 +170,7 @@ class BookingViewModel extends Cubit<BookingStates> {
         state.copyWith(
           status: BookingStatus.success,
           clearErrorMessage: true,
+          requiresPhoneVerification: false,
         ),
       );
     } catch (e) {
@@ -151,6 +178,7 @@ class BookingViewModel extends Cubit<BookingStates> {
         state.copyWith(
           status: BookingStatus.error,
           errorMessage: e.toString(),
+          requiresPhoneVerification: false,
         ),
       );
     }

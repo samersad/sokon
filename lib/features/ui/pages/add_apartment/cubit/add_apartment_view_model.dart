@@ -8,6 +8,7 @@ import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
 import 'package:sokon/core/cache/shared_prefs_helper.dart';
 import 'package:sokon/core/model/ApartmentResponse.dart';
 import 'package:sokon/core/model/apartment.dart';
+import 'package:sokon/core/utils/phone_verification_utils.dart';
 import 'package:sokon/cloudinary_service.dart';
 import '../../../../../data/repository/apartment/repository/apartment_repository.dart';
 import 'package:video_player/video_player.dart';
@@ -26,9 +27,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     'يسري راغب',
     'آخر',
   ];
+  static const List<String> genderOptions = ['male', 'female'];
   final ApartmentRepository apartmentRepository;
 
-  AddApartmentViewModel(this.apartmentRepository) : super(AddApartmentInitial());
+  AddApartmentViewModel(this.apartmentRepository)
+    : super(AddApartmentInitial());
 
   final ImagePicker _videoPicker = ImagePicker();
   final ImagePicker _imagePicker = ImagePicker();
@@ -36,13 +39,14 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   List<File> apartmentImages = [];
   List<String>? existingImageUrls;
   String? existingVideoUrl;
-  
+
   int bedrooms = 1;
   int bathrooms = 1;
   int livingRooms = 1;
   int floor = 1;
   int maxPeople = 1;
   int _reservedPeople = 0;
+  String selectedGender = 'male';
   bool verified = false;
 
   final TextEditingController nameCRl = TextEditingController();
@@ -50,7 +54,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
   final TextEditingController priceCRl = TextEditingController();
   final TextEditingController addressCRl = TextEditingController();
   final TextEditingController cityCRl = TextEditingController(text: fixedCity);
-  final TextEditingController districtCRl = TextEditingController(text: districtOptions.first);
+  final TextEditingController districtCRl = TextEditingController(
+    text: districtOptions.first,
+  );
   final TextEditingController floorCRl = TextEditingController(text: '1');
 
   File? videoFile;
@@ -74,10 +80,14 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     livingRooms = 1;
     maxPeople = 1;
     _reservedPeople = 0;
+    selectedGender = 'male';
     emit(AddApartmentInitial());
   }
 
-  void initEdit(ApartmentResponse apartment, LocationViewModel locationViewModel) {
+  void initEdit(
+    ApartmentResponse apartment,
+    LocationViewModel locationViewModel,
+  ) {
     nameCRl.text = apartment.name ?? "";
     descriptionCRl.text = apartment.description ?? "";
     priceCRl.text = apartment.price?.toString() ?? "";
@@ -90,21 +100,27 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     bathrooms = apartment.bathrooms ?? 1;
     livingRooms = apartment.livingRooms ?? 1;
     maxPeople = apartment.maxPeople ?? 1;
+    selectedGender = _normalizeGender(apartment.gender);
     verified = apartment.verified ?? false;
     final initialMaxPeople = apartment.maxPeople ?? maxPeople;
-    final initialAvailablePeople = apartment.availablePeople ?? initialMaxPeople;
+    final initialAvailablePeople =
+        apartment.availablePeople ?? initialMaxPeople;
     _reservedPeople = initialMaxPeople - initialAvailablePeople;
     if (_reservedPeople < 0) {
       _reservedPeople = 0;
     }
     existingImageUrls = List.from(apartment.images ?? []);
     existingVideoUrl = apartment.videoUrl;
-    
+
     if (apartment.lat != null && apartment.lng != null) {
-      locationViewModel.apartmentLocation = LatLng(apartment.lat!, apartment.lng!);
-      locationViewModel.apartmentAddress = apartment.locationAddress ?? apartment.address;
+      locationViewModel.apartmentLocation = LatLng(
+        apartment.lat!,
+        apartment.lng!,
+      );
+      locationViewModel.apartmentAddress =
+          apartment.locationAddress ?? apartment.address;
     }
-    
+
     emit(AddApartmentUpdateUI());
   }
 
@@ -118,6 +134,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
   void setFloor(String value) {
     floor = int.tryParse(value.trim()) ?? 1;
+    emit(AddApartmentUpdateUI());
+  }
+
+  void setGender(String value) {
+    selectedGender = _normalizeGender(value);
     emit(AddApartmentUpdateUI());
   }
 
@@ -193,8 +214,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
     final XFile? video = await _videoPicker.pickVideo(
       source: source,
-      maxDuration:
-          source == ImageSource.camera ? const Duration(minutes: 10) : null,
+      maxDuration: source == ImageSource.camera
+          ? const Duration(minutes: 10)
+          : null,
     );
 
     if (video == null) return;
@@ -206,8 +228,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       await controller.initialize();
 
       if (controller.value.duration > const Duration(minutes: 10)) {
-        emit(AddApartmentError(
-            "The video duration should not exceed 10 minutes."));
+        emit(
+          AddApartmentError("The video duration should not exceed 10 minutes."),
+        );
         return;
       }
 
@@ -233,10 +256,23 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     }
   }
 
-  Future<void> uploadApartment(UserViewModel userViewModel, LocationViewModel locationViewModel) async {
+  Future<void> uploadApartment(
+    UserViewModel userViewModel,
+    LocationViewModel locationViewModel,
+  ) async {
     final name = nameCRl.text;
     final description = descriptionCRl.text;
     final price = priceCRl.text;
+
+    if (!PhoneVerificationUtils.canRent(userViewModel.user)) {
+      emit(
+        AddApartmentError(
+          "Please go to settings and verify your phone number before adding an apartment.",
+          requiresPhoneVerification: true,
+        ),
+      );
+      return;
+    }
 
     if (name.isEmpty || price.isEmpty || description.isEmpty) {
       emit(AddApartmentError("Please fill all fields"));
@@ -253,7 +289,9 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     try {
       final token = SharedPrefsHelper.getData(key: "token")?.toString();
       if (token == null || token.isEmpty) {
-        emit(AddApartmentError("Please login again before adding an apartment."));
+        emit(
+          AddApartmentError("Please login again before adding an apartment."),
+        );
         return;
       }
 
@@ -261,8 +299,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       String? videoUrl;
 
       for (var image in apartmentImages) {
-        emit(AddApartmentProgress(
-            "Uploading image ${imageUrls.length + 1}/${apartmentImages.length}..."));
+        emit(
+          AddApartmentProgress(
+            "Uploading image ${imageUrls.length + 1}/${apartmentImages.length}...",
+          ),
+        );
         String? url = await CloudinaryService.uploadImage(image);
         if (url != null) {
           imageUrls.add(url);
@@ -300,6 +341,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         city: fixedCity,
         district: districtCRl.text.trim(),
         locationAddress: mapAddress,
+        gender: selectedGender,
         lat: locationViewModel.apartmentLocation?.latitude,
         lng: locationViewModel.apartmentLocation?.longitude,
         ownerId: userViewModel.user?.id,
@@ -321,7 +363,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     }
   }
 
-  Future<void> updateApartment(UserViewModel userViewModel, LocationViewModel locationViewModel, String apartmentId) async {
+  Future<void> updateApartment(
+    UserViewModel userViewModel,
+    LocationViewModel locationViewModel,
+    String apartmentId,
+  ) async {
     final name = nameCRl.text;
     final description = descriptionCRl.text;
     final price = priceCRl.text;
@@ -331,7 +377,8 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       return;
     }
 
-    if ((existingImageUrls == null || existingImageUrls!.isEmpty) && apartmentImages.isEmpty) {
+    if ((existingImageUrls == null || existingImageUrls!.isEmpty) &&
+        apartmentImages.isEmpty) {
       emit(AddApartmentError("Please add at least one image"));
       return;
     }
@@ -341,7 +388,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     try {
       final token = SharedPrefsHelper.getData(key: "token")?.toString();
       if (token == null || token.isEmpty) {
-        emit(AddApartmentError("Please login again before updating this apartment."));
+        emit(
+          AddApartmentError(
+            "Please login again before updating this apartment.",
+          ),
+        );
         return;
       }
 
@@ -349,8 +400,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
       String? videoUrl = existingVideoUrl;
 
       for (var image in apartmentImages) {
-        emit(AddApartmentProgress(
-            "Uploading new image ${imageUrls.length - (existingImageUrls?.length ?? 0) + 1}/${apartmentImages.length}..."));
+        emit(
+          AddApartmentProgress(
+            "Uploading new image ${imageUrls.length - (existingImageUrls?.length ?? 0) + 1}/${apartmentImages.length}...",
+          ),
+        );
         String? url = await CloudinaryService.uploadImage(image);
         if (url != null) {
           imageUrls.add(url);
@@ -388,6 +442,7 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
         city: fixedCity,
         district: districtCRl.text.trim(),
         locationAddress: locationViewModel.apartmentAddress,
+        gender: selectedGender,
         lat: locationViewModel.apartmentLocation?.latitude,
         lng: locationViewModel.apartmentLocation?.longitude,
         ownerId: userViewModel.user?.id,
@@ -399,9 +454,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
 
       emit(AddApartmentProgress("Updating apartment data..."));
       if (apartment.availablePeople! < 0) {
-        emit(AddApartmentError(
-          "People capacity cannot be lower than the number already renting this apartment.",
-        ));
+        emit(
+          AddApartmentError(
+            "People capacity cannot be lower than the number already renting this apartment.",
+          ),
+        );
         return;
       }
       await apartmentRepository.updateApartment(
@@ -426,4 +483,11 @@ class AddApartmentViewModel extends Cubit<AddApartmentStates> {
     floorCRl.dispose();
     return super.close();
   }
+}
+
+String _normalizeGender(String? value) {
+  final normalized = value?.trim().toLowerCase();
+  return AddApartmentViewModel.genderOptions.contains(normalized)
+      ? normalized!
+      : 'male';
 }

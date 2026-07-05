@@ -6,7 +6,9 @@ class RegisterResponse {
     final data = Map<String, dynamic>.from(json);
     return RegisterResponse(
       user: data['user'] is Map
-          ? RegisterUser.fromJson(Map<String, dynamic>.from(data['user'] as Map))
+          ? RegisterUser.fromJson(
+              Map<String, dynamic>.from(data['user'] as Map),
+            )
           : null,
       session: data['session'] is Map
           ? Session.fromJson(Map<String, dynamic>.from(data['session'] as Map))
@@ -59,7 +61,9 @@ class Session {
       expiresIn: _toNum(json['expires_in']),
       expiresAt: _toNum(json['expires_at']),
       user: json['user'] is Map
-          ? RegisterUser.fromJson(Map<String, dynamic>.from(json['user'] as Map))
+          ? RegisterUser.fromJson(
+              Map<String, dynamic>.from(json['user'] as Map),
+            )
           : null,
     );
   }
@@ -118,6 +122,7 @@ class RegisterUser {
     this.authProvider,
     this.photoUrl,
     this.fcmToken,
+    this.phoneVerified,
     this.id,
     this.createdAt,
   });
@@ -133,6 +138,11 @@ class RegisterUser {
       authProvider: json['authProvider']?.toString(),
       photoUrl: json['photoUrl']?.toString(),
       fcmToken: json['fcmToken']?.toString(),
+      phoneVerified:
+          json.containsKey('phoneVerified') ||
+              json.containsKey('phone_verified')
+          ? json['phoneVerified'] == true || json['phone_verified'] == true
+          : null,
       id: json['id']?.toString(),
       createdAt: json['createdAt']?.toString(),
     );
@@ -147,6 +157,7 @@ class RegisterUser {
   String? authProvider;
   dynamic photoUrl;
   dynamic fcmToken;
+  bool? phoneVerified;
   String? id;
   String? createdAt;
 
@@ -160,6 +171,7 @@ class RegisterUser {
     String? authProvider,
     dynamic photoUrl,
     dynamic fcmToken,
+    bool? phoneVerified,
     String? id,
     String? createdAt,
   }) {
@@ -173,6 +185,7 @@ class RegisterUser {
       authProvider: authProvider ?? this.authProvider,
       photoUrl: photoUrl ?? this.photoUrl,
       fcmToken: fcmToken ?? this.fcmToken,
+      phoneVerified: phoneVerified ?? this.phoneVerified,
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -189,6 +202,7 @@ class RegisterUser {
       'authProvider': authProvider,
       'photoUrl': photoUrl,
       'fcmToken': fcmToken,
+      'phoneVerified': phoneVerified ?? false,
       'id': id,
       'createdAt': createdAt,
     };

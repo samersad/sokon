@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/cache/cubit_manger/user_view_model.dart';
 import '../../../../core/di/di.dart';
+import '../../../../core/model/RegisterResponse.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_routes.dart';
@@ -60,10 +61,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           viewModel.showRoleSelectionDialog(context, state.user, userViewModel);
         } else if (state is RegisterSuccessStates) {
           AlertDialogUtils.hideLoading(context: context);
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRoutes.homeScreenRoute,
-            (route) => false,
-          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            _showPhoneVerificationChoice(context, state.user, userViewModel);
+          });
         }
       },
       child: BlocBuilder<RegisterViewModel, RegisterStates>(
@@ -77,7 +78,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 120.h),
-                    Center(child: Text(l10n.signUp, style: theme.textTheme.headlineLarge)),
+                    Center(
+                      child: Text(
+                        l10n.signUp,
+                        style: theme.textTheme.headlineLarge,
+                      ),
+                    ),
                     SizedBox(height: 100.h),
                     Container(
                       decoration: BoxDecoration(
@@ -93,7 +99,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           padding: EdgeInsets.symmetric(horizontal: 37.w),
                           child: Column(
                             children: [
-
                               SizedBox(height: 24.h),
                               CustomTextFormField(
                                 controller: viewModel.userCtrl,
@@ -116,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               SizedBox(height: 16.h),
                               DropdownButtonFormField<String>(
-                                value: viewModel.selectedRole,
+                                initialValue: viewModel.selectedRole,
                                 decoration: InputDecoration(
                                   contentPadding: EdgeInsets.symmetric(
                                     horizontal: 20.w,
@@ -148,13 +153,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       (role) => DropdownMenuItem<String>(
                                         value: role,
                                         child: Text(
-                                          role == 'owner' ? l10n.owner : l10n.client,
+                                          role == 'owner'
+                                              ? l10n.owner
+                                              : l10n.client,
                                         ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: viewModel.setRole,
-                                validator: (value) => value == null || value.isEmpty
+                                validator: (value) =>
+                                    value == null || value.isEmpty
                                     ? l10n.fieldRequired
                                     : null,
                               ),
@@ -166,7 +174,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   hintText: l10n.college,
                                   fillColor: theme.disabledColor,
                                   borderSideColor: theme.highlightColor,
-                                  validator: (val) => AppValidators.validateFullName(val, l10n),
+                                  validator: (val) =>
+                                      AppValidators.validateFullName(val, l10n),
                                 ),
                                 SizedBox(height: 16.h),
                               ],
@@ -179,12 +188,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderSideColor: theme.highlightColor,
                                 prefixIconName: Container(
                                   width: 80.w,
-                                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                  ),
                                   child: Row(
                                     children: [
-                                      Text("🇪🇬", style: TextStyle(fontSize: 20.sp)),
+                                      Text(
+                                        "🇪🇬",
+                                        style: TextStyle(fontSize: 20.sp),
+                                      ),
                                       SizedBox(width: 5.w),
-                                      Text("+2", style: theme.textTheme.bodyMedium),
+                                      Text(
+                                        "+2",
+                                        style: theme.textTheme.bodyMedium,
+                                      ),
                                       SizedBox(width: 5.w),
                                       Container(
                                         height: 20.h,
@@ -195,11 +212,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                                 validator: (val) =>
-                                    AppValidators.validatePhoneNumber(val, l10n),
+                                    AppValidators.validatePhoneNumber(
+                                      val,
+                                      l10n,
+                                    ),
                               ),
                               SizedBox(height: 16.h),
                               DropdownButtonFormField<String>(
-                                value: viewModel.selectedGender,
+                                initialValue: viewModel.selectedGender,
                                 decoration: InputDecoration(
                                   contentPadding: EdgeInsets.symmetric(
                                     horizontal: 20.w,
@@ -230,13 +250,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       (gender) => DropdownMenuItem<String>(
                                         value: gender,
                                         child: Text(
-                                          gender == 'male' ? l10n.male : l10n.female,
+                                          gender == 'male'
+                                              ? l10n.male
+                                              : l10n.female,
                                         ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: viewModel.setGender,
-                                validator: (value) => value == null || value.isEmpty
+                                validator: (value) =>
+                                    value == null || value.isEmpty
                                     ? l10n.fieldRequired
                                     : null,
                               ),
@@ -271,11 +294,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 fillColor: theme.disabledColor,
                                 borderSideColor: theme.highlightColor,
                                 obscureText: viewModel.hidePassword,
-                                validator: (val) => AppValidators.validateConfirmPassword(
-                                  val,
-                                  viewModel.passwordCtrl.text,
-                                  l10n,
-                                ),
+                                validator: (val) =>
+                                    AppValidators.validateConfirmPassword(
+                                      val,
+                                      viewModel.passwordCtrl.text,
+                                      l10n,
+                                    ),
                                 suffixIconName: IconButton(
                                   icon: Icon(
                                     viewModel.hidePassword
@@ -301,7 +325,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               SizedBox(height: 30.h),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   InkWell(
                                     onTap: () {
@@ -335,8 +360,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      Navigator.of(context)
-                                          .pushReplacementNamed(AppRoutes.loginRoute);
+                                      Navigator.of(
+                                        context,
+                                      ).pushReplacementNamed(
+                                        AppRoutes.loginRoute,
+                                      );
                                     },
                                     child: Text(
                                       l10n.login,
@@ -360,5 +388,202 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _goHome(BuildContext context) async {
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    if (!context.mounted) return;
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.homeScreenRoute, (route) => false);
+  }
+
+  Future<void> _showPhoneVerificationChoice(
+    BuildContext context,
+    RegisterUser user,
+    UserViewModel userViewModel,
+  ) async {
+    final phone = user.phoneNumber?.toString();
+    FocusManager.instance.primaryFocus?.unfocus();
+    final shouldVerify = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Verify phone number?'),
+          content: Text(
+            'You can skip now, but you must verify $phone before renting any apartment.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Skip for now'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Verify'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!context.mounted) return;
+    if (shouldVerify == true) {
+      final channel = await _chooseOtpChannel(context);
+      if (!context.mounted) return;
+      if (channel == null) {
+        await _goHome(context);
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+      if (!context.mounted) return;
+
+      try {
+        await viewModel.requestPhoneVerificationOTP(
+          phone ?? '',
+          channel: channel,
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        return;
+      }
+      if (!context.mounted) return;
+
+      final verified = await _showPhoneOtpDialog(
+        context,
+        phone,
+        channel: channel,
+        userViewModel: userViewModel,
+      );
+      if (verified == true) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Phone number verified')));
+      }
+    }
+    if (!context.mounted) return;
+    await _goHome(context);
+  }
+
+  Future<String?> _chooseOtpChannel(BuildContext context) {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Send verification code'),
+          content: const Text('Choose how you want to receive the OTP.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(null),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop('sms'),
+              child: const Text('SMS'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop('whatsapp'),
+              child: const Text('WhatsApp'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool?> _showPhoneOtpDialog(
+    BuildContext context,
+    String? phone, {
+    required String channel,
+    required UserViewModel userViewModel,
+  }) {
+    final codeController = TextEditingController();
+    String? errorText;
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: const Text('Phone verification'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Enter the 6-digit code for $phone.'),
+                    Text(
+                      'Sent by ${channel == 'whatsapp' ? 'WhatsApp' : 'SMS'}.',
+                    ),
+                    SizedBox(height: 12.h),
+                    TextField(
+                      controller: codeController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      decoration: InputDecoration(
+                        labelText: 'Verification code',
+                        errorText: errorText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    Navigator.of(dialogContext).pop(false);
+                  },
+                  child: const Text('Skip'),
+                ),
+                FilledButton(
+                  onPressed: () async {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    final otp = codeController.text.trim();
+                    if (otp.length != 6) {
+                      setDialogState(() {
+                        errorText = 'Enter the 6-digit code';
+                      });
+                      return;
+                    }
+                    try {
+                      await viewModel.verifyPhoneOTP(
+                        phone ?? '',
+                        otp,
+                        userViewModel,
+                      );
+                      if (!dialogContext.mounted) return;
+                      await Future<void>.delayed(
+                        const Duration(milliseconds: 80),
+                      );
+                      if (!dialogContext.mounted) return;
+                      Navigator.of(dialogContext).pop(true);
+                      return;
+                    } catch (e) {
+                      if (!dialogContext.mounted) return;
+                      setDialogState(() {
+                        errorText = e.toString();
+                      });
+                    }
+                  },
+                  child: const Text('Verify'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).whenComplete(codeController.dispose);
   }
 }

@@ -20,6 +20,7 @@ class Apartment {
   String? city;
   String? district;
   String? locationAddress;
+  String? gender;
   double? lat;
   double? lng;
   String? ownerId;
@@ -48,6 +49,7 @@ class Apartment {
     this.city,
     this.district,
     this.locationAddress,
+    this.gender,
     this.lat,
     this.lng,
     this.ownerId,
@@ -109,6 +111,7 @@ class Apartment {
       city: data["city"] ?? "Assuit",
       district: _normalizeDistrictName(data["district"]?.toString()),
       locationAddress: data["locationAddress"] ?? data["address"],
+      gender: _normalizeApartmentGender(data["gender"]?.toString()),
       lat: (data["lat"] as num?)?.toDouble(),
       lng: (data["lng"] as num?)?.toDouble(),
       ownerId: data["ownerId"],
@@ -141,6 +144,7 @@ class Apartment {
       'city': city ?? 'Assuit',
       'district': _normalizeDistrictName(district),
       'locationAddress': locationAddress,
+      'gender': _normalizeApartmentGender(gender),
       'lat': lat,
       'lng': lng,
       'ownerId': ownerId,
@@ -154,6 +158,12 @@ class Apartment {
     }
     return data;
   }
+}
+
+String _normalizeApartmentGender(String? gender) {
+  final value = gender?.trim().toLowerCase();
+  const allowedGenders = {'male', 'female'};
+  return allowedGenders.contains(value) ? value! : '';
 }
 
 String _normalizeDistrictName(String? district) {

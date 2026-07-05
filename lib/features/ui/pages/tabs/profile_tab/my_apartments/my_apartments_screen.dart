@@ -5,8 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_states.dart';
 import 'package:sokon/core/cache/cubit_manger/apartment_view_model.dart';
 import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/model/ApartmentResponse.dart';
+import 'package:sokon/core/model/BookingResponse.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
+import 'package:sokon/data/repository/booking/data_sources/remote/impl/booking_remote_data_impl.dart';
+import 'package:sokon/data/repository/booking/repository/booking_repository.dart';
+import 'package:sokon/data/repository/booking/repository/impl/booking_repository_impl.dart';
 
 import '../../../../../../core/utils/app_routes.dart';
 import '../../../../widgets/back_container.dart';
@@ -19,6 +24,12 @@ class MyApartmentsScreen extends StatefulWidget {
 }
 
 class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
+  final BookingRepository _bookingRepository =
+      BookingRepositoryImpl(BookingRemoteDataImpl());
+  List<BookingResponse> _ownerBookings = [];
+  bool _isLoadingBookings = false;
+  String? _bookingsError;
+
   @override
   void initState() {
     super.initState();
@@ -27,8 +38,34 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
       final userId = user?.id;
       if (userId != null && userId.isNotEmpty) {
         context.read<ApartmentViewModel>().getAllApartmentForOwner(userId);
+        _loadOwnerBookings(userId);
       }
     });
+  }
+
+  Future<void> _loadOwnerBookings(String userId) async {
+    setState(() {
+      _isLoadingBookings = true;
+      _bookingsError = null;
+    });
+
+    try {
+      final bookings = await _bookingRepository.getOwnerBookings(userId);
+      if (!mounted) return;
+      setState(() {
+        _ownerBookings = bookings;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _bookingsError = e.toString();
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingBookings = false;
+      });
+    }
   }
 
   @override
@@ -289,6 +326,31 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                         Row(
                           children: [
                             Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    _showApartmentClients(apartment),
+                                icon: Icon(
+                                  Icons.people_alt_outlined,
+                                  size: 18.sp,
+                                ),
+                                label: const Text("Clients"),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: theme.primaryColor,
+                                  side: BorderSide(
+                                    color: theme.primaryColor.withValues(
+                                      alpha: 0.35,
+                                    ),
+                                  ),
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 12.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Flexible(
                               child: ElevatedButton.icon(
                                 onPressed: () {
                                   Navigator.pushNamed(
@@ -297,15 +359,23 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
                                     arguments: apartment,
                                   );
                                 },
-                                icon: Icon(Icons.edit_rounded, size: 18.sp),
-                                label:  Text(l10n.editListing),
+                                icon: Icon(Icons.edit_rounded, size: 15.sp),
+                                label: Text(
+                                  l10n.editListing,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 11.sp),
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryColor,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
-                                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                    vertical: 9.h,
+                                  ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.r),
+                                    borderRadius: BorderRadius.circular(10.r),
                                   ),
                                 ),
                               ),
@@ -356,6 +426,240 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
         Text(text, style: theme.textTheme.bodyMedium),
       ],
     );
+  }
+
+  void _showApartmentClients(ApartmentResponse apartment) {
+    final theme = Theme.of(context);
+    final bookings = _ownerBookings
+        .where((booking) => booking.apartmentId == apartment.id)
+        .toList()
+      ..sort((a, b) => (b.createdAt ?? DateTime(0))
+          .compareTo(a.createdAt ?? DateTime(0)));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          expand: false,
+          builder: (context, scrollController) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: theme.highlightColor.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 18.h),
+                  Text(
+                    "Clients booking this apartment",
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    apartment.name ?? "Apartment",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  SizedBox(height: 16.h),
+                  if (_isLoadingBookings)
+                    Expanded(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: theme.primaryColor,
+                        ),
+                      ),
+                    )
+                  else if (_bookingsError != null)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          _bookingsError!,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    )
+                  else if (bookings.isEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          "No clients booked this apartment yet.",
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ListView.separated(
+                        controller: scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: bookings.length,
+                        separatorBuilder: (context, index) =>
+                            SizedBox(height: 12.h),
+                        itemBuilder: (context, index) =>
+                            _buildClientBookingTile(bookings[index]),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildClientBookingTile(BookingResponse booking) {
+    final theme = Theme.of(context);
+    final status = _normalizeStatus(booking.status);
+    final phone = booking.clientPhoneNumber?.trim();
+
+    return Container(
+      padding: EdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: theme.disabledColor,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22.r,
+            backgroundColor: theme.primaryColor.withValues(alpha: 0.12),
+            child: Icon(
+              Icons.person_outline_rounded,
+              color: theme.primaryColor,
+              size: 24.sp,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        booking.clientName ?? "Client",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium,
+                      ),
+                    ),
+                    _StatusPill(
+                      label: _statusLabel(status),
+                      color: _statusColor(status),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 7.h),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.phone_outlined,
+                      size: 15.sp,
+                      color: theme.highlightColor,
+                    ),
+                    SizedBox(width: 5.w),
+                    Expanded(
+                      child: Text(
+                        phone == null || phone.isEmpty
+                            ? "Phone not available"
+                            : phone,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          IconButton(
+            onPressed: booking.clientId == null || booking.clientId!.isEmpty
+                ? null
+                : () => _openClientChat(booking),
+            icon: Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: theme.primaryColor,
+              size: 22.sp,
+            ),
+            tooltip: "Chat",
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openClientChat(BookingResponse booking) {
+    Navigator.pop(context);
+    Navigator.pushNamed(
+      context,
+      AppRoutes.chatRoute,
+      arguments: {
+        'receiverId': booking.clientId,
+        'receiverName': booking.clientName ?? 'Client',
+        'receiverPhotoUrl': null,
+      },
+    );
+  }
+
+  String _normalizeStatus(String? status) {
+    final value = status?.toLowerCase().trim();
+    if (value == 'accepted') return 'confirmed';
+    if (value == 'canceled') return 'cancelled';
+    return value == null || value.isEmpty ? 'pending' : value;
+  }
+
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'confirmed':
+        return "Confirmed";
+      case 'rejected':
+        return "Rejected";
+      case 'cancelled':
+        return "Cancelled";
+      case 'pending':
+      default:
+        return "Pending";
+    }
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'confirmed':
+        return Colors.green;
+      case 'rejected':
+        return Colors.deepOrange;
+      case 'cancelled':
+        return Colors.red;
+      case 'pending':
+      default:
+        return Colors.orange;
+    }
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -461,6 +765,35 @@ class _MyApartmentsScreenState extends State<MyApartmentsScreen> {
             child:  Text(l10n.delete),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({
+    required this.label,
+    required this.color,
+  });
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

@@ -9,6 +9,7 @@ class MyUser {
   String? role; // 'owner' or 'client'
   String? photoUrl;
   String? fcmToken;
+  bool? phoneVerified;
   DateTime? createdAt;
 
   MyUser({
@@ -21,6 +22,7 @@ class MyUser {
     this.role,
     this.photoUrl,
     this.fcmToken,
+    this.phoneVerified,
     this.createdAt,
   });
 
@@ -35,6 +37,11 @@ class MyUser {
       role: data["role"]?.toString(),
       photoUrl: data["photoUrl"]?.toString(),
       fcmToken: data["fcmToken"]?.toString(),
+      phoneVerified:
+          data.containsKey("phoneVerified") ||
+              data.containsKey("phone_verified")
+          ? data["phoneVerified"] == true || data["phone_verified"] == true
+          : null,
       createdAt: data["createdAt"] != null
           ? DateTime.tryParse(data["createdAt"].toString())
           : null,
@@ -52,6 +59,7 @@ class MyUser {
       "role": role,
       "photoUrl": photoUrl,
       "fcmToken": fcmToken,
+      "phoneVerified": phoneVerified ?? false,
       "createdAt": createdAt?.toIso8601String(),
     };
   }

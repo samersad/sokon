@@ -12,11 +12,7 @@ import 'package:sokon/core/model/booking.dart';
 import 'api_constants.dart';
 
 class ApiService {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: ApiConstants.baseUrl,
-    ),
-  );
+  final Dio dio = Dio(BaseOptions(baseUrl: ApiConstants.baseUrl));
 
   Future<RegisterResponse> register({
     required String name,
@@ -27,6 +23,7 @@ class ApiService {
     String? college,
     String? gender,
     String role = 'client',
+    bool phoneVerified = false,
   }) async {
     try {
       final response = await dio.post(
@@ -40,6 +37,7 @@ class ApiService {
           "college": college,
           "gender": gender,
           "role": role,
+          "phoneVerified": phoneVerified,
         },
       );
       return RegisterResponse.fromJson(response.data);
@@ -57,10 +55,7 @@ class ApiService {
     try {
       final response = await dio.post(
         EndPoints.loginApi,
-        data: {
-          "email": email,
-          "password": password,
-        },
+        data: {"email": email, "password": password},
       );
 
       return LoginResponse.fromJson(response.data); // ← الصحيsح
@@ -83,9 +78,12 @@ class ApiService {
     String? gender,
     String? photoUrl,
     dynamic fcmToken,
+    bool phoneVerified = false,
   }) async {
     try {
-      final formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+2$phoneNumber';
+      final formattedPhone = phoneNumber.startsWith('+')
+          ? phoneNumber
+          : '+2$phoneNumber';
       final token = SharedPrefsHelper.getData(key: "token")?.toString();
       final response = await dio.patch(
         EndPoints.userApi(userId),
@@ -98,6 +96,7 @@ class ApiService {
           "role": role,
           "photoUrl": photoUrl,
           "fcmToken": fcmToken,
+          "phoneVerified": phoneVerified,
         },
         options: token == null || token.isEmpty
             ? null
@@ -108,7 +107,9 @@ class ApiService {
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Update user failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Update user failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -156,7 +157,9 @@ class ApiService {
       );
       return RegisterResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Session exchange failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Session exchange failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -174,7 +177,9 @@ class ApiService {
       }
       return null;
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Request password reset failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Request password reset failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -195,7 +200,50 @@ class ApiService {
       }
       throw Exception("Invalid response from server");
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "OTP verification failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "OTP verification failed"),
+      );
+    } catch (e) {
+      throw Exception("Unexpected error: $e");
+    }
+  }
+
+  Future<void> requestPhoneVerificationOTP({
+    required String phoneNumber,
+    String channel = 'sms',
+  }) async {
+    try {
+      await dio.post(
+        EndPoints.phoneOtpApi,
+        data: {'phoneNumber': phoneNumber, 'channel': channel},
+        options: _requiredAuthOptions(),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Send phone OTP failed"),
+      );
+    } catch (e) {
+      throw Exception("Unexpected error: $e");
+    }
+  }
+
+  Future<RegisterUser> verifyPhoneOTP({
+    required String phoneNumber,
+    required String otp,
+  }) async {
+    try {
+      final response = await dio.post(
+        EndPoints.phoneOtpVerifyApi,
+        data: {'phoneNumber': phoneNumber, 'otp': otp},
+        options: _requiredAuthOptions(),
+      );
+      final data = response.data;
+      final userData = data is Map ? data['user'] ?? data : data;
+      return RegisterUser.fromJson(Map<String, dynamic>.from(userData as Map));
+    } on DioException catch (e) {
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Phone verification failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -212,7 +260,9 @@ class ApiService {
       );
       return RegisterResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Confirm password reset failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Confirm password reset failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -229,7 +279,9 @@ class ApiService {
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Update password failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Update password failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -269,7 +321,9 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Delete account failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Delete account failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -285,7 +339,9 @@ class ApiService {
 
       return ApartmentResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Add apartment failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Add apartment failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -306,7 +362,9 @@ class ApiService {
 
       return ApartmentResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Update apartment failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Update apartment failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -324,7 +382,12 @@ class ApiService {
       );
       return ApartmentResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Update apartment verification failed"));
+      throw Exception(
+        _getErrorMessage(
+          e,
+          defaultMessage: "Update apartment verification failed",
+        ),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -337,7 +400,9 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Delete apartment failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Delete apartment failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -351,7 +416,9 @@ class ApiService {
       );
       return _parseApartmentList(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Get apartments failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Get apartments failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -359,7 +426,9 @@ class ApiService {
 
   Future<List<ApartmentResponse>> getApartmentsByOwner(String ownerId) async {
     final apartments = await getAllApartments();
-    return apartments.where((apartment) => apartment.ownerId == ownerId).toList();
+    return apartments
+        .where((apartment) => apartment.ownerId == ownerId)
+        .toList();
   }
 
   Future<List<ApartmentResponse>> searchApartments(String query) async {
@@ -375,11 +444,60 @@ class ApiService {
         options: _authOptions(),
       );
       return _parseApartmentList(response.data);
-    } on DioException catch (_) {
-      final apartments = await getAllApartments();
-      return apartments
-          .where((apartment) => _matchesApartmentSearch(apartment, normalizedQuery))
-          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Search apartments failed"),
+      );
+    } catch (e) {
+      throw Exception("Unexpected error: $e");
+    }
+  }
+
+  Future<List<ApartmentResponse>> filterApartments({
+    String? type,
+    String? district,
+    String? gender,
+    double? minPrice,
+    double? maxPrice,
+    int? bedrooms,
+  }) async {
+    final queryParameters = <String, dynamic>{};
+    final normalizedType = type?.trim();
+    final normalizedDistrict = district?.trim();
+    final normalizedGender = gender?.trim().toLowerCase();
+
+    if (normalizedType != null && normalizedType.isNotEmpty) {
+      queryParameters['type'] = normalizedType;
+    }
+    if (normalizedDistrict != null &&
+        normalizedDistrict.isNotEmpty &&
+        normalizedDistrict.toLowerCase() != 'any') {
+      queryParameters['district'] = normalizedDistrict;
+    }
+    if (normalizedGender == 'male' || normalizedGender == 'female') {
+      queryParameters['gender'] = normalizedGender;
+    }
+    if (minPrice != null) {
+      queryParameters['minPrice'] = minPrice;
+    }
+    if (maxPrice != null) {
+      queryParameters['maxPrice'] = maxPrice;
+    }
+    if (bedrooms != null) {
+      queryParameters['bedrooms'] = bedrooms;
+    }
+
+    try {
+      final response = await dio.get(
+        EndPoints.apartmentsApi,
+        queryParameters: queryParameters,
+        options: _authOptions(),
+      );
+      return _parseApartmentList(response.data);
+    } on DioException catch (e) {
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Filter apartments failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -394,7 +512,9 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Add booking failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Add booking failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -415,10 +535,7 @@ class ApiService {
     try {
       final response = await dio.get(
         EndPoints.bookingActiveCheckApi,
-        queryParameters: {
-          'userId': userId,
-          'apartmentId': apartmentId,
-        },
+        queryParameters: {'userId': userId, 'apartmentId': apartmentId},
         options: _requiredAuthOptions(),
       );
       final data = response.data;
@@ -430,7 +547,9 @@ class ApiService {
       }
       return false;
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Check active booking failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Check active booking failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -448,7 +567,9 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Update booking status failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Update booking status failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -473,7 +594,9 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Update booking status failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Update booking status failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -491,7 +614,9 @@ class ApiService {
       );
       return BookingResponse.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Rate booking failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Rate booking failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -512,9 +637,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> upsertChat(
-    Map<String, dynamic> chatData,
-  ) async {
+  Future<Map<String, dynamic>> upsertChat(Map<String, dynamic> chatData) async {
     try {
       final response = await dio.post(
         EndPoints.chatsApi,
@@ -550,7 +673,9 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Delete chat failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Delete chat failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -564,7 +689,9 @@ class ApiService {
       );
       return _parseMapList(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Get messages failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Get messages failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -582,7 +709,9 @@ class ApiService {
       );
       return Map<String, dynamic>.from(response.data as Map);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Send message failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Send message failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -595,7 +724,9 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Delete message failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Delete message failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -610,7 +741,9 @@ class ApiService {
       );
       return _parseNotificationList(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Get notifications failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Get notifications failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -623,13 +756,17 @@ class ApiService {
         options: _requiredAuthOptions(),
       );
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Mark notification read failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Mark notification read failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
   }
 
-  Future<List<AppNotification>> markAllNotificationsAsRead(String userId) async {
+  Future<List<AppNotification>> markAllNotificationsAsRead(
+    String userId,
+  ) async {
     try {
       final response = await dio.patch(
         EndPoints.notificationsReadAllApi(userId),
@@ -637,7 +774,12 @@ class ApiService {
       );
       return _parseNotificationList(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Mark all notifications read failed"));
+      throw Exception(
+        _getErrorMessage(
+          e,
+          defaultMessage: "Mark all notifications read failed",
+        ),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -680,25 +822,7 @@ class ApiService {
     if (listData is! List) {
       return [];
     }
-    return listData
-        .map((item) => ApartmentResponse.fromJson(item))
-        .toList();
-  }
-
-  bool _matchesApartmentSearch(ApartmentResponse apartment, String query) {
-    final searchLower = query.toLowerCase();
-    final fields = [
-      apartment.name,
-      apartment.description,
-      apartment.address,
-      apartment.locationAddress,
-      apartment.city,
-      apartment.district,
-    ];
-
-    return fields.any(
-      (field) => field != null && field.toLowerCase().contains(searchLower),
-    );
+    return listData.map((item) => ApartmentResponse.fromJson(item)).toList();
   }
 
   Future<List<BookingResponse>> _getBookings({
@@ -712,7 +836,9 @@ class ApiService {
       );
       return _parseBookingList(response.data);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e, defaultMessage: "Get bookings failed"));
+      throw Exception(
+        _getErrorMessage(e, defaultMessage: "Get bookings failed"),
+      );
     } catch (e) {
       throw Exception("Unexpected error: $e");
     }
@@ -741,10 +867,7 @@ class ApiService {
         .toList();
   }
 
-  Map<String, dynamic> _parseMap(
-    dynamic data, {
-    required List<String> keys,
-  }) {
+  Map<String, dynamic> _parseMap(dynamic data, {required List<String> keys}) {
     if (data is! Map) {
       return {};
     }
@@ -766,9 +889,11 @@ class ApiService {
       return [];
     }
     return listData
-        .map((item) => AppNotification.fromSupaBase(
-              Map<String, dynamic>.from(item as Map),
-            ))
+        .map(
+          (item) => AppNotification.fromSupaBase(
+            Map<String, dynamic>.from(item as Map),
+          ),
+        )
         .toList();
   }
 
@@ -789,6 +914,7 @@ class ApiService {
       'city': apartment.city ?? 'Assuit',
       'district': apartment.district,
       'locationAddress': apartment.locationAddress,
+      'gender': apartment.gender,
       'lat': apartment.lat,
       'lng': apartment.lng,
       'ownerId': apartment.ownerId,

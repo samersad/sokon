@@ -19,6 +19,13 @@ migrate_working_dir/
 .idea/
 *.env
 
+# Local media and private credentials that should not be pushed.
+images sokon/
+assets/images/forget_bg.png
+assets/images/splash_screen.png
+assets/images/verification_bg.png
+sokon-30008-firebase-adminsdk-*.json
+
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line

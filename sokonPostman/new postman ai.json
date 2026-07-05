@@ -1,0 +1,864 @@
+{
+  "info": {
+    "name": "SOKON Backend API (Auto) - v1",
+    "description": "Postman collection generated from the backend routes.js file. Base path is /api/v1.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serverUrl}}/health",
+              "host": ["{{serverUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sokon Test User\",\n  \"email\": \"sokon.test+{{$timestamp}}@example.com\",\n  \"password\": \"password123\",\n  \"college\": \"Engineering\",\n  \"phoneNumber\": \"01000000000\",\n  \"gender\": \"male\",\n  \"role\": \"client\",\n  \"photoUrl\": null\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sokon.test@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Exchange Session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/exchange",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "exchange"]
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sokon.test@example.com\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password-reset"]
+            }
+          }
+        },
+        {
+          "name": "Verify Reset OTP",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sokon.test@example.com\",\n  \"otp\": \"123456\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password-reset", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"password\": \"NewPassword@123\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password-reset", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"NewPassword@123\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password"]
+            }
+          }
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/account",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "account"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get User (Optional Auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Upsert User",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Sokon User\",\n  \"college\": \"Computer Science\",\n  \"fcmToken\": \"test-fcm-token\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Sokon User\",\n  \"college\": \"Computer Science\",\n  \"fcmToken\": \"test-fcm-token\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Apartments",
+      "item": [
+        {
+          "name": "List Apartments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apartments",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments"]
+            }
+          }
+        },
+        {
+          "name": "Search Apartments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apartments/search?query={{query}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments", "search"],
+              "query": [{"key": "query", "value": "{{query}}"}]
+            }
+          }
+        },
+        {
+          "name": "Get Apartment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apartments/{{apartmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments", "{{apartmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Apartment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Apartment\",\n  \"description\": \"Student friendly apartment\",\n  \"price\": 4500,\n  \"images\": [],\n  \"video_url\": null,\n  \"bedrooms\": 2,\n  \"bathrooms\": 1,\n  \"living_rooms\": 1,\n  \"floor\": 3,\n  \"max_people\": 3,\n  \"available_people\": 3,\n  \"address\": \"Main Street\",\n  \"city\": \"Assuit\",\n  \"district\": \"فيريال\",\n  \"locationAddress\": \"Main Street, Assuit\",\n  \"lat\": 27.1809,\n  \"lng\": 31.1837,\n  \"verified\": false\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apartments",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments"]
+            }
+          }
+        },
+        {
+          "name": "Update Apartment (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 5000,\n  \"available_people\": 2\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apartments/{{apartmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments", "{{apartmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Apartment (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 5000,\n  \"available_people\": 2\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apartments/{{apartmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments", "{{apartmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Verify Apartment (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": true\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apartments/{{apartmentId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments", "{{apartmentId}}", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Delete Apartment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apartments/{{apartmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["apartments", "{{apartmentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "List Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Check Active Booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/active/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "active", "check"]
+            }
+          }
+        },
+        {
+          "name": "Get Booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apartmentId\": \"{{apartmentId}}\",\n  \"startDate\": \"2026-07-01T00:00:00.000Z\",\n  \"endDate\": \"2026-07-30T00:00:00.000Z\",\n  \"people_count\": 1,\n  \"totalPrice\": 5000,\n  \"status\": \"pending\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Update Booking Status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"accepted\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Update Booking Status (POST)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"accepted\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Rate Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/rating",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}", "rating"]
+            }
+          }
+        },
+        {
+          "name": "RPC Update Booking Status With Capacity",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_booking_id\": \"{{bookingId}}\",\n  \"p_status\": \"cancelled\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rpc/update_booking_status_with_capacity",
+              "host": ["{{baseUrl}}"],
+              "path": ["rpc", "update_booking_status_with_capacity"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Notification\",\n  \"body\": \"This is a test notification\",\n  \"type\": \"new_booking\",\n  \"receiverId\": \"{{userId}}\",\n  \"isRead\": false\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "{{notificationId}}", "read"]
+            }
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "read-all", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chats",
+      "item": [
+        {
+          "name": "List Chats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/chats?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats"],
+              "query": [{"key": "userId", "value": "{{userId}}"}]
+            }
+          }
+        },
+        {
+          "name": "Upsert Chat",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{chatId}}\",\n  \"users\": [\"{{userId}}\"],\n  \"lastMessage\": \"Hello\",\n  \"displayNames\": {},\n  \"displayPhotos\": {}\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chats",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats"]
+            }
+          }
+        },
+        {
+          "name": "Get Chat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/chats/{{chatId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats", "{{chatId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Chat",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/chats/{{chatId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats", "{{chatId}}"]
+            }
+          }
+        },
+        {
+          "name": "List Messages (by chatId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/chats/{{chatId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats", "{{chatId}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "Send Message (by chatId)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senderId\": \"{{userId}}\",\n  \"message\": \"Hello from Postman\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chats/{{chatId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats", "{{chatId}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "List Messages (generic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages"]
+            }
+          }
+        },
+        {
+          "name": "Send Message (generic)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chatId\": \"{{chatId}}\",\n  \"senderId\": \"{{userId}}\",\n  \"message\": \"Hello from Postman\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages"]
+            }
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages", "{{messageId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Storage (Cloudinary)",
+      "item": [
+        {
+          "name": "Upload to bucket",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "file", "type": "file", "src": ""},
+                {"key": "folder", "type": "text", "value": "{{folder}}"}
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/storage/{{bucket}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["storage", "{{bucket}}"]
+            }
+          }
+        },
+        {
+          "name": "Remove from bucket",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"public_id\": \"{{cloudinaryPublicId}}\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/storage/{{bucket}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["storage", "{{bucket}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Functions",
+      "item": [
+        {
+          "name": "Send Booking Notification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": \"{{userId}}\",\n  \"bookingId\": \"{{bookingId}}\",\n  \"title\": \"New Booking Request\",\n  \"body\": \"Test booking notification\",\n  \"type\": \"new_booking\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/functions/send-booking-notification",
+              "host": ["{{baseUrl}}"],
+              "path": ["functions", "send-booking-notification"]
+            }
+          }
+        },
+        {
+          "name": "Send Chat Notification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": \"{{userId}}\",\n  \"senderId\": \"{{userId}}\",\n  \"chatId\": \"{{chatId}}\",\n  \"title\": \"New message\",\n  \"body\": \"Hello\",\n  \"type\": \"new_message\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/functions/send-chat-notification",
+              "host": ["{{baseUrl}}"],
+              "path": ["functions", "send-chat-notification"]
+            }
+          }
+        },
+        {
+          "name": "Send Booking Status Notification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": \"{{userId}}\",\n  \"bookingId\": \"{{bookingId}}\",\n  \"title\": \"Booking approved\",\n  \"body\": \"Your booking was approved\",\n  \"type\": \"booking_accepted\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/functions/send-booking-status-notification",
+              "host": ["{{baseUrl}}"],
+              "path": ["functions", "send-booking-status-notification"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RPC",
+      "item": [
+        {
+          "name": "RPC Rate Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_booking_id\": \"{{bookingId}}\",\n  \"p_rating\": 5\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rpc/rate_booking",
+              "host": ["{{baseUrl}}"],
+              "path": ["rpc", "rate_booking"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI/Chatbot",
+      "item": [
+        {
+          "name": "Chatbot",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chatbot",
+              "host": ["{{baseUrl}}"],
+              "path": ["chatbot"]
+            }
+          }
+        },
+        {
+          "name": "AI Chat",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hi, I want info about apartments.\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["ai", "chat"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "serverUrl", "value": "http://localhost:5000", "type": "string"},
+    {"key": "baseUrl", "value": "http://localhost:5000/api/v1", "type": "string"},
+    {"key": "accessToken", "value": "", "type": "string"},
+    {"key": "userId", "value": "", "type": "string"},
+    {"key": "apartmentId", "value": "", "type": "string"},
+    {"key": "bookingId", "value": "", "type": "string"},
+    {"key": "chatId", "value": "test-chat-001", "type": "string"},
+    {"key": "messageId", "value": "", "type": "string"},
+    {"key": "notificationId", "value": "", "type": "string"},
+    {"key": "cloudinaryPublicId", "value": "", "type": "string"},
+    {"key": "resetToken", "value": "", "type": "string"},
+    {"key": "bucket", "value": "profiles", "type": "string"},
+    {"key": "folder", "value": "{{userId}}", "type": "string"},
+    {"key": "query", "value": "", "type": "string"}
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+  }
+}
+

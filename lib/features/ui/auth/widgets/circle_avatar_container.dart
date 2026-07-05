@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sokon/core/utils/app_colors.dart';
 
 
 class CircleAvatarContainer extends StatelessWidget {
@@ -13,12 +12,12 @@ class CircleAvatarContainer extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-            color: AppColors.pureBlack,
+            color: Colors.black,
             width: 1
         ),
       ),
       child: CircleAvatar(
-        backgroundColor: AppColors.avatarBlue,
+        backgroundColor: const Color(0xFFB9D6FA),
         radius: 30.r,
         child: Image.asset(
           image,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/utils/app_colors.dart';
+
 class CustomTextFormField extends StatefulWidget {
   CustomTextFormField({
     super.key,
@@ -15,20 +17,14 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.obscuringCharacter = '•',
-    this.controller,
+     this.controller,
     this.prefixIconColor,
     this.suffixIconColor,
-    this.maxLines = 1,
-    this.onChanged,
-    this.fillColor,
-    this.borderRadius = 10,
-    this.paddingVertical = 10,
-    this.paddingHorizontal = 20,
-    this.readOnly = false,
-    this.enabled = true,
-    this.onTap,
+    this.maxLines=1,
+    this.onChanged, this.fillColor,
+    this.borderRadius=10
   });
-  //
+//
   final Color? borderSideColor;
   final Color? fillColor;
   final String? hintText;
@@ -45,14 +41,9 @@ class CustomTextFormField extends StatefulWidget {
   final Color? prefixIconColor;
   final Color? suffixIconColor;
   final int maxLines;
-  final void Function(String)? onChanged;
-  final double borderRadius;
-  final bool readOnly;
-  final bool enabled;
-  final VoidCallback? onTap;
+  void Function(String)? onChanged ;
+  final double borderRadius ;
 
-  final double paddingVertical;
-  final double paddingHorizontal;
 
   @override
   State<CustomTextFormField> createState() => _CustomTextFormFieldState();
@@ -61,61 +52,46 @@ class CustomTextFormField extends StatefulWidget {
 class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return TextFormField(
       onChanged: widget.onChanged,
-      enabled: widget.enabled,
-      readOnly: widget.readOnly,
-      onTap: widget.onTap,
       maxLines: widget.maxLines,
-      cursorColor: theme.primaryColor,
+      cursorColor: AppColors.primaryColor,
       validator: widget.validator,
       keyboardType: widget.keyboardType,
       obscureText: widget.obscureText,
       controller: widget.controller,
       obscuringCharacter: widget.obscuringCharacter,
-      cursorErrorColor: theme.colorScheme.error,
+      cursorErrorColor: AppColors.redColor,
       style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
-        contentPadding: EdgeInsetsGeometry.symmetric(
-          vertical: widget.paddingVertical.h,
-          horizontal: widget.paddingHorizontal.w,
-        ),
-        fillColor: widget.fillColor ?? theme.disabledColor,
+        contentPadding:EdgeInsetsGeometry.symmetric(vertical: 20.h,horizontal: 10.w) ,
+        fillColor:widget.fillColor??AppColors.offWhiteColor,
         filled: true,
         enabledBorder: bulitOutLineInputBorder(
-          borderSideColor: widget.borderSideColor ?? theme.highlightColor,
-          radius: widget.borderRadius,
+          borderSideColor: widget.borderSideColor!,
+          radius: widget.borderRadius
         ),
         focusedBorder: bulitOutLineInputBorder(
-          borderSideColor: widget.borderSideColor ?? theme.primaryColor,
+          borderSideColor:widget.borderSideColor! ,
         ),
-
-        errorBorder: bulitOutLineInputBorder(
-          borderSideColor: theme.colorScheme.error,
-        ),
-        focusedErrorBorder: bulitOutLineInputBorder(
-          borderSideColor: theme.colorScheme.error,
-        ),
+        errorBorder: bulitOutLineInputBorder(borderSideColor: AppColors.redColor),
+        focusedErrorBorder: bulitOutLineInputBorder(borderSideColor: AppColors.redColor),
         hintText: widget.hintText,
         hintStyle: widget.hintStyle ?? Theme.of(context).textTheme.bodyMedium,
         labelText: widget.labelText,
         labelStyle: widget.labelStyle ?? Theme.of(context).textTheme.bodyMedium,
         prefixIcon: widget.prefixIconName,
-        prefixIconColor: theme.highlightColor,
+        prefixIconColor: Theme.of(context).highlightColor,
         suffixIcon: widget.suffixIconName,
-        suffixIconColor: theme.highlightColor,
+        suffixIconColor: Theme.of(context).highlightColor,
       ),
     );
   }
 
-  OutlineInputBorder bulitOutLineInputBorder({
-    required Color borderSideColor,
-    double radius = 10,
-  }) {
+  OutlineInputBorder bulitOutLineInputBorder({required Color borderSideColor,double radius=10}) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(radius),
-      borderSide: BorderSide(color: borderSideColor, width: 1),
+      borderSide: BorderSide(color: borderSideColor, width: 2),
     );
   }
 }

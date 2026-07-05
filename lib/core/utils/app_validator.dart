@@ -1,71 +1,67 @@
-import 'package:sokon/l10n/app_localizations.dart';
-
 class AppValidators {
   AppValidators._();
 
-  static String? validateEmail(String? val, AppLocalizations l10n) {
+  static String? validateEmail(String? val) {
     final RegExp emailRegex = RegExp(
       r"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$",
     );
 
     if (val == null || val.trim().isEmpty) {
-      return l10n.fieldRequired;
+      return 'this field is required';
     } else if (!emailRegex.hasMatch(val.trim())) {
-      return l10n.enterValidEmail;
+      return 'enter valid email';
     } else {
       return null;
     }
   }
 
-  static String? validatePassword(String? val, AppLocalizations l10n) {
-    // Fixed regex: removed extra spaces and improved lookahead groups
-    RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])');
+  static String? validatePassword(String? val) {
+    RegExp passwordRegex = RegExp(r'^( ?=.* [a-zA-Z]) ( ?=.* [0-9]) ');
     if (val == null || val.isEmpty) {
-      return l10n.fieldRequired;
+      return 'this field is required';
     } else if (val.length < 8 || !passwordRegex.hasMatch(val)) {
-      return l10n.passwordValidation;
+      return 'strong password please';
     } else {
       return null;
     }
   }
 
-  static String? validateConfirmPassword(String? val, String? password, AppLocalizations l10n) {
+  static String? validateConfirmPassword(String? val, String? password) {
     if (val == null || val.isEmpty) {
-      return l10n.fieldRequired;
+      return 'this field is required';
     } else if (val != password) {
-      return l10n.passwordsNotMatching;
+      return 'Passwords not matching';
     } else {
       return null;
     }
   }
 
-  static String? validateUsername(String? val, AppLocalizations l10n) {
-    RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9, . -]+$');
-
+  static String? validateUsername(String? val) {
+    RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9, .- ]+$');
     if (val == null || val.isEmpty) {
-      return l10n.fieldRequired;
+      return 'this field is required';
     } else if (!usernameRegex.hasMatch(val)) {
-      return l10n.enterValidUsername;
+      return 'enter valid username';
     } else {
       return null;
     }
   }
 
-  static String? validateFullName(String? val, AppLocalizations l10n) {
+  static String? validateFullName(String? val) {
     if (val == null || val.isEmpty) {
-      return l10n.fieldRequired;
+      return 'this field is required';
     } else {
       return null;
     }
   }
 
-  static String? validatePhoneNumber(String? val, AppLocalizations l10n) {
-    if (val == null || val.trim().isEmpty) {
-      return l10n.fieldRequired;
+  static String? validatePhoneNumber(String? val) {
+    if (val == null) {
+      return 'this field is required';
     } else if (int.tryParse(val.trim()) == null) {
-      return l10n.enterNumbersOnly;
+      return 'enter numbers only';
     } else if (val.trim().length != 11) {
-      return l10n.phoneValidation;
+      return 'enter value must equal 11 digit';
     } else {
       return null;
     }

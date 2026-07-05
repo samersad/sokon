@@ -1,14 +1,26 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:sokon/l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:sokon/core/cache/cubit_manger/user_view_model.dart';
+import 'package:sokon/core/constants/university_locations.dart';
+import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_assets.dart';
 import 'package:sokon/core/utils/app_colors.dart';
-import 'package:sokon/features/ui/widgets/custom_text_form_field.dart';
+import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_states.dart';
+import 'package:sokon/features/ui/pages/notifaction_screen/cubit/notification_view_model.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_states.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/cubit/home_tab_view_model.dart';
+import 'package:sokon/features/ui/pages/tabs/home_tab/home_map_screen.dart';
 
-import '../../../../../core/cache/provider/location_provider.dart';
 import '../../../../../core/utils/app_styles.dart';
+import '../../../widgets/district_location_card.dart';
+import '../../../widgets/featured_estates_card.dart';
+import '../../../widgets/nearby_estate_card.dart';
+import '../../../widgets/search_widget.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -18,373 +30,455 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  final HomeTabViewModel viewModel = getIt<HomeTabViewModel>();
+  final NotificationViewModel notificationViewModel = getIt<NotificationViewModel>();
+  GoogleMapController? _mapController;
+
   @override
   void initState() {
     super.initState();
+    viewModel.loadHomeData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LocationProvider>(context, listen: false)
-          .getCurrentLocation();
+      final userId = context.read<UserViewModel>().user?.id;
+      if (userId != null && userId.isNotEmpty) {
+        notificationViewModel.listenToNotifications(userId);
+      }
     });
   }
 
   @override
+  void dispose() {
+    _mapController?.dispose();
+    viewModel.close();
+    super.dispose();
+  }
+
+  Future<void> _moveCameraToLocation(LatLng location) async {
+    final controller = _mapController;
+    if (controller == null) return;
+
+    await controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: location, zoom: 15),
+      ),
+    );
+  }
+
+  Future<void> _openHomeMap({
+    required HomeTabStates state,
+    required String? userPhotoUrl,
+  }) async {
+    if (!mounted) return;
+
+    Navigator.of(context).pushNamed(
+      AppRoutes.homeMapRoute,
+      arguments: HomeMapArguments(
+        apartments: state.allApartments,
+        userLocation: state.selectedUniversity.location,
+        userPhotoUrl: userPhotoUrl,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final locationProvider = Provider.of<LocationProvider>(context);
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final userViewModel = context.read<UserViewModel>();
+    final user = userViewModel.user;
 
-    final LatLng initialTarget =
-        locationProvider.eventLocation ??
-            locationProvider.userLocation ??
-            const LatLng(30.0444, 31.2357);
+    return BlocConsumer<HomeTabViewModel, HomeTabStates>(
+      bloc: viewModel,
+      listenWhen: (previous, current) {
+        return previous.selectedUniversity != current.selectedUniversity ||
+            previous.errorMessage != current.errorMessage;
+      },
+      listener: (context, state) {
+        _moveCameraToLocation(state.selectedUniversity.location);
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ///  Top Bar
-              Row(
+        final errorMessage = state.errorMessage;
+        if (errorMessage != null && errorMessage.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+          viewModel.clearErrorMessage();
+        }
+      },
+      builder: (context, state) {
+        final universityLocation = state.selectedUniversity.location;
+        final featuredApartments = state.featuredApartments;
+        final nearbyApartments = state.nearbyApartments;
+        final topDistricts = state.topDistricts;
+
+        return Scaffold(
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InkWell(
-                    onTap: () {},
-                    child: Container(
-                      height: 50.h,
-                      width: 160.w, //
-                      padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.whiteColor,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: AppColors.grayColor),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildUniversitySelector(
+                          theme: theme,
+                          selectedUniversity: state.selectedUniversity,
+                          l10n: l10n,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          Image.asset(AppAssets.locationIcon, width: 16.w),
-                          SizedBox(width: 6.w),
-                          Expanded(
-                            child: Text(
-                              "Jakarta, Indonesia",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppStyles.medium10blueDarkColor,
+                      SizedBox(width: 10.w),
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(AppRoutes.chatBotRoute);
+                        },
+                        child: Image.asset(AppAssets.chatBot, width: 24.w),
+                      ),
+                      SizedBox(width: 10.w),
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(AppRoutes.notificationRoute);
+                        },
+                        child: BlocBuilder<NotificationViewModel, NotificationStates>(
+                          bloc: notificationViewModel,
+                          builder: (context, notificationState) {
+                            final unreadCount = notificationState is NotificationLoaded
+                                ? notificationState.unreadCount
+                                : 0;
+                            final hasNewNotification = unreadCount > 0;
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Image.asset(AppAssets.notification, width: 24.w),
+                                if (hasNewNotification)
+                                  Positioned(
+                                    right: -8.w,
+                                    top: -8.h,
+                                    child: Container(
+                                      constraints: BoxConstraints(
+                                        minWidth: 18.w,
+                                        minHeight: 18.h,
+                                      ),
+                                      padding: EdgeInsets.symmetric(horizontal: 4.w),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.redColor,
+                                        borderRadius: BorderRadius.circular(20.r),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        unreadCount > 99 ? '99+' : '$unreadCount',
+                                        style: AppStyles.medium12White.copyWith(
+                                          fontSize: 9.sp,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      InkWell(
+                        onTap: () {},
+                        child: CircleAvatar(
+                          radius: 18.r,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                              ? CachedNetworkImageProvider(user.photoUrl!)
+                              : AssetImage(AppAssets.profileImage) as ImageProvider,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      height: 170.h,
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: universityLocation,
+                          zoom: 15,
+                        ),
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+                          _moveCameraToLocation(universityLocation);
+                        },
+                        zoomControlsEnabled: true,
+                        myLocationEnabled: false,
+                        myLocationButtonEnabled: false,
+                        scrollGesturesEnabled: true,
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId("university_location"),
+                            position: universityLocation,
+                            infoWindow: InfoWindow(
+                              title: state.selectedUniversity.name,
                             ),
                           ),
-                          Image.asset(AppAssets.downIcon, width: 14.w),
-                        ],
+                        },
                       ),
                     ),
                   ),
-
-                  const Spacer(),
-
-                  Image.asset(AppAssets.chatBot, width: 24.w),
-                  SizedBox(width: 10.w),
-                  Image.asset(AppAssets.notification, width: 24.w),
-                ],
-              ),
-
-              SizedBox(height: 20.h),
-
-              ///  Search
-              CustomTextFormField(
-                borderRadius: 14,
-                fillColor: AppColors.whiteColor,
-                borderSideColor: AppColors.grayColor,
-                hintText: "Search House, Apartment, etc",
-                hintStyle: AppStyles.medium12gray,
-                prefixIconName: Image.asset(AppAssets.searchIcon),
-                suffixIconName: InkWell(
-                  onTap: () {},
-                  child: Image.asset(AppAssets.filterIcon),
-                ),
-              ),
-
-              SizedBox(height: 20.h),
-
-              /// Map
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  height: 170.h,
-                  child: GoogleMap(
-                    initialCameraPosition:
-                    CameraPosition(target: initialTarget, zoom: 15),
-                    zoomControlsEnabled: false,
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
-                    markers: locationProvider.eventLocation != null
-                        ? {
-                      Marker(
-                        markerId:
-                        const MarkerId("Selected Location"),
-                        position:
-                        locationProvider.eventLocation!,
-                      )
-                    }
-                        : {},
-                    onTap: locationProvider.changeEventLocation,
+                  SizedBox(height: 12.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton.icon(
+                      onPressed: state.isLoadingEstates
+                          ? null
+                          : () => _openHomeMap(
+                                state: state,
+                                userPhotoUrl: user?.photoUrl,
+                              ),
+                      icon: const Icon(Icons.map_outlined),
+                      label:  Text(l10n.viewAllOnMap),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: AppColors.whiteColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.r),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-
-              SizedBox(height: 20.h),
-
-              ///  Featured title
-              Row(
-                children: [
-                  Text("Featured Estates",
-                      style: AppStyles.bold18PrimaryColor),
-                  const Spacer(),
-                  Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),
+                  SizedBox(height: 20.h),
+                  Row(
+                    children: [
+                      Text(l10n.featuredEstates, style: theme.textTheme.displaySmall),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRoutes.featuredEstateRoute);
+                        },
+                        child: Text(l10n.viewAll, style: theme.textTheme.displaySmall),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  SizedBox(
+                    height: 210.h,
+                    child: _buildFeaturedSection(
+                      isLoading: state.isLoadingEstates,
+                      apartments: featuredApartments,
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Row(
+                    children: [
+                      Text(l10n.topLocation, style: theme.textTheme.displaySmall),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRoutes.topLocationRoute);
+                        },
+                        child: Text(l10n.viewAll, style: theme.textTheme.displaySmall),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  if (state.isLoadingEstates && topDistricts.isEmpty)
+                    SizedBox(
+                      height: 60.h,
+                      child: const Center(child: CircularProgressIndicator()),
+                    )
+                  else if (topDistricts.isEmpty)
+                    SizedBox(
+                      height: 60.h,
+                      child: Center(
+                        child: Text(
+                          l10n.noDistrictsAvailable,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      height: 78.h,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: topDistricts.length,
+                        separatorBuilder: (_, index) => SizedBox(width: 10.w),
+                        itemBuilder: (_, index) {
+                          final district = topDistricts[index];
+                          return SizedBox(
+                            width: 138.w,
+                            child: DistrictLocationCard(
+                              districtSummary: district,
+                              compact: true,
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.districtApartmentsRoute,
+                                  arguments: district,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  SizedBox(height: 10.h),
+                  Row(
+                    children: [
+                      Text(l10n.nearbyEstate, style: theme.textTheme.displaySmall),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRoutes.nearbyEstateRoute);
+                        },
+                        child: Text(l10n.viewAll, style: theme.textTheme.displaySmall),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  SizedBox(
+                    height: 315.h,
+                    child: _buildNearbySection(
+                      isLoading: state.isLoadingEstates,
+                      apartments: nearbyApartments,
+                    ),
+                  ),
+                  SizedBox(height: 60.h),
                 ],
               ),
-
-              SizedBox(height: 10.h),
-
-              ///  Featured list
-              SizedBox(
-                height: 170.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 5,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, __) {
-                    return Container(
-                      width: 270.w,
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.offWhiteColor,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(AppAssets.image,
-                              width: 120.w, fit: BoxFit.fill),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceAround,
-                              children: [
-                                AutoSizeText(
-                                  "Sky Dandelions Apartment",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppStyles.bold12Primary,
-                                ),
-                                Row(
-                                  children: [
-                                    Image.asset(AppAssets.star,
-                                        width: 14.w),
-                                    SizedBox(width: 4.w),
-                                    Text("4.9",
-                                        style:
-                                        AppStyles.bold12Primary),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Image.asset(
-                                        AppAssets.locationIcon,
-                                        width: 14.w),
-                                    SizedBox(width: 4.w),
-                                    Expanded(
-                                      child: Text(
-                                        "Jakarta, Indonesia",
-                                        maxLines: 1,
-                                        overflow:
-                                        TextOverflow.ellipsis,
-                                        style: AppStyles
-                                            .medium10blueDarkColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "EG 290/",
-                                        style: AppStyles
-                                            .bold18PrimaryColor,
-                                      ),
-                                      TextSpan(
-                                        text: "month",
-                                        style:
-                                        AppStyles.bold8Primary,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              SizedBox(height: 20.h),
-
-              ///  Top location
-              Row(
-                children: [
-                  Text("Top Location",
-                      style: AppStyles.bold18PrimaryColor),
-                  const Spacer(),
-                  Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),
-                ],
-              ),
-
-              SizedBox(height: 10.h),
-
-              SizedBox(
-                height: 52.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 5,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, __) {
-                    return Container(
-                      width: 123.w,
-                      padding: EdgeInsets.symmetric(horizontal: 8.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.offWhiteColor,
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(AppAssets.imageS,
-                              width: 28.w),
-                          SizedBox(width: 6.w),
-                          Expanded(
-                            child: Text(
-                              "Malang",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppStyles.bold12Primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 10.h),
-
-              Row(
-                children: [
-                  Text("Nearby Estate",
-                      style: AppStyles.bold18PrimaryColor),
-                  const Spacer(),
-                  Text("View all",
-                      style: AppStyles.semiBold10PrimaryColor),
-                ],
-              ),
-
-              SizedBox(height: 10.h),
-
-              SizedBox(
-                height: 250.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 5,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (_, __) {
-                    return Container(
-                      width: 168.w,
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.offWhiteColor,
-                        borderRadius: BorderRadius.circular(27),
-                      ),
-                      child:
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AspectRatio(
-                            aspectRatio: 1,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                AppAssets.imageC,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: 8.h),
-
-                          Text(
-                            "Bungalow House",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppStyles.bold12Primary,
-                          ),
-
-                          SizedBox(height: 6.h),
-
-                          Row(
-                            children: [
-                              Image.asset(AppAssets.locationOrange, width: 14.w),
-                              SizedBox(width: 4.w),
-                              Expanded(
-                                child: Text(
-                                  "Jakarta, Indonesia",
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppStyles.medium10blueDarkColor,
-                                ),
-                              ),
-                              Image.asset(AppAssets.downIcon, width: 12.w),
-                            ],
-                          ),
-
-                          SizedBox(height: 10.h), // 👈 بدل Spacer
-
-                          Row(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "EG 290/",
-                                      style: AppStyles.bold18PrimaryColor,
-                                    ),
-                                    TextSpan(
-                                      text: "month",
-                                      style: AppStyles.bold8Primary,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Spacer(),
-                              Image.asset(AppAssets.star, width: 14.w),
-                              SizedBox(width: 4.w),
-                              Text("4.7", style: AppStyles.bold12Primary),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 60.h),
-
-            ],
+            ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildUniversitySelector({
+    required ThemeData theme,
+    required University selectedUniversity,
+    required AppLocalizations l10n,
+  }) {
+    return InkWell(
+      onTap: () {
+        showModalBottomSheet(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          context: context,
+          builder: (_) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                    child: Text(
+                      l10n.selectUniversity,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                  ...UniversityLocations.all.map((university) {
+                    final isSelected = university.name == selectedUniversity.name;
+                    return ListTile(
+                      leading: Icon(
+                        Icons.school_rounded,
+                        color: isSelected
+                            ? AppColors.primaryColor
+                            : theme.iconTheme.color,
+                      ),
+                      title: Text(
+                        university.getLocalizedName(l10n),
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected ? AppColors.primaryColor : null,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle, color: AppColors.primaryColor)
+                          : null,
+                      onTap: () {
+                        Navigator.pop(context);
+                        viewModel.selectUniversity(university);
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        height: 50.h,
+        padding: EdgeInsets.symmetric(horizontal: 10.w),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: theme.highlightColor),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.school_rounded, size: 18.w, color: AppColors.primaryColor),
+            SizedBox(width: 6.w),
+            Expanded(
+              child: Text(
+                selectedUniversity.getLocalizedName(l10n),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            Image.asset(AppAssets.downIcon, width: 14.w),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildFeaturedSection({
+    required bool isLoading,
+    required List apartments,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    if (isLoading && apartments.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (apartments.isEmpty) {
+      return  Center(child: Text(l10n.noFeaturedEstates));
+    }
+
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: apartments.length,
+      separatorBuilder: (_, __) => SizedBox(width: 10.w),
+      itemBuilder: (_, index) {
+        return FeaturedEstatesCard(apartment: apartments[index]);
+      },
+    );
+  }
+
+  Widget _buildNearbySection({
+    required bool isLoading,
+    required List apartments,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    if (isLoading && apartments.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (apartments.isEmpty) {
+      return  Center(child: Text(l10n.noNearbyEstates));
+    }
+
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: apartments.length,
+      separatorBuilder: (_, __) => SizedBox(width: 10.w),
+      itemBuilder: (_, index) {
+        return NearbyEstateCard(
+          apartment: apartments[index],
+          referenceLocation: viewModel.state.selectedUniversity.location,
+        );
+      },
+    );
+  }
 }
-
-

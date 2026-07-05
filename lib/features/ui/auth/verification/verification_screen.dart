@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pinput/pinput.dart';
+import 'package:sokon/core/di/di.dart';
 import 'package:sokon/core/utils/app_routes.dart';
+import 'package:sokon/features/ui/auth/forget_password/cubit/forget_password_states.dart';
+import 'package:sokon/features/ui/auth/forget_password/cubit/forget_password_view_model.dart';
+import 'package:sokon/features/ui/widgets/alert_dialog_utils.dart';
 
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_styles.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../widgets/custom_elevated_buttom.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -19,6 +25,7 @@ class VerificationScreen extends StatefulWidget {
 class _VerificationScreenState extends State<VerificationScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _pinController = TextEditingController();
+  final ForgetPasswordViewModel viewModel = getIt<ForgetPasswordViewModel>();
 
   late final PinTheme defaultPinTheme;
   late final PinTheme focusedPinTheme;
@@ -28,26 +35,35 @@ class _VerificationScreenState extends State<VerificationScreen>
   int _secondsLeft = _startSeconds;
   Timer? _timer;
 
-
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
+  String? email;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    email = ModalRoute.of(context)!.settings.arguments as String?;
+    if (email != null) {
+      viewModel.userEmail = email;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
     defaultPinTheme = PinTheme(
-      width: 52.w,
-      height: 52.w,
+      width: 48.w,
+      height: 48.w,
       textStyle: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF0A3D62),
+        color: AppColors.primaryColor,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFFB9C7D9),
+          color: AppColors.verificationBorder,
           width: 1.2,
         ),
       ),
@@ -62,13 +78,12 @@ class _VerificationScreenState extends State<VerificationScreen>
 
     submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration!.copyWith(
-        color: const Color(0xFFEAEFF3),
+        color: AppColors.verificationField,
       ),
     );
 
     _startTimer();
 
-    // ---------- SHAKE ----------
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -79,7 +94,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ================= TIMER LOGIC =================
   void _startTimer() {
     _timer?.cancel();
     _secondsLeft = _startSeconds;
@@ -95,17 +109,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     });
   }
 
-  // ================= VALIDATION =================
-  void _validatePin(String pin) {
-    if (pin == '2222') {
-      debugPrint('OTP صحيح ✅');
-      // Navigate to next screen
-    } else {
-      _shakeController.forward(from: 0);
-      _pinController.clear();
-    }
-  }
-
   @override
   void dispose() {
     _timer?.cancel();
@@ -116,113 +119,122 @@ class _VerificationScreenState extends State<VerificationScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.whiteColor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Stack(
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return BlocProvider.value(
+      value: viewModel,
+      child: BlocListener<ForgetPasswordViewModel, ForgetPasswordState>(
+        listener: (context, state) {
+          if (state is ForgetPasswordLoading) {
+            AlertDialogUtils.showLoading(context: context, msg: l10n.verifyingOtp);
+          } else if (state is ForgetPasswordError) {
+            AlertDialogUtils.hideLoading(context: context);
+            AlertDialogUtils.showMessage(context: context, msg: state.message, title: l10n.error);
+            _shakeController.forward(from: 0);
+          } else if (state is OTPSuccess) {
+            AlertDialogUtils.hideLoading(context: context);
+            Navigator.of(context).pushNamed(AppRoutes.forgetPassword2Route);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          body: SingleChildScrollView(
+            child: Column(
               children: [
-                Image.asset(AppAssets.verificationBg),
+                Stack(
+                  children: [
+                    Image.asset(AppAssets.verificationBg),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 50.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.verification,
+                            style: theme.textTheme.headlineMedium,
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            l10n.verificationDesc,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 50.h),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "Verification",
-                        style: AppStyles.regular30primary,
+                        l10n.enterCodeSent,
+                        style: theme.textTheme.bodyMedium,
                       ),
-                      SizedBox(height: 8.h),
+                      SizedBox(height: 10.h),
                       Text(
-                        "* We will send you a message to set or reset your new password",
-                        style: AppStyles.medium12gray,
+                        email ?? "",
+                        style: theme.textTheme.labelMedium,
                       ),
+                      SizedBox(height: 24.h),
+                      AnimatedBuilder(
+                        animation: _shakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(_shakeAnimation.value, 0),
+                            child: child,
+                          );
+                        },
+                        child: Pinput(
+                          length: 6,
+                          controller: _pinController,
+                          defaultPinTheme: defaultPinTheme,
+                          focusedPinTheme: focusedPinTheme,
+                          submittedPinTheme: submittedPinTheme,
+                          separatorBuilder: (index) => SizedBox(width: 8.w),
+                          onCompleted: (pin) => viewModel.verifyOTP(pin),
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      _secondsLeft > 0
+                          ? Text(
+                              l10n.resendCodeIn(_secondsLeft),
+                              style: theme.textTheme.bodyMedium,
+                            )
+                          : GestureDetector(
+                              onTap: () {
+                                if (email != null) viewModel.sendOTP(email!);
+                                _startTimer();
+                              },
+                              child: Text(
+                                l10n.resendCode,
+                                style: theme.textTheme.displaySmall,
+                              ),
+                            ),
+                      SizedBox(height: 40.h),
+                      CustomElevatedButtom(
+                        onPressed: () {
+                          if (_pinController.text.length == 6) {
+                            viewModel.verifyOTP(_pinController.text);
+                          }
+                        },
+                        text: l10n.submit,
+                        width: 336.w,
+                        borderRadius: 30.r,
+                        backgroundColorElevated: theme.primaryColor,
+                        textStyle: theme.textTheme.titleLarge,
+                        borderColor: AppColors.transparentColor,
+                        customPadding: 16.h,
+                      ),
+                      SizedBox(height: 30.h),
                     ],
                   ),
                 ),
               ],
             ),
-
-            SizedBox(height: 12.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30.w),
-              child: Column(
-                children: [
-                  Text(
-                    "We will send you one time password this email address.",
-                    style: AppStyles.medium12gray,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    "(example123@gmail.com)",
-                    style: AppStyles.semiBold15black,
-                  ),
-                  SizedBox(height: 24.h),
-
-                  AnimatedBuilder(
-                    animation: _shakeAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(_shakeAnimation.value, 0),
-                        child: child,
-                      );
-                    },
-                    child: Pinput(
-                      length: 4,
-                      controller: _pinController,
-                      defaultPinTheme: defaultPinTheme,
-                      focusedPinTheme: focusedPinTheme,
-                      submittedPinTheme: submittedPinTheme,
-                      separatorBuilder: (index) =>
-                          SizedBox(width: 12.w),
-
-                      // 🔥 AUTO SUBMIT
-                      onCompleted: _validatePin,
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  _secondsLeft > 0
-                      ? Text(
-                    "Resend code in $_secondsLeft s",
-                    style: AppStyles.medium12gray,
-                  )
-                      : GestureDetector(
-                    onTap: () {
-                      debugPrint('Resend OTP');
-                      _startTimer();
-                    },
-                    child: Text(
-                      "Resend Code",
-                      style: AppStyles.semiBold14Primary,
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  // ================= SUBMIT =================
-                  CustomElevatedButtom(
-                    onPressed: () {
-                      _validatePin(_pinController.text);
-                      Navigator.of(context).pushNamed(AppRoutes.forgetPassword2Route);
-                    },
-                    text: "Submit",
-                    width: 336.w,
-                    borderRadius: 30.r,
-                    backgroundColorElevated:
-                    AppColors.primaryColor,
-                    textStyle: AppStyles.semiBold20White,
-                    borderColor: AppColors.blackColor,
-                    customPadding: 16.h,
-                  ),
-
-                  SizedBox(height: 30.h),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -1,8 +1,9 @@
 flutter_native_splash:
   color: "#3889E7"
+  color_dark: "#10161C"
 
   #background_image: assets/images/splash_bg.png
-  #background_image_dark: assets/images/splash_bg.png
+  background_image_dark: assets/images/splash_dark_bg.png
 
   image: assets/images/Logo.png
   image_dark: assets/images/Logo.png
@@ -11,6 +12,7 @@ flutter_native_splash:
 
   android_12:
     color: "#3889E7"
+    color_dark: "#10161C"
 
     #background_image: assets/images/splash_bg.png
     #background_image_dark: assets/images/splash_bg.png

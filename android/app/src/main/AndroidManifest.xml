@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -13,6 +14,8 @@
 
     <uses-permission
         android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -24,15 +27,15 @@
 
     <application
         android:label="sokon"
-        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDM7e19DP2CPQ6N1eCY-VRxOYmGOnfNKns"/>
+            android:value="${googleMapsApiKey}"/>
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.sokon.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
@@ -55,6 +58,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel" />
     </application>
 
     <queries>

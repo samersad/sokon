@@ -1,55 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sokon/core/utils/app_colors.dart';
 import 'package:sokon/core/utils/app_styles.dart';
 
-
-class AlertDialogUtils{
-  static void  showLoading({required BuildContext context,required String msg}){
-    showDialog(barrierDismissible: false,context: context, builder: (context) => AlertDialog(
-      content: Row(
-        children: [
-          CircularProgressIndicator(color: AppColors.primaryColor,),
-          SizedBox(width:20,),
-          Text(msg ,style: AppStyles.semiBold14Primary,)
-        ],
+class AlertDialogUtils {
+  static void showLoading({required BuildContext context, required String msg}) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
+        content: Padding(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          child: Row(
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryColor),
+              SizedBox(width: 20.w),
+              Expanded(
+                child: Text(
+                  msg,
+                  style: AppStyles.semiBold14Primary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    )
     );
   }
-  static void hideLoading({required BuildContext context}){
-    Navigator.pop(context);
+
+  static void hideLoading({required BuildContext context}) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
   }
 
-  static void showMessage({required BuildContext context,
+  static void showMessage({
+    required BuildContext context,
     required String msg,
     String? title,
     Widget? pos,
-    Function? posAction,
+    VoidCallback? posAction,
     Widget? nav,
-    Function? navAction,
-
-
-  }){
-    List<Widget> actions =[];
-    if (pos!=null) {
-      actions.add(TextButton(onPressed: (){
-        //Navigator.pop(context);
-        posAction?.call();
-      }, child: pos));
-    }
-    if (nav!=null) {
-      actions.add(TextButton(onPressed: (){
-        //Navigator.pop(context);
-        navAction?.call();
-      }, child: nav));
-    }
-    showDialog(context: context, builder: (context) {
-      return AlertDialog(
-
-          content: Text(msg,style:AppStyles.bold20blackIner,),
-          title:Text(title ?? "" ,style: AppStyles.semiBold14Primary,) ,
-          actions: actions
-      );
-    },);
+    VoidCallback? navAction,
+  }) {
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+          title: title != null
+              ? Text(title, style: AppStyles.bold20blackIner)
+              : null,
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 0.4.sh),
+            child: SingleChildScrollView(
+              child: Text(msg, style: AppStyles.medium16black),
+            ),
+          ),
+          actionsPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 15.h),
+          actions: [
+            Row(
+              children: [
+                if (nav != null)
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        navAction?.call();
+                      },
+                      child: Center(child: nav),
+                    ),
+                  ),
+                if (nav != null && pos != null) SizedBox(width: 10.w),
+                if (pos != null)
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        posAction?.call();
+                      },
+                      child: Center(child: pos),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 }

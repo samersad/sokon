@@ -18,6 +18,8 @@ migrate_working_dir/
 *.iws
 .idea/
 *.env
+*-firebase-adminsdk-*.json
+sokon-*-firebase-adminsdk-*.json
 
 
 # The .vscode folder contains launch configuration and tasks you configure in
